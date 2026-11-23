@@ -89,10 +89,10 @@ const wide: UInt<bits: 128> = 2 ** 100     // fits: 128 bits are enough (not bui
 - `+ - * / % **`, the comparisons and the bit operators work as on the other whole numbers (1.8). Both sides have the same type, and a result that doesn't fit panics (5.6): `integer overflow: 4095 + 1 doesn't fit in UInt<bits: 12>`. `wrapping_add` and `checked_add` (5.6) work at the type's width; `~` flips its `n` bits; `<<` and `>>` take a shift from 0 to `n - 1`.
 - `UInt<bits: 12>(x)` converts any number, and panics when `x` doesn't fit, as `Int8(300)` does: `5000 doesn't fit in UInt<bits: 12>`. A float is cut to its whole part first.
 - Under `try` or `catch`, a conversion of a number into any whole-number type fails with a `SizeError` instead of panicking (2.9), with the same text. This holds for `Int8` … `UInt64` too, as they are `bits` types: `try Int8(n)`. Text read as a number still fails with a `ParseError`.
-- It prints, compares, goes in lists, dicts and records, and is written to JSON as the number it is. Read from JSON, a number that doesn't fit is an error (2.12): ``a whole number that fits `UInt<bits: 12>` ``.
+- It prints, compares, goes in lists, dicts and records, and is written to JSON as the number it is. Read from JSON, a number that doesn't fit is an error (2.12), wherever it is in the type: ``a whole number that fits `UInt<bits: 12>` ``.
 - *Not built yet:* widths over 64 bits. Up to then, `Int<bits: 128>` is a compile error that names `BigInt`.
 - *Not built yet:* A value is kept in the smallest of 1, 2, 4 or 8 bytes that holds it; a wider one in whole 8-byte words. Today every one is kept in 8 bytes, as an `Int`.
-- *Not built yet:* in native code, reading JSON into a type that holds a `bits` or range number (`json.decode`), and a generic function given one (`fn twice<T: Add>(x: T)`); the interpreter runs both.
+- A generic function given one checks its type's limits too: `twice(UInt<bits: 12>(3000))`, with `fn twice<T: Number>(x: T) -> T { x + x }`, panics as `3000 + 3000` does.
 
 **A range: `Int<range: a..=b>`.** A whole number that is always in the range: an `Int` whose smallest and largest are `a` and `b`. Both ends are known while compiling; `a..b` leaves `b` out, as a range does (1.8), so `Int<range: 0..10>` is `Int<range: 0..=9>`, one type, and is shown that way. An empty range is a compile error.
 

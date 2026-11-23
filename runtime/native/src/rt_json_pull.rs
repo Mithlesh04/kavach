@@ -11,7 +11,8 @@
 
 use crate::heap::{alloc_slots, release, release_slot, retain, slots};
 use crate::rt::type_code;
-use crate::rt_json_decode::{decimal, fits, fixed, template};
+use crate::rt_json_decode::{decimal, fixed, int_fits, template};
+use crate::rt_json_wholes::part;
 use crate::shapes::{new_text, shape};
 use kavach_kir::{FieldShape, Shape, Type};
 use kavach_runtime_core::Decimal;
@@ -21,7 +22,7 @@ use kavach_runtime_core::json::{Keys, Limits, Pull};
 /// when the text is not one.
 pub fn decode(text: &str, limits: &Limits, ty: Type, templates: i64) -> Option<u64> {
     let mut r = Pull::new(text, limits).ok()?;
-    let v = read(&mut r, ty, templates).ok()?;
+    let v = read(&mut r, ty, templates, crate::rt_json_wholes::root()).ok()?;
     if r.end().is_err() {
         release_slot(v as i64, ty);
         return None;
@@ -34,7 +35,9 @@ struct Wrong;
 
 type Read = Result<u64, Wrong>;
 
-fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
+/// With node `node` of the plan of whole numbers with their own limits
+/// (`rt_json_wholes.rs`).
+fn read(r: &mut Pull<'_>, ty: Type, templates: i64, node: usize) -> Read {
     // A number's text; each type below reads it as it needs, with no
     // `Tree` in between.
     fn number<'t>(r: &mut Pull<'t>) -> Result<(&'t str, bool), Wrong> {
@@ -65,7 +68,7 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
         t if t.is_int() => {
             return match number(r)? {
                 (text, true) => match text.parse::<i64>() {
-                    Ok(n) if fits(n, t) => Ok(n as u64),
+                    Ok(n) if int_fits(n, t, node).0 => Ok(n as u64),
                     _ => Err(Wrong),
                 },
                 _ => Err(Wrong),
@@ -101,18 +104,18 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
         },
         Shape::Optional(_) if r.peek() == Some(b'n') => r.null().map(|_| 0).map_err(|_| Wrong),
         Shape::Optional(inner) => {
-            let v = read(r, *inner, templates)?;
+            let v = read(r, *inner, templates, part(node, 0))?;
             if inner.is_ref() {
                 return Ok(v);
             }
             Ok(crate::rt_data::kv_some(v as i64, type_code(ty)) as u64)
         }
         Shape::List(item) => {
-            let built = items(r, |_| *item, templates)?;
+            let built = items(r, |_| (*item, part(node, 0)), templates)?;
             Ok(alloc_slots(ty, 0, built) as u64)
         }
         Shape::Set(item) => {
-            let built = items(r, |_| *item, templates)?;
+            let built = items(r, |_| (*item, part(node, 0)), templates)?;
             let mut set = crate::rt_maps::kv_map_new(type_code(ty));
             for v in built {
                 set = crate::rt_maps::kv_map_insert(set, v as i64, 0, 0);
@@ -121,14 +124,15 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
         }
         Shape::Tuple(ts) => {
             let n = ts.len();
-            let built = items(r, |i| ts.get(i).copied().unwrap_or(Type::Unit), templates)?;
+            let at = |i| (ts.get(i).copied().unwrap_or(Type::Unit), part(node, i));
+            let built = items(r, at, templates)?;
             if built.len() != n {
                 release_all(built, ts);
                 return Err(Wrong);
             }
             Ok(fixed(ty, 0, &built))
         }
-        Shape::Map(k, v) => map(r, ty, *k, *v, templates),
+        Shape::Map(k, v) => map(r, ty, (*k, *v), templates, node),
         Shape::Union { .. } if crate::rt_json::is_json(ty) => {
             let mut b = crate::rt_json_build::Builder::new(None);
             let root = r.value(&mut b).map_err(|_| Wrong)?;
@@ -143,7 +147,8 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
         }
         Shape::Record { fields, .. } => {
             r.object().map_err(|_| Wrong)?;
-            let built = fields_of(r, fields, ty, templates)?;
+            let nodes = crate::rt_json_wholes::fields(node, fields.len());
+            let built = fields_of(r, fields, ty, templates, &nodes)?;
             Ok(fixed(ty, 0, &built))
         }
         // A name, or the text or number a variant carries (spec 2.6).
@@ -166,7 +171,8 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
             let name = r.field(&mut keys).map_err(|_| Wrong)?.ok_or(Wrong)?;
             let i = variants.iter().position(|x| x.name == *name).ok_or(Wrong)?;
             r.object().map_err(|_| Wrong)?;
-            let built = fields_of(r, &variants[i].fields, Type::Unit, templates)?;
+            let nodes = crate::rt_json_wholes::variant(node, i);
+            let built = fields_of(r, &variants[i].fields, Type::Unit, templates, &nodes)?;
             if !matches!(r.field(&mut keys), Ok(None)) {
                 let types: Vec<Type> = variants[i].fields.iter().map(|f| f.ty).collect();
                 release_all(built, &types);
@@ -178,10 +184,10 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
     }
 }
 
-/// The items of an array, item `i` of type `item(i)`.
+/// The items of an array, item `i` of type and plan node `item(i)`.
 fn items(
     r: &mut Pull<'_>,
-    item: impl Fn(usize) -> Type,
+    item: impl Fn(usize) -> (Type, usize),
     templates: i64,
 ) -> Result<Vec<u64>, Wrong> {
     r.array().map_err(|_| Wrong)?;
@@ -193,8 +199,8 @@ fn items(
             Ok(false) => return Ok(built),
             Err(_) => return Err(release_all(built, &types)),
         }
-        let t = item(built.len());
-        match read(r, t, templates) {
+        let (t, node) = item(built.len());
+        match read(r, t, templates, node) {
             Ok(v) => {
                 built.push(v);
                 types.push(t);
@@ -207,7 +213,7 @@ fn items(
     }
 }
 
-fn map(r: &mut Pull<'_>, ty: Type, k: Type, v: Type, templates: i64) -> Read {
+fn map(r: &mut Pull<'_>, ty: Type, (k, v): (Type, Type), templates: i64, node: usize) -> Read {
     r.object().map_err(|_| Wrong)?;
     let mut keys = Keys::default();
     let mut map = crate::rt_maps::kv_map_new(type_code(ty));
@@ -224,13 +230,13 @@ fn map(r: &mut Pull<'_>, ty: Type, k: Type, v: Type, templates: i64) -> Read {
             false => {
                 let tree =
                     kavach_runtime_core::json::key_tree(&key, crate::rt_json_decode::key_kind(k));
-                match crate::rt_json_decode::decode(&tree, k, "", templates) {
+                match crate::rt_json_decode::decode_at(&tree, k, "", templates, part(node, 0)) {
                     Ok(slot) => slot as i64,
                     Err(_) => break,
                 }
             }
         };
-        let Ok(value) = read(r, v, templates) else {
+        let Ok(value) = read(r, v, templates, part(node, 1)) else {
             crate::rt_json_decode::release_key(key, k);
             break;
         };
@@ -248,6 +254,7 @@ fn fields_of(
     fields: &[FieldShape],
     record: Type,
     templates: i64,
+    nodes: &[usize],
 ) -> Result<Vec<u64>, Wrong> {
     let types: Vec<Type> = fields.iter().map(|f| f.ty).collect();
     let mut given: Vec<Option<u64>> = vec![None; fields.len()];
@@ -266,7 +273,12 @@ fn fields_of(
             }
             continue;
         };
-        match read(r, fields[i].ty, templates) {
+        match read(
+            r,
+            fields[i].ty,
+            templates,
+            nodes.get(i).copied().unwrap_or(0),
+        ) {
             Ok(v) => given[i] = Some(v),
             Err(_) => break true,
         }

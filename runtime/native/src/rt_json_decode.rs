@@ -12,17 +12,20 @@
 //! has a default. A missing field is copied from its type's template.
 
 use crate::heap::{
-    Data, alloc, alloc_slots, alloc_zeroed, obj, release, release_slot, retain, slots, slots_mut,
+    Data, alloc, alloc_slots, alloc_zeroed, release, release_slot, slots, slots_mut,
 };
 use crate::rt::{type_code, type_of};
 use crate::rt_errors::set_error;
+use crate::rt_json_fields::decode_fields;
+pub(crate) use crate::rt_json_fields::template;
+use crate::rt_json_wholes::part;
 use crate::shapes::{new_text, shape, with_str};
-use kavach_kir::{FieldShape, RtOp, Shape, Type, VariantValue};
+use kavach_kir::{RtOp, Shape, Type, VariantValue};
 use kavach_runtime_core::json::{self, Limits, Tree, expected, path_field, path_item};
 use kavach_runtime_core::{Decimal, format_float};
 
 /// Where decoding failed, and what it wanted there.
-type Failed = (String, String);
+pub(crate) type Failed = (String, String);
 
 thread_local! {
     /// While `json.decode` decodes: the problems found so far. Decoding
@@ -39,7 +42,7 @@ thread_local! {
 
 /// `e`, unless the problems are being collected: then it is noted, and
 /// decoding goes on.
-fn stop_at(e: Failed) -> Option<Failed> {
+pub(crate) fn stop_at(e: Failed) -> Option<Failed> {
     PROBLEMS.with(|p| match p.borrow_mut().as_mut() {
         Some(all) => {
             all.push(e);
@@ -58,7 +61,7 @@ fn problems_noted() -> usize {
 /// those of shape, or, when the shapes fit, each broken invariant.
 fn decode_every(t: &Tree, ty: Type, templates: i64) -> Result<u64, Vec<Failed>> {
     PROBLEMS.with(|p| *p.borrow_mut() = Some(Vec::new()));
-    let result = decode(t, ty, "", templates);
+    let result = decode_at(t, ty, "", templates, crate::rt_json_wholes::root());
     let mut problems = PROBLEMS.with(|p| p.borrow_mut().take()).unwrap_or_default();
     let slot = match result {
         Ok(slot) => slot,
@@ -81,8 +84,13 @@ fn decode_every(t: &Tree, ty: Type, templates: i64) -> Result<u64, Vec<Failed>> 
 /// `json.decode_value<T>(json, 0, templates)`, all owned: a value of type
 /// `code`, or 0 with the error set.
 pub fn decode_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
-    // The last of `b`'s numbers says whether unknown fields are skipped.
-    IGNORE.with(|i| i.set(slots(b).last().is_some_and(|n| *n != 0)));
+    // `b`'s numbers: the limits (for `json.decode`), whether unknown
+    // fields are skipped, then the plan of whole numbers with their own
+    // limits (`rt_json_wholes.rs`).
+    let words: Vec<i64> = slots(b).iter().map(|n| *n as i64).collect();
+    let skip_at = if op == RtOp::JsonDecode { 3 } else { 0 };
+    IGNORE.with(|i| i.set(words.get(skip_at).is_some_and(|n| *n != 0)));
+    crate::rt_json_wholes::begin(words.get(skip_at + 1..).unwrap_or_default());
     let tree = if op == RtOp::JsonDecode {
         let d = Limits::default();
         let limit = |i: usize, default: usize| {
@@ -131,6 +139,7 @@ pub fn decode_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
 
 fn finish(a: i64, b: i64, c: i64, result: i64) -> i64 {
     IGNORE.with(|i| i.set(true));
+    crate::rt_json_wholes::end();
     release(a);
     release(b);
     release(c);
@@ -152,6 +161,27 @@ pub(crate) fn fits(n: i64, ty: Type) -> bool {
 
 /// `t` as an owned slot of type `ty`.
 pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u64, Failed> {
+    decode_at(t, ty, path, templates, 0)
+}
+
+/// The name of whole-number type `t`, or of plan node `n`'s whole number
+/// when it has its own limits, and whether `v` fits it.
+pub(crate) fn int_fits(v: i64, t: Type, n: usize) -> (bool, String) {
+    match crate::rt_json_wholes::whole(n, v) {
+        Some((name, inside)) => (inside && fits(v, t), name),
+        None => (fits(v, t), t.kavach_name().to_string()),
+    }
+}
+
+/// `t` as an owned slot of type `ty`, with node `n` of the plan of
+/// whole numbers with their own limits (`rt_json_wholes.rs`).
+pub(crate) fn decode_at(
+    t: &Tree,
+    ty: Type,
+    path: &str,
+    templates: i64,
+    node: usize,
+) -> Result<u64, Failed> {
     let wrong = |want: &str| Err((path.to_string(), want.to_string()));
     match (ty, t) {
         (Type::Bool, Tree::Bool(b)) => return Ok(*b as u64),
@@ -176,15 +206,23 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             return Ok(s.chars().next().unwrap_or(' ') as u64);
         }
         (Type::Char, _) => return wrong(expected::CHAR),
-        (t, Tree::Int(n)) if t.is_int() && fits(*n, t) => return Ok(*n as u64),
-        // A `Json` value's number, by its digits (`json.decode_value`).
-        (t, Tree::Number(text)) if t.is_int() => {
-            return match text.parse::<i64>() {
-                Ok(n) if fits(n, t) => Ok(n as u64),
-                _ => wrong(&expected::integer(t.kavach_name())),
+        // A `Json` value's number is read by its digits
+        // (`json.decode_value`).
+        (t, tree @ (Tree::Int(_) | Tree::Number(_))) if t.is_int() => {
+            let v = match tree {
+                Tree::Int(v) => Some(*v),
+                Tree::Number(text) => text.parse::<i64>().ok(),
+                _ => None,
+            };
+            let (inside, name) = int_fits(v.unwrap_or(0), t, node);
+            return match v {
+                Some(v) if inside => Ok(v as u64),
+                _ => wrong(&expected::integer(&name)),
             };
         }
-        (t, _) if t.is_int() => return wrong(&expected::integer(t.kavach_name())),
+        (t, _) if t.is_int() => {
+            return wrong(&expected::integer(&int_fits(0, t, node).1));
+        }
         (Type::Unit, _) => return Ok(0),
         _ => {}
     }
@@ -215,18 +253,18 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
         (Shape::BigInt, _) => wrong(expected::WHOLE),
         (Shape::Optional(_), Tree::Null) => Ok(0),
         (Shape::Optional(inner), _) => {
-            let v = decode(t, *inner, path, templates)?;
+            let v = decode_at(t, *inner, path, templates, part(node, 0))?;
             if inner.is_ref() {
                 return Ok(v);
             }
             Ok(crate::rt_data::kv_some(v as i64, type_code(ty)) as u64)
         }
         (Shape::List(item), Tree::Array(items)) => {
-            let built = whole_items(items, *item, path, templates)?;
+            let built = whole_items(items, *item, path, templates, part(node, 0))?;
             Ok(alloc_slots(ty, 0, built) as u64)
         }
         (Shape::Set(item), Tree::Array(items)) => {
-            let built = whole_items(items, *item, path, templates)?;
+            let built = whole_items(items, *item, path, templates, part(node, 0))?;
             let mut set = crate::rt_maps::kv_map_new(type_code(ty));
             for v in built {
                 set = crate::rt_maps::kv_map_insert(set, v as i64, 0, 0);
@@ -234,7 +272,7 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             Ok(set as u64)
         }
         (Shape::Tuple(ts), Tree::Array(items)) if ts.len() == items.len() => {
-            let built = decode_all(items, ts, path, templates)?;
+            let built = decode_all(items, ts, path, templates, &|i| part(node, i))?;
             Ok(fixed(ty, 0, &built))
         }
         (Shape::Tuple(ts), _) => wrong(&expected::items(ts.len())),
@@ -247,7 +285,7 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             if !text_keys {
                 for (key, _) in fields {
                     let tree = json::key_tree(key, key_kind(*k));
-                    match decode(&tree, *k, &path_field(path, key), templates) {
+                    match decode_at(&tree, *k, &path_field(path, key), templates, part(node, 0)) {
                         Ok(slot) => key_slots.push(slot),
                         Err(e) => return Err(drop_all(key_slots, &key_types, e)),
                     }
@@ -258,7 +296,7 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             let keys: Vec<String> = fields.iter().map(|(k, _)| path_field(path, k)).collect();
             let mut built = Vec::with_capacity(values.len());
             for (i, (value, at)) in values.iter().zip(&keys).enumerate() {
-                match decode(value, types[i], at, templates).map_err(stop_at) {
+                match decode_at(value, types[i], at, templates, part(node, 1)).map_err(stop_at) {
                     Ok(slot) => built.push(slot),
                     Err(None) => built.push(0),
                     Err(Some(e)) => {
@@ -295,7 +333,8 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             }
         }
         (Shape::Record { fields, .. }, Tree::Object(given)) => {
-            let built = decode_fields(given, fields, ty, path, templates)?;
+            let nodes = crate::rt_json_wholes::fields(node, fields.len());
+            let built = decode_fields(given, fields, ty, path, templates, &nodes)?;
             Ok(fixed(ty, 0, &built))
         }
         (Shape::Union { name, variants }, _) => {
@@ -315,7 +354,9 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
                 return wrong(&expected::variant(name));
             };
             let at = path_field(path, &variants[i].name);
-            let built = decode_fields(&given, &variants[i].fields, Type::Unit, &at, templates)?;
+            let nodes = crate::rt_json_wholes::variant(node, i);
+            let fields = &variants[i].fields;
+            let built = decode_fields(&given, fields, Type::Unit, &at, templates, &nodes)?;
             Ok(fixed(ty, i as u32, &built))
         }
         _ => wrong(expected::OBJECT),
@@ -364,10 +405,16 @@ pub(crate) fn fixed(ty: Type, tag: u32, fields: &[u64]) -> u64 {
 /// The items of a list or set, each of type `item`. When one had a
 /// problem (noted, so the whole value is thrown away), none: an item left
 /// empty can't go into a list whose items are stored flat, nor be hashed.
-fn whole_items(items: &[Tree], item: Type, path: &str, templates: i64) -> Result<Vec<u64>, Failed> {
+fn whole_items(
+    items: &[Tree],
+    item: Type,
+    path: &str,
+    templates: i64,
+    node: usize,
+) -> Result<Vec<u64>, Failed> {
     let types = vec![item; items.len()];
     let before = problems_noted();
-    let built = decode_all(items, &types, path, templates)?;
+    let built = decode_all(items, &types, path, templates, &|_| node)?;
     if problems_noted() == before {
         return Ok(built);
     }
@@ -377,17 +424,19 @@ fn whole_items(items: &[Tree], item: Type, path: &str, templates: i64) -> Result
     Ok(Vec::new())
 }
 
-/// Each item decoded with its type; on a failure, the ones made so far
-/// are released.
+/// Each item decoded with its type and plan node `node_of(i)`; on a
+/// failure, the ones made so far are released.
 fn decode_all(
     items: &[Tree],
     types: &[Type],
     path: &str,
     templates: i64,
+    node_of: &dyn Fn(usize) -> usize,
 ) -> Result<Vec<u64>, Failed> {
     let mut built = Vec::with_capacity(items.len());
     for (i, (item, t)) in items.iter().zip(types).enumerate() {
-        match decode(item, *t, &path_item(path, i), templates).map_err(stop_at) {
+        let node = node_of(i);
+        match decode_at(item, *t, &path_item(path, i), templates, node).map_err(stop_at) {
             Ok(slot) => built.push(slot),
             Err(None) => built.push(0),
             Err(Some(e)) => return Err(drop_all(built, types, e)),
@@ -422,66 +471,9 @@ pub(crate) fn release_key(slot: i64, ty: Type) {
     release_slot(slot, ty);
 }
 
-fn drop_all(built: Vec<u64>, types: &[Type], e: Failed) -> Failed {
+pub(crate) fn drop_all(built: Vec<u64>, types: &[Type], e: Failed) -> Failed {
     for (slot, t) in built.into_iter().zip(types) {
         release_slot(slot as i64, *t);
     }
     e
-}
-
-/// The fields of a record (of type `record`, which may have a template)
-/// or variant: each from `given`, or its default, or `none`.
-fn decode_fields(
-    given: &[(String, Tree)],
-    fields: &[FieldShape],
-    record: Type,
-    path: &str,
-    templates: i64,
-) -> Result<Vec<u64>, Failed> {
-    let types: Vec<Type> = fields.iter().map(|f| f.ty).collect();
-    // A field the type doesn't have (decision 0096).
-    if !IGNORE.with(std::cell::Cell::get) {
-        for (k, _) in given {
-            if !fields.iter().any(|f| f.name == *k)
-                && let Some(e) = stop_at((path_field(path, k), expected::NO_FIELD.to_string()))
-            {
-                return Err(e);
-            }
-        }
-    }
-    let mut built = Vec::with_capacity(fields.len());
-    for (i, f) in fields.iter().enumerate() {
-        let slot = match given.iter().find(|(k, _)| *k == f.name) {
-            Some((_, t)) => decode(t, f.ty, &path_field(path, &f.name), templates),
-            None => match template(templates, record) {
-                Some((p, defaults)) if i < 64 && defaults >> i & 1 == 1 => {
-                    let slot = slots(p)[i];
-                    if f.ty.is_ref() {
-                        retain(slot as i64);
-                    }
-                    Ok(slot)
-                }
-                _ if matches!(shape(f.ty), Shape::Optional(_)) && f.ty.is_ref() => Ok(0),
-                _ => Err((path.to_string(), expected::field(&f.name))),
-            },
-        };
-        match slot.map_err(stop_at) {
-            Ok(s) => built.push(s),
-            Err(None) => built.push(0),
-            Err(Some(e)) => return Err(drop_all(built, &types, e)),
-        }
-    }
-    Ok(built)
-}
-
-/// The template record of type `record` and its mask of fields with
-/// defaults, if generated code passed one.
-pub(crate) fn template(templates: i64, record: Type) -> Option<(i64, u64)> {
-    if templates == 0 || record == Type::Unit {
-        return None;
-    }
-    slots(templates)
-        .chunks(2)
-        .find(|pair| pair[0] != 0 && obj(pair[0] as i64).ty() == record)
-        .map(|pair| (pair[0] as i64, pair.get(1).copied().unwrap_or(0)))
 }

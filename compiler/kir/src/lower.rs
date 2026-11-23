@@ -99,6 +99,11 @@ pub(crate) struct Lowerer<'a> {
     /// never made (`lower_generic.rs`), and those of the one being made.
     pub(crate) fn_stand_ins: HashMap<FuncId, Vec<DefId>>,
     pub(crate) stand_ins: Vec<DefId>,
+    /// The type parameters of each instance given a whole number with its
+    /// own limits (`lower_whole_generic.rs`), and those of the one being
+    /// made.
+    pub(crate) fn_wholes: HashMap<FuncId, HashMap<DefId, kavach_checker::Prim>>,
+    pub(crate) wholes: HashMap<DefId, kavach_checker::Prim>,
     /// Names brought in by `use std.<module>`, and the module (spec 14).
     pub(crate) std_modules: HashMap<DefId, String>,
     pub(crate) agents: crate::lower_agents::Agents<'a>,
@@ -177,6 +182,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         subst: HashMap::new(),
         fn_stand_ins: HashMap::new(),
         stand_ins: Vec::new(),
+        fn_wholes: HashMap::new(),
+        wholes: HashMap::new(),
         std_modules: HashMap::new(),
         agents: Default::default(),
         dest_finals: HashMap::new(),

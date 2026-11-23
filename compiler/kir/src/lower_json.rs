@@ -55,15 +55,12 @@ impl<'a> Lowerer<'a> {
         let Some(first) = given[0] else {
             return Err(self.unsupported(format!("`json.{name}()`"), span));
         };
-        if self.decodes_whole(span) {
-            return Err(self.unsupported(
-                "decoding JSON into an `Int<bits: n>` or an `Int<range: …>`",
-                span,
-            ));
-        }
+        // Where whole numbers with their own limits are, after the
+        // other numbers (`lower_json_wholes.rs`).
+        let plan = self.whole_plan(span)?;
         let first = self.expr(first)?;
-        // `unknown: JsonUnknown.Ignore` (variant 1) as 1, last of the
-        // numbers the runtime is given (decision 0096).
+        // `unknown: JsonUnknown.Ignore` (variant 1) as 1, after the limits
+        // in the numbers the runtime is given (decision 0096).
         let ignore = match given.last().copied().flatten() {
             Some(e) => {
                 let value = self.expr(e)?;
@@ -90,9 +87,12 @@ impl<'a> Lowerer<'a> {
                 });
             }
             limits.push(ignore);
+            limits.extend(plan.iter().map(|n| at(K::Int(*n), Type::I64)));
             (RtOp::JsonDecode, at(K::List(limits), list))
         } else {
-            (RtOp::JsonDecodeValue, at(K::List(vec![ignore]), list))
+            let mut numbers = vec![ignore];
+            numbers.extend(plan.iter().map(|n| at(K::Int(*n), Type::I64)));
+            (RtOp::JsonDecodeValue, at(K::List(numbers), list))
         };
         let templates = self.templates(ty, line, span)?;
         let decoded = at(K::Rt(op, vec![first, limits, templates]), ty);

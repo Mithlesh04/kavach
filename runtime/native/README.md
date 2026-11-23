@@ -58,6 +58,8 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/live.rs` | Counting live objects for the leak check, per thread when tasks run at once |
 | `src/rt_regex.rs` | `std.regex`, with the engine from `runtime/core` |
 | `src/rt_json_decode.rs` | `json.decode<T>`: JSON into typed values by their shape, with record defaults passed in as templates; it tries `src/rt_json_pull.rs` first, which reads straight from the text |
+| `src/rt_json_fields.rs` | The fields of a record or variant read from JSON: from the text, the type's template of defaults, or `none` |
+| `src/rt_json_wholes.rs` | The plan of where whole numbers with their own limits (`UInt<bits: 12>`, `Int<range: …>`) are in a type `json.decode` reads, so their limits are checked |
 | `src/rt_json_build.rs` | `json.parse` straight into `Json` values: maps made at their final size, repeated values shared |
 | `src/rt_json.rs` | `std.json`: JSON text to and from `Json` values, with the parser from `runtime/core` |
 | `src/rt_log.rs` | `std.log`'s lines (spec 14.12): written as `[log]` in `kavach.toml` says, with `runtime/core`'s log writer |

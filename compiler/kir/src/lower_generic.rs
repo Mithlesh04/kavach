@@ -24,8 +24,8 @@ impl<'a> Lowerer<'a> {
         line: u32,
     ) -> Lowered<ir::Expr> {
         let span = e.span;
-        self.no_whole_in_generic(e, args)?;
         let f = self.generic_fns[&def];
+        let wholes = self.call_wholes(f, args, e, None);
         // The type arguments written at the call (`read<Point>(…)`), then
         // the ones the argument and result types show.
         let mut subst = HashMap::new();
@@ -91,7 +91,14 @@ impl<'a> Lowerer<'a> {
             .zip(wants?)
             .map(|(v, want)| self.coerce(v, want))
             .collect::<Lowered<Vec<_>>>()?;
+        let params: Vec<DefId> = (f.generics.iter())
+            .filter_map(|g| self.decl.get(&g.name.span.start).copied())
+            .collect();
+        type_args.extend(self.whole_key(&params, &wholes));
         let fid = self.instance(def, f, type_args, subst, None);
+        if !wholes.is_empty() {
+            self.fn_wholes.insert(fid, wholes);
+        }
         if !stand_ins.is_empty() {
             self.fn_stand_ins.insert(fid, stand_ins);
         }
@@ -199,7 +206,7 @@ impl<'a> Lowerer<'a> {
         call: &'a ast::Expr,
     ) -> Lowered<ir::Expr> {
         let span = call.span;
-        self.no_whole_in_generic(call, args)?;
+        let wholes = self.call_wholes(f, args, call, Some(owner));
         let type_params = self.type_generics(owner);
         let mut subst = HashMap::new();
         if let Some(r) = &receiver {
@@ -231,12 +238,14 @@ impl<'a> Lowerer<'a> {
             .iter()
             .filter_map(|g| self.decl.get(&g.name.span.start).copied());
         let mut type_args = Vec::new();
-        for g in type_params.iter().copied().chain(own) {
-            match subst.get(&g) {
+        let all_params: Vec<DefId> = type_params.iter().copied().chain(own).collect();
+        for g in &all_params {
+            match subst.get(g) {
                 Some(t) => type_args.push(*t),
                 None => return Err(self.unsupported("this generic method call", span)),
             }
         }
+        type_args.extend(self.whole_key(&all_params, &wholes));
         let outer = std::mem::replace(&mut self.subst, subst.clone());
         let wants = params
             .map(|t| self.written_type(t))
@@ -254,6 +263,9 @@ impl<'a> Lowerer<'a> {
             subst,
             Some(crate::lower::Owner::Adt(owner)),
         );
+        if !wholes.is_empty() {
+            self.fn_wholes.insert(fid, wholes);
+        }
         let call = ir::Expr {
             kind: K::Call(fid, all),
             ty,

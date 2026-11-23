@@ -1,0 +1,66 @@
+// Rule: `json.decode` checks a `bits` or range number at any depth: in a list, a dict, an optional, a tuple, a record, a variant and a generic type; one that doesn't fit is a problem naming its type.
+// Spec: 2.1, 2.12
+// expect output: [7, 4095]
+// expect output: Reg(addr: 4095, port: 443, tags: {"a": -8}, last: none, pair: (1, 2))
+// expect output: [0]: a whole number that fits `UInt<bits: 12>`
+// expect output: port: a whole number that fits `Int<range: 1..=65535>`
+// expect output: tags.b: a whole number that fits `Int<bits: 4>`
+// expect output: last: a whole number that fits `UInt<bits: 12>`
+// expect output: pair[1]: a whole number that fits `Int<range: 1..=9>`
+// expect output: Set.level: a whole number that fits `Int<range: 0..=3>`
+// expect output: v: a whole number that fits `UInt<bits: 3>`
+// expect output: Box(v: 7)
+
+use std.json
+
+type Reg {
+    addr: UInt<bits: 12>
+    port: Int<range: 1..=65535>
+    tags: {String: Int<bits: 4>}
+    last: UInt<bits: 12>?
+    pair: (Int, Int<range: 1..=9>)
+}
+
+type Cmd = Stop | Set(level: Int<range: 0..=3>)
+
+type Box<T> {
+    v: T
+}
+
+fn explain(e: JsonError) {
+    match e {
+        JsonError.Invalid(problems) => {
+            for p in problems {
+                print(`{p.path}: {p.expected}`)
+            }
+        }
+        _ => print("other"),
+    }
+}
+
+fn main() {
+    print(json.decode<[UInt<bits: 12>]>("[7, 4095]") catch _ => [])
+    const good = `\{"addr": 4095, "port": 443, "tags": \{"a": -8}, "last": null, "pair": [1, 2]}`
+    match json.decode<Reg>(good) {
+        ok(r) => print(r),
+        err(e) => explain(e),
+    }
+    match json.decode<[UInt<bits: 12>]>("[4096]") {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+    const bad = `\{"addr": 1, "port": 0, "tags": \{"b": 8}, "last": 5000, "pair": [1, 10]}`
+    match json.decode<Reg>(bad) {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+    match json.decode<Cmd>(`\{"Set": \{"level": 4}}`) {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+    match json.decode<Box<UInt<bits: 3>>>(`\{"v": 8}`) {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+    print(json.decode<Box<UInt<bits: 3>>>(`\{"v": 7}`) catch _ => Box(v: 0))
+}

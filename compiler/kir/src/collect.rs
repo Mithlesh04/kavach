@@ -32,6 +32,7 @@ pub(crate) fn collect_functions(
                 let f = f.expect("a declared function");
                 l.subst = l.fn_subst.get(&id).cloned().unwrap_or_default();
                 l.stand_ins = l.fn_stand_ins.get(&id).cloned().unwrap_or_default();
+                l.wholes = l.fn_wholes.get(&id).cloned().unwrap_or_default();
                 l.function(f, owner)
             }
         };
@@ -44,6 +45,7 @@ pub(crate) fn collect_functions(
         }
     }
     l.subst.clear();
+    l.wholes.clear();
     Ok(())
 }
 

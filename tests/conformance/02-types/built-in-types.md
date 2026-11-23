@@ -98,3 +98,5 @@ Conformance tests for spec section [2.1 Built-in types](../../../docs/spec/02-ty
 | 2.1, 2.9 | [try-into-a-range-fails-with-a-size-error.kav](try-into-a-range-fails-with-a-size-error.kav) | `try Int<range: a..=b>(n)` fails with a `SizeError` when `n` is out of the range. | runs |
 | 2.1 | [a-range-up-to-its-end-leaves-the-end-out.kav](a-range-up-to-its-end-leaves-the-end-out.kav) | `Int<range: a..b>` leaves `b` out: it is the type `Int<range: a..=b-1>`. | panic |
 | 2.1 | [an-empty-range-type-is-an-error.kav](an-empty-range-type-is-an-error.kav) | A range type with no values is a compile error. | compile error |
+| 2.1, 2.12 | [json-decode-checks-bits-and-range-numbers.kav](json-decode-checks-bits-and-range-numbers.kav) | `json.decode` checks a `bits` or range number at any depth; one that doesn't fit is a problem naming its type. | runs |
+| 2.1, 2.9, 5.6 | [generic-functions-check-bits-and-range-numbers.kav](generic-functions-check-bits-and-range-numbers.kav) | A generic function given a `bits` or range number checks that type's limits. | panic |

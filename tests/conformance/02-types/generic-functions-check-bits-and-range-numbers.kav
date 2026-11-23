@@ -1,0 +1,23 @@
+// Rule: A generic function given a `bits` or range number checks that type's limits, in native code as in the interpreter.
+// Spec: 2.1, 2.9
+// expect output: 4000
+// expect output: 9
+// expect output: [2, 4]
+// expect panic: integer overflow: 3000 + 3000 doesn't fit in UInt<bits: 12>
+
+fn twice<T: Number>(x: T) -> T {
+    x + x
+}
+
+fn doubled<T: Number>(xs: [T]) -> [T] {
+    xs.map(x => twice(x))
+}
+
+fn main() {
+    print(twice(UInt<bits: 12>(2000)))
+    const step: Int<range: 1..=9> = 4
+    print(twice(step) + 1)
+    const small: [Int<bits: 4>] = [1, 2]
+    print(doubled(small))
+    print(twice(UInt<bits: 12>(3000)))
+}

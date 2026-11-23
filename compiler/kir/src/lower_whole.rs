@@ -23,10 +23,7 @@ fn op_code(op: &str) -> i128 {
 impl<'a> Lowerer<'a> {
     /// The type of `e` when it is a whole number with its own limits.
     pub(crate) fn whole_of(&self, e: &ast::Expr) -> Option<Prim> {
-        match self.c.expr_types.get(&(e.span.start, e.span.end))? {
-            Ty::Prim(p) if p.is_narrow() => Some(*p),
-            _ => None,
-        }
+        self.whole_at(e.span)
     }
 
     /// The KIR type of a written `Int<bits: n>`, `UInt<bits: n>` or
@@ -51,90 +48,22 @@ impl<'a> Lowerer<'a> {
         }
     }
 
-    /// The whole-number type with its own limits the checker gave `span`.
+    /// The whole-number type with its own limits the checker gave `span`,
+    /// in a generic instance too (`lower_whole_generic.rs`).
     pub(crate) fn whole_at(&self, span: ast::Span) -> Option<Prim> {
-        match self.c.expr_types.get(&(span.start, span.end))? {
-            Ty::Prim(p) if p.is_narrow() => Some(*p),
-            _ => None,
-        }
-    }
-
-    /// A generic function or method given a whole number with its own
-    /// limits (or a value holding one): each copy of a generic function
-    /// is made for the `Int` its values are kept in, so its operators
-    /// would not check the limits. Not built yet in native code.
-    pub(crate) fn no_whole_in_generic(&self, call: &ast::Expr, args: &[ast::Arg]) -> Lowered<()> {
-        let mut parts: Vec<&ast::Expr> = args.iter().map(|a| &a.value).collect();
-        parts.push(call);
-        if let ast::ExprKind::Call { callee, .. } = &call.kind
-            && let ast::ExprKind::Field { base, .. } = &callee.kind
-        {
-            parts.push(base);
-        }
-        for e in parts {
-            let Some(t) = self.c.expr_types.get(&(e.span.start, e.span.end)) else {
-                continue;
-            };
-            if self.holds_whole(t, false, &mut std::collections::HashSet::new()) {
-                return Err(self.unsupported(
-                    "a generic function given an `Int<bits: n>` or an `Int<range: …>`",
-                    call.span,
-                ));
-            }
-        }
-        Ok(())
-    }
-
-    /// Whether the call at `span` decodes JSON into a type that holds a
-    /// whole number with its own limits, at any depth: its limits are
-    /// not checked by the native decoder yet.
-    pub(crate) fn decodes_whole(&self, span: ast::Span) -> bool {
-        let Some(t) = self.c.expr_types.get(&(span.start, span.end)) else {
-            return false;
-        };
-        let mut seen = std::collections::HashSet::new();
-        self.holds_whole(t, true, &mut seen)
-    }
-
-    fn holds_whole(
-        &self,
-        t: &Ty,
-        fields: bool,
-        seen: &mut std::collections::HashSet<kavach_resolver::DefId>,
-    ) -> bool {
-        match t {
-            Ty::Prim(p) => p.is_narrow(),
-            Ty::List(x) | Ty::Set(x) | Ty::Optional(x) => self.holds_whole(x, fields, seen),
-            Ty::Map(k, v) | Ty::Result(k, v) => {
-                self.holds_whole(k, fields, seen) || self.holds_whole(v, fields, seen)
-            }
-            Ty::Tuple(ts) | Ty::Builtin(_, ts) => {
-                ts.iter().any(|t| self.holds_whole(t, fields, seen))
-            }
-            Ty::Anon(fs) => fs.iter().any(|(_, t)| self.holds_whole(t, fields, seen)),
-            Ty::Sized(x, _, _) | Ty::Frozen(x, _, _) => self.holds_whole(x, fields, seen),
-            Ty::Adt(def, args) => {
-                if !seen.insert(*def) {
-                    return false;
-                }
-                let defs = &self.c.resolution.defs;
-                let of_def = |d: kavach_resolver::DefId| {
-                    d == *def
-                        || matches!(defs[d].kind, kavach_resolver::DefKind::Variant { of } if of == *def)
-                };
-                args.iter().any(|a| self.holds_whole(a, fields, seen))
-                    || (fields
-                        && (self.c.field_types.iter())
-                            .any(|((d, _), t)| of_def(*d) && self.holds_whole(t, true, seen)))
-            }
-            _ => false,
-        }
+        self.narrow(self.c.expr_types.get(&(span.start, span.end))?)
     }
 
     /// The code `IntWhole` reads `p`'s limits and name from: its
     /// `Shape::Whole`, or `Int8` … `UInt64`'s own type code.
     fn whole_code(&mut self, p: Prim) -> i128 {
-        let ty = match p {
+        let ty = self.whole_type(p);
+        i128::from(type_code(ty))
+    }
+
+    /// The type whose code `whole_code` gives.
+    pub(crate) fn whole_type(&mut self, p: Prim) -> Type {
+        match p {
             Prim::Bits(n, _) => {
                 let (lo, hi) = p.int_range().unwrap_or((0, 0));
                 self.shapes.intern(Shape::Whole {
@@ -145,8 +74,7 @@ impl<'a> Lowerer<'a> {
             }
             Prim::Ranged(lo, hi) => self.shapes.intern(Shape::Whole { lo, hi, bits: 0 }),
             p => crate::types::prim_type(p).unwrap_or(Type::I64),
-        };
-        i128::from(type_code(ty))
+        }
     }
 
     /// `IntWhole` doing `op` on `a` and `b` in type `p`, giving `ty`.
