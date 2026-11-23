@@ -214,6 +214,7 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.33 | [tensor-split-cuts-equal-parts.kav](tensor-split-cuts-equal-parts.kav) | `t.split(count)` cuts `count` equal parts along an axis, and `t.split_at(points)` cuts before each point. | runs |
 | 14.33 | [tensor-split-that-doesnt-divide-panics.kav](tensor-split-that-doesnt-divide-panics.kav) | `t.split(count)` of a size that `count` doesn't divide is a panic naming both. | panic |
 | 14.33 | [tensor-numpy-names-are-errors.kav](tensor-numpy-names-are-errors.kav) | NumPy's names for a tensor's methods are compile errors that name Kavach's: `t.rank()` names `t.dims()`. | compile error |
+| 14.33, 2.17 | [tensor-product-names-matmul.kav](tensor-product-names-matmul.kav) | `Matrix`'s `a.product(b, fast: true)` on a tensor is a compile error naming `a.matmul(b, fast: true)`. | compile error |
 | 14.33 | [tensor-matmul-of-vectors.kav](tensor-matmul-of-vectors.kav) | In `a @ b`, a 1-D `a` is a row and a 1-D `b` a column, that dimension taken out: two vectors give their dot product, of shape `[]`. | runs |
 | 14.33 | [tensor-matmul-broadcasts-batches.kav](tensor-matmul-broadcasts-batches.kav) | In `a @ b`, the dimensions before the last two are a batch, broadcast as `+` broadcasts; batches that don't fit are a panic naming both. | panic |
 | 14.33 | [tensor-matmul-fast-is-the-same-product.kav](tensor-matmul-fast-is-the-same-product.kav) | `a.matmul(b, fast: true)` is the product `a @ b`: floats may differ in their last bits, whole numbers are the same. | runs |

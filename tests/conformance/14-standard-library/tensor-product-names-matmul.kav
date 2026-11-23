@@ -1,0 +1,10 @@
+// Rule: `Matrix`'s `a.product(b, fast: true)` on a tensor is a compile error that names `a.matmul(b, fast: true)`.
+// Spec: 14.33, 2.17
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const a = tensor.eye<Float>(2)
+    print(a.product(a, fast: true).items)   // error: Kavach's is `matmul(b, fast: true)`
+}
