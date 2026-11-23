@@ -194,8 +194,7 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
         kavach_runtime_core::set_file_gpu_cpu();
     }
     // The NaN watch (spec 5.9): only `run`, never `test`.
-    let watch = kavach_driver::watch_nan(program.path.as_ref());
-    crate::ops::WATCH_NAN.store(watch, std::sync::atomic::Ordering::Relaxed);
+    i.watch_nan = kavach_driver::watch_nan(program.path.as_ref());
     // Every GPU the code or `[run] gpu` names must be there (spec 15.6).
     if let Err(why) = i.gpu_start(run.gpu.as_deref()) {
         i.err.push_str(&format!("error: {why}\n"));

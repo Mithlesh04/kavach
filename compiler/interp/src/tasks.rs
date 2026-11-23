@@ -335,6 +335,7 @@ impl<'a> Interp<'a> {
             events: self.events.clone(),
             // A task runs the code it started with (spec 10.5).
             hot: None,
+            watch_nan: self.watch_nan,
             held: Vec::new(),
         }
     }

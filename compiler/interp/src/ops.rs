@@ -300,11 +300,6 @@ impl<'a> Interp<'a> {
     }
 }
 
-/// Whether the program is watched for NaN (spec 5.9): `[run] watch_nan`
-/// or `--watch-nan`, set as `main` starts.
-pub(crate) static WATCH_NAN: std::sync::atomic::AtomicBool =
-    std::sync::atomic::AtomicBool::new(false);
-
 impl<'a> Interp<'a> {
     /// The NaN watch's panic, for an operation at `span` that gave `NaN`:
     /// when the watch is on and `span` is the program's own code.
@@ -313,8 +308,7 @@ impl<'a> Interp<'a> {
         message: String,
         span: Span,
     ) -> Result<(), crate::value::Flow<'a>> {
-        let on = WATCH_NAN.load(std::sync::atomic::Ordering::Relaxed);
-        if on && !self.c.in_std(span.start) {
+        if self.watch_nan && !self.c.in_std(span.start) {
             return Err(self.panic(message, span));
         }
         Ok(())
