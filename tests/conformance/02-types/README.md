@@ -31,6 +31,7 @@ The tests are listed in two files, by section:
 | 2.12 | [json-decode-in-a-generic-method-is-checked-where-it-is-used.kav](json-decode-in-a-generic-method-is-checked-where-it-is-used.kav) | A generic method reading its type parameter from JSON is checked at each call. | compile error |
 | 2.12 | [json-decode-fills-in-a-generic-type.kav](json-decode-fills-in-a-generic-type.kav) | `json.decode<Box<Yes>>` decodes a generic record or union with its type arguments put in for its parameters. | runs |
 | 2.12 | [json-schema-marks-secret-fields.kav](json-schema-marks-secret-fields.kav) | `json.schema<T>()` marks a `secret` field `"writeOnly": true`. | runs |
+| 2.12 | [json-decode-fills-defaults-beside-a-float32.kav](json-decode-fills-defaults-beside-a-float32.kav) | Decoding fills in a record's defaults whatever its other fields' types, a `Float32` field among them. | runs |
 | 2.2 | [push-needs-a-var.kav](push-needs-a-var.kav) | Methods that change a collection (`push`, `remove`) need a `let`. | compile error |
 | 2.2 | [lists-hold-any-text.kav](lists-hold-any-text.kav) | A list of text gives back every item as it was put in, short or long, ASCII or not, and copies of the list are independent. | runs |
 | 2.2 | [capacity-holds-at-most-n.kav](capacity-holds-at-most-n.kav) | `List.capacity(n)`, `Map.capacity(n)` and `Set.capacity(n)` hold at most `n` entries; `is_full()`; first entries; below 0 counts as 0. | runs |

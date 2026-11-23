@@ -1,0 +1,15 @@
+// Rule: decoding fills in a record's defaults whatever its other fields' types, a `Float32` field among them.
+// Spec: 2.12
+// expect output: Reading(value: 0.5, ok: true)
+
+use std.json
+
+type Reading {
+    value: Float32
+    ok: Bool = true
+}
+
+fn main() {
+    const r = json.decode<Reading>(`\{"value": 0.5}`) catch _ => return
+    print(r)
+}

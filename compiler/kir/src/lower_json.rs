@@ -17,7 +17,7 @@ use kavach_runtime_core::json::Limits;
 /// A placeholder of type `t`: 0, or no object for a heap type.
 fn zero(t: Type) -> K {
     match t {
-        Type::F64 => K::Float(0.0),
+        Type::F64 | Type::F32 => K::Float(0.0),
         Type::Bool => K::Bool(false),
         Type::Char => K::Char('\0'),
         _ => K::Int(0),
