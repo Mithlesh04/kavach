@@ -136,6 +136,7 @@ impl<'s> Reader<'s> {
         Some(match g {
             Gen::Int(p) => Value::Int(self.number().parse().ok()?, *p),
             Gen::Float => Value::Float(self.number().parse().ok()?),
+            Gen::Float32 => Value::Float32(self.number().parse().ok()?),
             Gen::Decimal => Value::Decimal(Decimal::parse(self.number())?),
             Gen::Bool => Value::Bool(self.name().parse().ok()?),
             Gen::Char => Value::Char(self.quoted('\'')?.chars().next()?),

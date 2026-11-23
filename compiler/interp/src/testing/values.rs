@@ -19,6 +19,8 @@ use std::rc::Rc;
 pub(crate) enum Gen {
     Int(Prim),
     Float,
+    /// A `Float32`: a float, not a whole number of that type.
+    Float32,
     Decimal,
     Bool,
     Char,
@@ -119,6 +121,7 @@ impl<'a> Interp<'a> {
                         ("String", []) => Gen::Str,
                         ("Bytes", []) => Gen::Bytes,
                         ("Float", []) => Gen::Float,
+                        ("Float32", []) => Gen::Float32,
                         ("Decimal", []) => Gen::Decimal,
                         ("Bool", []) => Gen::Bool,
                         ("Char", []) => Gen::Char,
@@ -186,6 +189,13 @@ impl<'a> Interp<'a> {
                 Value::Float(match edge(EDGES.len()) {
                     Some(i) => EDGES[i],
                     None => rng.range(-1_000_000, 1_000_000) as f64 / 100.0,
+                })
+            }
+            Gen::Float32 => {
+                const EDGES: [f32; 6] = [0.0, 1.0, -1.0, 0.5, 1e30, -1e-30];
+                Value::Float32(match edge(EDGES.len()) {
+                    Some(i) => EDGES[i],
+                    None => (rng.range(-1_000_000, 1_000_000) as f64 / 100.0) as f32,
                 })
             }
             Gen::Decimal => {

@@ -1,0 +1,9 @@
+// Rule: functions that take `Float32` get generated `Float32` arguments, floats of that type, as `Float` ones get `Float`s.
+// Spec: 11.2, 2.1
+// expect test pass
+
+fn half(x: Float32) -> Float32
+    ensure result * 2.0 == x
+{
+    x / 2.0
+}
