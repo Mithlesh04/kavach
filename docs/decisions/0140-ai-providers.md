@@ -330,7 +330,7 @@ The first part was built on 2026-11-20: the `Provider` interface, `Anthropic`'s 
 11. **A provider's value is a constructor written with plain values** (or a `const` or a function with no parameters that gives one), lowered or run where the `ask` is.
 12. **`std.ai`'s variant names don't bring the module in.** `NotFound`, `Answer` and `Other` are common words; every program that needs `std.ai` writes `ask`, `Model` or one of its type names anyway.
 13. **The key goes to the address in the provider's request,** so a package's provider decides where a program's key is sent. The spec says to use providers from packages you trust.
-14. **`Auth.AwsSignature` and `Auth.GoogleToken`** fail an `ask` with `Failed(status: 0, …)` until signing is built (choice 5). (`Auth.AwsSignature` was built on 2026-11-22, below.)
+14. **`Auth.AwsSignature` and `Auth.GoogleToken`** fail an `ask` with `Failed(status: 0, …)` until signing is built (choice 5). (`Auth.AwsSignature` and `Auth.GoogleToken` were built on 2026-11-22 and 2026-11-23, below.)
 
 Fallbacks (choice 3) were built on 2026-11-22: `model` takes a list literal of models, in an agent and in `ask` (spec 8.4, *Fallbacks*). Points this record didn't settle, each **for a maintainer's review**:
 
@@ -375,6 +375,15 @@ Signing AWS requests (choice 5, `Auth.AwsSignature`) was built on 2026-11-22: th
 44. **The clock** is the machine's, with no correction for skew. AWS refuses a request more than 5 minutes off; the provider reads that reply as any other.
 45. **`service` and `region`** must be letters, digits and `-`; anything else fails the call with `Failed(status: 0, …)` before any variable is read.
 46. **A request's `host` header** now has its port when it is not the scheme's own (`127.0.0.1:8080`), as HTTP/1.1 says, so a signature matches the header sent. It was the host's name alone before.
+
+Google access tokens (choice 5, `Auth.GoogleToken`) were built on 2026-11-23: the runtime reads a service account's key file, signs a JWT with RS256 (`ring`), exchanges it at the key's `token_uri`, keeps the token while it lasts, and sends it as `Bearer`, in `runtime/net`, for the interpreter and native code (spec 8.4, *Google access tokens*). Points this record didn't settle, each **for a maintainer's review**:
+
+47. **Only a service account's JSON key file is read,** from `GOOGLE_APPLICATION_CREDENTIALS`, or from the variable the `Model`'s `api_key_env` names (so two accounts can be used at once, unlike AWS's). Not `gcloud`'s default file, a user's credentials, workload identity federation, the metadata server of Google's machines, impersonation or domain-wide delegation (`sub`).
+48. **A key file that can't be used** (not there, not JSON, not a service account's, no RSA key) fails with `BadKey`, and the message names the variable, not the path.
+49. **The token server** is the key file's `token_uri`, and must be `https://`, or `http://` on this machine for a test server. `KAVACH_AI_URL` doesn't move it.
+50. **A token is kept** for each account, key, scope and token server until 5 minutes before its `expires_in` ends; one without `expires_in`, or lasting 5 minutes or less, is used for one try. A token the provider refuses (401) stays kept until then; the call fails with the provider's `BadKey`.
+51. **The token server's errors:** 400, 401 and 403 are `BadKey` (400 `invalid_scope` is `BadRequest`), 429 `RateLimited`, 500, 502 and 503 `Overloaded`, 504 `TimedOut`, anything else `Failed`; only its `error` and `error_description` are in the message.
+52. **One fetch at a time** for the whole program, before the call's gate, so `ask`s started together share one token. The JWT's `iat` is the machine's clock, with no correction for skew.
 
 ## Consequences
 

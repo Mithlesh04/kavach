@@ -153,7 +153,7 @@ pub type Auth = NoKey                    // a server that takes none
     | Bearer                             // `authorization: Bearer <key>`
     | InHeader(name: String)             // `x-api-key`, `api-key`, `x-goog-api-key`
     | AwsSignature(service: String, region: String)   // signed by the runtime (below)
-    | GoogleToken(scope: String)
+    | GoogleToken(scope: String)                      // a token the runtime gets (below)
 
 pub type Reply = Answer(text: String, usage: Usage)
     | Refused(reason: String?, usage: Usage)   // the model or a filter said no
@@ -230,6 +230,29 @@ type Bedrock: Provider {
 - **The time** is the machine's clock, in UTC. AWS refuses a request signed more than 5 minutes from its own time; the provider reads that reply as it reads any other. The runtime doesn't correct the clock.
 - **`service` and `region`** are made of letters, digits and `-`. Anything else, or an empty one, fails the call with `Failed(status: 0, …)` before any variable is read.
 - The secret and the signature never appear in an error, the journal or the audit log. A counting call (`ai.count`, below) is signed in the same way.
+
+### Google access tokens: `Auth.GoogleToken`
+
+A provider for a Google Cloud service, such as Vertex AI, gives `Auth.GoogleToken(scope:)`. The runtime gets an OAuth access token for `scope` from a service account's key, as Google's own libraries do, and sends it as `authorization: Bearer <token>`. Provider code never holds the key or the token.
+
+```kavach
+type Vertex: Provider {
+    fn auth(self, model: Model) -> Auth {
+        Auth.GoogleToken(scope: "https://www.googleapis.com/auth/cloud-platform")
+    }
+    // … the other methods
+}
+```
+
+- **The key file** is the JSON key Google gives for a service account (`"type": "service_account"`). Its path is in the variable `GOOGLE_APPLICATION_CREDENTIALS`, or in the one the `Model`'s `api_key_env` names, so two accounts can be used at once. The variable is looked up as a key is (above), and the file read, for each call. The provider's `key_variable` decides nothing here.
+- **Without the variable** (or set to empty text), the call fails with `NoKey(variable: "GOOGLE_APPLICATION_CREDENTIALS")`. A file that isn't there, can't be read, or isn't a service account's key with a `client_email` and an RSA `private_key` fails it with `BadKey`, saying which: `the service account key file that GOOGLE_APPLICATION_CREDENTIALS names is not there (spec 8.4)`. Nothing is sent.
+- **The token** is fetched as Google's "OAuth 2.0 for Server to Server Applications" says: a JWT with the header `{"alg":"RS256","typ":"JWT","kid":<private_key_id>}` and the claims `iss` (the `client_email`), `scope`, `aud` (the token server), `iat` (now) and `exp` (an hour on), signed RS256 with the private key, is posted as `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=<jwt>` to the key file's `token_uri` (`https://oauth2.googleapis.com/token` when it has none). The reply's `access_token` is the token.
+- **The token server** must be an `https://` address, or `http://` on this machine only (`127.0.0.1`, `localhost`, `[::1]`), for a test server. `KAVACH_AI_URL` doesn't change it: a test gives a fake key file whose `token_uri` is its fake token server.
+- **The token is kept** for the program's run, for each account, key, scope and token server, until 5 minutes before its `expires_in` ends; then the next call fetches a new one. A token the reply gives no `expires_in` for, or one that lasts 5 minutes or less, is used for one try only. Calls that need a token at the same time wait for one fetch.
+- **A fetch that fails** fails the try as the provider's trouble would: the token server's 400, 401 and 403 are `BadKey` (400 `invalid_scope` is `BadRequest`), 429 is `RateLimited`, 500, 502 and 503 `Overloaded`, 504 `TimedOut`, anything else `Failed`; a dropped connection is `Network`. They are sent again or moved on from as those troubles are (above). The message gives only the server's `error` and `error_description`: `getting a Google access token failed: the token server said 400: invalid_grant: Invalid JWT Signature.`
+- **The fetch comes first,** before the call passes its gate, on each try that has no token kept. A counting call (`ai.count`, below) gets its token in the same way.
+- The key, the JWT and the token never appear in an error, the journal or the audit log.
+- **`scope`** is text with no line breaks or other control characters; several scopes are split by spaces, as Google takes them. An empty one fails the call with `Failed(status: 0, …)` before any variable is read.
 
 ## Fallbacks: a list of models
 
@@ -417,4 +440,4 @@ pub type Estimate {
 - A dry run or a generated test (8.5, 11.5) counts nothing and calls no provider method: the count is `about 0 tokens (dry run: nothing was counted)`.
 - A count isn't kept in an agent's journal (8.5): an event run again after a restart counts again (for a maintainer's review).
 
-*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.GoogleToken`, for now an `ask` whose provider gives it fails with `Failed(status: 0, …)`; for `Auth.AwsSignature`, credentials from AWS's files (`~/.aws/credentials`, `~/.aws/config`) and profiles, and from roles (the instance metadata service, containers, web identity, single sign-on): only the variables above are read; a counting call for each of those providers that has one.
+*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; for `Auth.GoogleToken`, the other kinds of Google credentials (a user's from `gcloud auth application-default login`, workload identity federation, the metadata server of Google's machines, impersonation, and a `sub` for domain-wide delegation) and the default file `gcloud` writes: only a service account's key file, named by a variable, is read; for `Auth.AwsSignature`, credentials from AWS's files (`~/.aws/credentials`, `~/.aws/config`) and profiles, and from roles (the instance metadata service, containers, web identity, single sign-on): only the variables above are read; a counting call for each of those providers that has one.

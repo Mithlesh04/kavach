@@ -56,6 +56,7 @@ For running programs:
 | `ANTHROPIC_API_KEY` | a key | The key `ask` uses; never in `kavach.toml` | 8.4 |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | an AWS access key's ID and secret | The credentials a provider's `Auth.AwsSignature` signs with; never in `kavach.toml` | 8.4 |
 | `AWS_SESSION_TOKEN` | a session token | Short-term AWS credentials' token, sent as `x-amz-security-token` and signed | 8.4 |
+| `GOOGLE_APPLICATION_CREDENTIALS` | the path of a file | A Google service account's JSON key file, which a provider's `Auth.GoogleToken` gets access tokens with, unless the `Model`'s `api_key_env` names another variable; never in `kavach.toml` | 8.4 |
 | `KAVACH_AI_URL` | a URL | Where `ask` sends its requests (a test server) | 8.4 |
 | `NO_COLOR` | any text | No colors in what the program prints | 14.12 |
 | `KAVACH_CHECK_LEAKS` | any value | At the end, report heap objects that were never freed | 6.1 |
