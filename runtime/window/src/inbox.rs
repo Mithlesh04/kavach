@@ -7,7 +7,7 @@
 //! A task waiting in `events()` lets other tasks run meanwhile (spec
 //! 9.7): it leaves a waker here, which the next event calls.
 
-use crate::events::{Event, REDRAW, WOKEN, plain};
+use crate::events::{Event, Press, REDRAW, WOKEN, plain};
 use std::collections::{HashMap, VecDeque};
 use std::sync::{Condvar, Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant};
@@ -23,6 +23,11 @@ pub(crate) struct Inbox {
     pub(crate) input: bool,
     pub(crate) size: (u32, u32),
     pub(crate) scale: f64,
+    /// The modifiers held now, as `events::SHIFT` and the rest.
+    pub(crate) modifiers: u8,
+    /// Where the pointer is, and the last press, to count clicks.
+    pub(crate) pointer: (f64, f64),
+    pub(crate) press: Press,
     /// Tasks waiting for the next event.
     pub(crate) wakers: Vec<Waker>,
     /// How many frames were shown in the window (spec 14.24).
@@ -138,8 +143,8 @@ pub fn ready(n: i64) -> bool {
     hub().lock().get(&n).is_none_or(|i| !i.events.is_empty())
 }
 
-/// `take`, as `std.window` reads it: three numbers an event (its kind and
-/// two numbers), with the texts kept for `texts`, one an event.
+/// `take`, as `std.window` reads it: five numbers an event (its kind and
+/// four numbers), with the texts kept for `texts`, one an event.
 pub fn take_numbers(n: i64, wait: bool) -> Vec<f64> {
     let got = take(n, wait);
     let texts = got.iter().map(|e| e.text.clone()).collect();

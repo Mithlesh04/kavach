@@ -50,8 +50,11 @@ impl Checker<'_> {
         {
             // Reading and changing files are granted apart (spec 8.1).
             let cap = match (module, name) {
-                // Listening to the keyboard and mouse (spec 14.22).
-                ("window", "listen_id" | "lock_cursor_id") => "Input",
+                // Listening to the keyboard and mouse (spec 14.22),
+                // and composing text in a window (spec 14.22.2).
+                ("window", "listen_id" | "lock_cursor_id" | "text_input_id" | "caret_id") => {
+                    "Input"
+                }
                 (
                     "fs",
                     "read_text" | "read_bytes" | "map" | "lines" | "chunks" | "exists" | "list"

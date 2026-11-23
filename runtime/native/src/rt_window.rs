@@ -111,6 +111,20 @@ crate::rt_data::entry!(kv_rt_window, |op, a, b, c, code, line| {
             win::wake(a);
             0
         }
+        RtOp::WindowTextInput => {
+            win::set_text_input(a, b != 0);
+            0
+        }
+        // `b` is the list (owned) of `x`, `y`, width and height.
+        RtOp::WindowCaret => {
+            let all: Vec<f64> = (crate::heap::slots(b).iter())
+                .map(|s| f64::from_bits(*s))
+                .collect();
+            release(b);
+            let part = |k: usize| all.get(k).copied().unwrap_or(0.0);
+            win::set_caret(a, [part(0), part(1), part(2), part(3)]);
+            0
+        }
         _ => {
             win::close(a);
             0

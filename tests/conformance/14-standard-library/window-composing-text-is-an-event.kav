@@ -1,0 +1,19 @@
+// Rule: `Composing(text, from, to)` is text an input method composes, not yet typed, with the part it works on from character `from` to `to`; an empty `text` ends the composing.
+// Spec: 14.22, 14.22.2
+// expect output: composing 日本 (1 to 2)
+// expect output: composing ended
+
+use std.window
+
+fn said(e: Event) -> String {
+    match e {
+        Event.Composing("", _, _) => "composing ended",
+        Event.Composing(text, from, to) => `composing {text} ({from} to {to})`,
+        _ => "other",
+    }
+}
+
+fn main() {
+    print(said(Event.Composing(text: "日本", from: 1, to: 2)))
+    print(said(Event.Composing(text: "", from: -1, to: -1)))
+}

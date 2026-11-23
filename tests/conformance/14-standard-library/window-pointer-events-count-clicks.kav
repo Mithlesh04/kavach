@@ -1,0 +1,22 @@
+// Rule: `MouseButton` has `clicks`, 1 unless quick presses in one place make more, and `Modifiers`; `Wheel` has `pixels` and its `phase`; the pointer coming and going is `MouseEntered` and `MouseLeft`.
+// Spec: 14.22, 14.22.2
+// expect output: MouseButton(button: 0, down: true, clicks: 1, modifiers: Modifiers(shift: false, ctrl: false, alt: false, meta: false))
+// expect output: double click
+// expect output: 12.5 pixels, Began
+// expect output: in out
+
+use std.window
+
+fn main() {
+    print(Event.MouseButton(button: 0, down: true))
+    match Event.MouseButton(button: 0, down: true, clicks: 2) {
+        Event.MouseButton(0, true, 2, _) => print("double click"),
+        _ => print("other"),
+    }
+    match Event.Wheel(x: 0.0, y: 12.5, pixels: true, phase: "Began") {
+        Event.Wheel(_, y, true, phase, _) => print(`{y} pixels, {phase}`),
+        _ => print("lines"),
+    }
+    const moves = [Event.MouseEntered, Event.MouseLeft]
+    print(moves.map(e => if e == Event.MouseEntered { "in" } else { "out" }).join(" "))
+}

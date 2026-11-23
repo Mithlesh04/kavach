@@ -78,6 +78,21 @@ impl<'a> Interp<'a> {
                 win::wake(n);
                 Value::Unit
             }
+            "text_input_id" => {
+                win::set_text_input(n, flag(1));
+                Value::Unit
+            }
+            "caret_id" => {
+                let part = |k: usize| match args.get(1) {
+                    Some(Value::List(xs)) => match xs.get(k) {
+                        Some(Value::Float(f)) => *f,
+                        _ => 0.0,
+                    },
+                    _ => 0.0,
+                };
+                win::set_caret(n, [part(0), part(1), part(2), part(3)]);
+                Value::Unit
+            }
             _ => {
                 win::close(n);
                 Value::Unit

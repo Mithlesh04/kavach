@@ -1,0 +1,24 @@
+// Rule: A `Key` event has the key's place (`key`), its name in the layout (`name`), whether it repeats (`repeat`) and the `Modifiers` held; the last three default to `""`, `false` and none held.
+// Spec: 14.22, 14.22.2
+// expect output: Key(key: "KeyW", down: true, name: "", repeat: false, modifiers: Modifiers(shift: false, ctrl: false, alt: false, meta: false))
+// expect output: undo
+// expect output: held Backspace
+// expect output: other
+
+use std.window
+
+fn said(e: Event) -> String {
+    match e {
+        Event.Key(_, true, "z", false, m) if m.ctrl => "undo",
+        Event.Key(_, true, name, true, _) => `held {name}`,
+        _ => "other",
+    }
+}
+
+fn main() {
+    print(Event.Key(key: "KeyW", down: true))
+    const ctrl = Modifiers(ctrl: true)
+    print(said(Event.Key(key: "KeyY", down: true, name: "z", modifiers: ctrl)))
+    print(said(Event.Key(key: "Backspace", down: true, name: "Backspace", repeat: true)))
+    print(said(Event.Key(key: "KeyZ", down: true, name: "z")))
+}

@@ -59,6 +59,8 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("window", "lock_cursor_id") => RtOp::WindowLockCursor,
         ("window", "close_id") => RtOp::WindowClose,
         ("window", "wake_id") => RtOp::WindowWake,
+        ("window", "text_input_id") => RtOp::WindowTextInput,
+        ("window", "caret_id") => RtOp::WindowCaret,
         ("input", "start_id") => RtOp::InputStart,
         ("input", "pads_id") => RtOp::InputPads,
         ("input", "names_id") => RtOp::InputNames,

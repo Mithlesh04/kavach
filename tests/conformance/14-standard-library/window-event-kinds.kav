@@ -1,9 +1,10 @@
-// Rule: `Event` is `Closed`, `Resized`, `Scaled`, `Focused`, `Key`, `Text`, `MouseMoved`, `MouseButton`, `Wheel`, `Motion`, `PadConnected`, `PadGone`, `PadButton`, `PadAxis`, `Touch`, `Redraw` or `Woken`, with the fields the spec names.
+// Rule: `Event` is `Closed`, `Resized`, `Scaled`, `Focused`, `Key`, `Text`, `MouseMoved`, `MouseButton`, `Wheel`, `Motion`, `PadConnected`, `PadGone`, `PadButton`, `PadAxis`, `Touch`, `Redraw`, `Woken`, `MouseEntered`, `MouseLeft` or `Composing`, with the fields the spec names.
 // Spec: 14.22
 // expect output: Touch(id: 3, x: 1.5, y: 2.5, phase: "Began", pressure: 1.0) 3 Began
 // expect output: PadAxis(pad: 0, axis: "LeftX", value: -1.0) LeftX
 // expect output: Redraw draw again
 // expect output: Woken look again
+// expect output: Composing(text: "かな", from: 0, to: 2) かな
 
 use std.window
 
@@ -26,6 +27,9 @@ fn said(e: Event) -> String {
         Event.Touch(id, _, _, phase, _) => `{id} {phase}`,
         Event.Redraw => "draw again",
         Event.Woken => "look again",
+        Event.MouseEntered => "in",
+        Event.MouseLeft => "out",
+        Event.Composing(text, _, _) => text,
     }
 }
 
@@ -35,6 +39,7 @@ fn main() {
         Event.PadAxis(pad: 0, axis: "LeftX", value: -1.0),
         Event.Redraw,
         Event.Woken,
+        Event.Composing(text: "かな", from: 0, to: 2),
     ]
     for e in events {
         print(`{e} {said(e)}`)

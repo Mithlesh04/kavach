@@ -287,3 +287,7 @@ RandomInts,
 /// `win.wake()` (spec 14.22): window `a`'s waiting `events()` gives a
 /// `Woken` event, from any task (`runtime/native/src/rt_window.rs`).
 WindowWake,
+/// `win.set_text_input(on)` (`b` 1) and `win.set_caret` (`b` the list of
+/// `x`, `y`, width and height, owned) of window `a` (spec 14.22.2).
+WindowTextInput,
+WindowCaret,

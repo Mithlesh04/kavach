@@ -128,6 +128,7 @@ pub(crate) fn apply(pads: &mut BTreeMap<i64, Pad>, id: i64, change: Change) -> E
         a: id as f64,
         b,
         text: text.to_string(),
+        ..Event::default()
     };
     match change {
         Change::Connected(name) => {

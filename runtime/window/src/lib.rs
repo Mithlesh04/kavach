@@ -38,6 +38,10 @@ enum Command {
     Title(i64, String),
     Fullscreen(i64, bool),
     LockCursor(i64, bool),
+    /// Input methods on or off (spec 14.22.2).
+    TextInput(i64, bool),
+    /// Where the caret is: `x`, `y`, width and height in pixels.
+    Caret(i64, [f64; 4]),
     Close(i64),
     /// Runs on the event loop's thread with the window, or `None` once it
     /// is closed: some systems give a window's handle only there.
@@ -151,6 +155,19 @@ impl ApplicationHandler<Command> for App {
                     w.set_cursor_visible(!on);
                 }
             }
+            Command::TextInput(n, on) => {
+                if let Some(w) = self.windows.get(&n) {
+                    w.set_ime_allowed(on);
+                }
+            }
+            Command::Caret(n, [x, y, width, height]) => {
+                if let Some(w) = self.windows.get(&n) {
+                    w.set_ime_cursor_area(
+                        winit::dpi::PhysicalPosition::new(x, y),
+                        PhysicalSize::new(width, height),
+                    );
+                }
+            }
             Command::Run(n, f) => f(self.windows.get(&n).cloned()),
             Command::Close(n) => {
                 if let Some(w) = self.windows.remove(&n) {
@@ -242,6 +259,16 @@ pub fn set_fullscreen(n: i64, on: bool) {
 
 pub fn lock_cursor(n: i64, on: bool) {
     tell(Command::LockCursor(n, on));
+}
+
+/// Lets input methods compose text in window `n`, or not.
+pub fn set_text_input(n: i64, on: bool) {
+    tell(Command::TextInput(n, on));
+}
+
+/// The caret of window `n` is at `x`, `y`, `width` × `height` pixels.
+pub fn set_caret(n: i64, area: [f64; 4]) {
+    tell(Command::Caret(n, area));
 }
 
 /// Closes window `n`; closing it again does nothing. Its state goes at

@@ -33,7 +33,14 @@ impl Checker<'_> {
             "size_id" => (vec![id], Ty::List(Box::new(int))),
             "scale_id" => (vec![id], float),
             "set_title_id" => (vec![id, p("title", &string)], Ty::Unit),
-            "set_fullscreen_id" | "lock_cursor_id" => (vec![id, p("on", &boolean)], Ty::Unit),
+            "set_fullscreen_id" | "lock_cursor_id" | "text_input_id" => {
+                (vec![id, p("on", &boolean)], Ty::Unit)
+            }
+            // `x`, `y`, width and height (spec 14.22.2).
+            "caret_id" => (
+                vec![id, p("area", &Ty::List(Box::new(float.clone())))],
+                Ty::Unit,
+            ),
             "listen_id" | "close_id" | "wake_id" => (vec![id], Ty::Unit),
             _ => return None,
         })

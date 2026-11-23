@@ -14,9 +14,18 @@ use std.window
 /// on a server with no screen.
 pub type WindowError = Unavailable(reason: String)
 
+/// Which of Shift, Ctrl, Alt and the Windows or Command key were held.
+pub type Modifiers {
+    pub shift: Bool = false
+    pub ctrl: Bool = false
+    pub alt: Bool = false
+    pub meta: Bool = false
+}
+
 /// Something that happened to a window, or to a gamepad (spec 14.26).
-/// From `Key` on, they come only after `listen_input()`.
-pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float) | PadConnected(pad: Int, name: String) | PadGone(pad: Int) | PadButton(pad: Int, button: String, down: Bool) | PadAxis(pad: Int, axis: String, value: Float) | Touch(id: Int, x: Float, y: Float, phase: String, pressure: Float) | Redraw | Woken
+/// From `Key` on, but `Redraw` and `Woken`, they come only after
+/// `listen_input()`.
+pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool, name: String = "", repeat: Bool = false, modifiers: Modifiers = Modifiers()) | Text(text: String) | MouseMoved(x: Float, y: Float, modifiers: Modifiers = Modifiers()) | MouseButton(button: Int, down: Bool, clicks: Int = 1, modifiers: Modifiers = Modifiers()) | Wheel(x: Float, y: Float, pixels: Bool = false, phase: String = "Moved", modifiers: Modifiers = Modifiers()) | Motion(x: Float, y: Float) | PadConnected(pad: Int, name: String) | PadGone(pad: Int) | PadButton(pad: Int, button: String, down: Bool) | PadAxis(pad: Int, axis: String, value: Float) | Touch(id: Int, x: Float, y: Float, phase: String, pressure: Float) | Redraw | Woken | MouseEntered | MouseLeft | Composing(text: String, from: Int, to: Int)
 
 /// An open window. It closes when its last holder ends, or at `close()`.
 pub type AppWindow: Drop {
@@ -76,6 +85,18 @@ pub type AppWindow: Drop {
         window.set_fullscreen_id(self.id, on)
     }
 
+    /// Lets input methods compose text in the window: `Composing` events
+    /// come while a person composes, and `Text` when they finish.
+    pub fn set_text_input(self, on: Bool) uses Input {
+        window.text_input_id(self.id, on)
+    }
+
+    /// Where the caret is, in pixels from the top left, so an input
+    /// method shows its choices beside it.
+    pub fn set_caret(self, x: Float, y: Float, width: Float, height: Float) uses Input {
+        window.caret_id(self.id, [x, y, width, height])
+    }
+
     /// Hides the pointer and keeps it in the window; `Motion` events
     /// still come.
     pub fn lock_cursor(self, on: Bool) uses Input {
@@ -111,16 +132,38 @@ pub fn open(title: String, width: Int, height: Int) -> AppWindow ! WindowError u
     AppWindow(id: id)
 }
 
-/// The runtime's events, three numbers each, as `Event`s; texts holds
+/// The runtime's events, five numbers each, as `Event`s; texts holds
 /// each one's key or typed text.
 fn decoded(id: Int, numbers: [Float]) -> [Event] uses Window {
     const texts = window.texts_id(id)
     let out: [Event] = []
     for i in 0..texts.len() {
-        const (a, b) = (numbers[i * 3 + 1], numbers[i * 3 + 2])
-        out.push(event_of(Int(numbers[i * 3]), a, b, texts[i]))
+        const at = i * 5
+        const more = [numbers[at + 3], numbers[at + 4]]
+        out.push(event_of(Int(numbers[at]), numbers[at + 1], numbers[at + 2], more, texts[i]))
     }
     out
+}
+
+/// The modifiers in `bits`: 1 Shift, 2 Ctrl, 4 Alt, 8 the Windows or
+/// Command key.
+fn modifiers_of(bits: Float) -> Modifiers
+    require bits >= 0.0 and bits < 16.0
+    example modifiers_of(5.0) == Modifiers(shift: true, alt: true)
+{
+    const n = Int(bits)
+    Modifiers(shift: n % 2 == 1, ctrl: n / 2 % 2 == 1, alt: n / 4 % 2 == 1, meta: n / 8 % 2 == 1)
+}
+
+/// A key from its numbers (down, repeated, modifiers) and its text: its
+/// place and its name, a tab between.
+fn key_of(down: Float, repeat: Float, bits: Float, text: String) -> Event
+    require bits >= 0.0 and bits < 16.0
+    example key_of(1.0, 0.0, 2.0, `KeyZ\tz`) == Event.Key(key: "KeyZ", down: true, name: "z", modifiers: Modifiers(ctrl: true))
+{
+    const parts = text.split(`\t`)
+    const name = if parts.len() > 1 { parts[1:].join(`\t`) } else { "" }
+    Event.Key(key: parts.first() ?? "", down: down > 0.0, name: name, repeat: repeat > 0.0, modifiers: modifiers_of(bits))
 }
 
 /// A touch at `x`, `y` from its text: its phase, id and pressure, as
@@ -135,24 +178,27 @@ fn touch_of(x: Float, y: Float, text: String) -> Event
 }
 
 /// One event from its kind's number (as `Event`'s variants are
-/// numbered), two numbers and a text.
-fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
-    require a.abs() <= 1e15 and b.abs() <= 1e15
-    example event_of(1, 640.0, 480.0, "") == Event.Resized(width: 640, height: 480)
-    example event_of(4, 1.0, 0.0, "KeyW") == Event.Key(key: "KeyW", down: true)
-    example event_of(12, 3.0, 1.0, "South") == Event.PadButton(pad: 3, button: "South", down: true)
-    example event_of(16, 0.0, 0.0, "") == Event.Woken
+/// numbered), four numbers and a text.
+fn event_of(kind: Int, a: Float, b: Float, more: [Float], text: String) -> Event
+    require a.abs() <= 1e15 and b.abs() <= 1e15 and more.len() == 2 and more[0] >= 0.0 and more[0] < 1e6 and more[1] >= 0.0 and more[1] < 16.0
+    example event_of(1, 640.0, 480.0, [0.0, 0.0], "") == Event.Resized(width: 640, height: 480)
+    example event_of(4, 1.0, 0.0, [0.0, 0.0], `KeyW\tw`) == Event.Key(key: "KeyW", down: true, name: "w")
+    example event_of(7, 0.0, 1.0, [2.0, 1.0], "") == Event.MouseButton(button: 0, down: true, clicks: 2, modifiers: Modifiers(shift: true))
+    example event_of(8, 0.0, -12.5, [1.0, 0.0], "Began") == Event.Wheel(x: 0.0, y: -12.5, pixels: true, phase: "Began")
+    example event_of(12, 3.0, 1.0, [0.0, 0.0], "South") == Event.PadButton(pad: 3, button: "South", down: true)
+    example event_of(16, 0.0, 0.0, [0.0, 0.0], "") == Event.Woken
+    example event_of(19, 1.0, 2.0, [0.0, 0.0], "かな") == Event.Composing(text: "かな", from: 1, to: 2)
 {
     match kind {
         0 => Event.Closed,
         1 => Event.Resized(width: Int(a), height: Int(b)),
         2 => Event.Scaled(factor: a),
         3 => Event.Focused(on: a > 0.0),
-        4 => Event.Key(key: text, down: a > 0.0),
+        4 => key_of(a, b, more[0], text),
         5 => Event.Text(text: text),
-        6 => Event.MouseMoved(x: a, y: b),
-        7 => Event.MouseButton(button: Int(a), down: b > 0.0),
-        8 => Event.Wheel(x: a, y: b),
+        6 => Event.MouseMoved(x: a, y: b, modifiers: modifiers_of(more[0])),
+        7 => Event.MouseButton(button: Int(a), down: b > 0.0, clicks: Int(more[0]), modifiers: modifiers_of(more[1])),
+        8 => Event.Wheel(x: a, y: b, pixels: more[0] > 0.0, phase: text, modifiers: modifiers_of(more[1])),
         9 => Event.Motion(x: a, y: b),
         10 => Event.PadConnected(pad: Int(a), name: text),
         11 => Event.PadGone(pad: Int(a)),
@@ -160,6 +206,9 @@ fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
         13 => Event.PadAxis(pad: Int(a), axis: text, value: b),
         15 => Event.Redraw,
         16 => Event.Woken,
+        17 => Event.MouseEntered,
+        18 => Event.MouseLeft,
+        19 => Event.Composing(text: text, from: Int(a), to: Int(b)),
         _ => touch_of(a, b, text),
     }
 }

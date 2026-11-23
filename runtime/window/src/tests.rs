@@ -22,6 +22,7 @@ fn input_events_come_only_after_listening() {
         position: winit::dpi::PhysicalPosition::new(3.0, 4.0),
     };
     assert!(translate(moved(), &mut inbox).is_empty());
+    assert_eq!(inbox.pointer, (3.0, 4.0), "kept for counting clicks");
     inbox.input = true;
     assert_eq!(
         translate(moved(), &mut inbox),
@@ -130,4 +131,58 @@ fn a_window_opens_or_says_why_not() {
         }
         Err(why) => assert!(!why.is_empty()),
     }
+}
+
+#[test]
+fn text_field_events_carry_what_a_text_box_needs() {
+    use super::events::{Press, key_name, modifier_bits};
+    use winit::event::{Ime, Modifiers, MouseScrollDelta};
+    use winit::keyboard::{Key, ModifiersState, NamedKey};
+    let mut inbox = Inbox {
+        input: true,
+        ..Inbox::default()
+    };
+    // Names as the W3C's `KeyboardEvent.key` gives them.
+    assert_eq!(key_name(&Key::Character("z".into())), "z");
+    assert_eq!(key_name(&Key::Named(NamedKey::ArrowLeft)), "ArrowLeft");
+    assert_eq!(key_name(&Key::Named(NamedKey::Space)), " ");
+    let held = Modifiers::from(ModifiersState::CONTROL | ModifiersState::SUPER);
+    assert_eq!(modifier_bits(&held), CTRL | META);
+    assert!(translate(WindowEvent::ModifiersChanged(held), &mut inbox).is_empty());
+    assert_eq!(inbox.modifiers, CTRL | META);
+    // Composing text: its selected part in characters, not bytes.
+    let preedit = WindowEvent::Ime(Ime::Preedit("日本語".into(), Some((3, 6))));
+    let composing = translate(preedit, &mut inbox);
+    assert_eq!(
+        composing[0].numbers(),
+        [COMPOSING as f64, 1.0, 2.0, 0.0, 0.0]
+    );
+    assert_eq!(composing[0].text, "日本語");
+    let hidden = WindowEvent::Ime(Ime::Preedit(String::new(), None));
+    assert_eq!(translate(hidden, &mut inbox)[0].a, -1.0);
+    // A touchpad scrolls in pixels, with its phase and the modifiers.
+    let wheel = WindowEvent::MouseWheel {
+        device_id: DeviceId::dummy(),
+        delta: MouseScrollDelta::PixelDelta(winit::dpi::PhysicalPosition::new(0.0, -12.5)),
+        phase: TouchPhase::Started,
+    };
+    let scrolled = translate(wheel, &mut inbox);
+    assert_eq!(scrolled[0].numbers(), [WHEEL as f64, 0.0, -12.5, 1.0, 10.0]);
+    assert_eq!(scrolled[0].text, "Began");
+    let entered = WindowEvent::CursorEntered {
+        device_id: DeviceId::dummy(),
+    };
+    assert_eq!(translate(entered, &mut inbox)[0].kind, MOUSE_ENTERED);
+    // Clicks: quick presses in one place count up; another button, a
+    // move or a pause starts again.
+    let mut p = Press::default();
+    let t = std::time::Instant::now();
+    let ms = |n| t + Duration::from_millis(n);
+    assert_eq!(p.count(0.0, (10.0, 10.0), t), 1);
+    assert_eq!(p.count(0.0, (12.0, 9.0), ms(300)), 2);
+    assert_eq!(p.count(0.0, (12.0, 9.0), ms(600)), 3);
+    assert_eq!(p.clicks(), 3, "the release gives the press's count");
+    assert_eq!(p.count(1.0, (12.0, 9.0), ms(700)), 1, "another button");
+    assert_eq!(p.count(1.0, (30.0, 9.0), ms(800)), 1, "another place");
+    assert_eq!(p.count(1.0, (30.0, 9.0), ms(1400)), 1, "too slow");
 }

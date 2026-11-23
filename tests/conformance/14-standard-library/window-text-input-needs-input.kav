@@ -1,0 +1,16 @@
+// Rule: Turning input methods on and saying where the caret is need `Input`, as reading keys does.
+// Spec: 14.22.2, 8.1
+// expect compile error
+
+use std.window
+
+fn compose(win: AppWindow) uses Window {
+    win.set_text_input(true)   // error: needs Input
+}
+
+fn main() uses Window {
+    match window.open("Kavach", 320, 200) {
+        ok(win) => compose(win),
+        err(_) => {}
+    }
+}

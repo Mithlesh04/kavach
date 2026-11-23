@@ -1,8 +1,8 @@
 // Rule: An `Event` is a value of a union, made and matched like any other: a key is named by its place (`KeyW`), mouse buttons are numbered 0 left to 4 forward.
 // Spec: 14.22
-// expect output: Key(key: "KeyW", down: true) forward
+// expect output: Key(key: "KeyW", down: true, name: "", repeat: false, modifiers: Modifiers(shift: false, ctrl: false, alt: false, meta: false)) forward
 // expect output: Resized(width: 1280, height: 720) 1280 by 720
-// expect output: MouseButton(button: 0, down: false) left
+// expect output: MouseButton(button: 0, down: false, clicks: 1, modifiers: Modifiers(shift: false, ctrl: false, alt: false, meta: false)) left
 // expect output: Closed close
 
 use std.window
