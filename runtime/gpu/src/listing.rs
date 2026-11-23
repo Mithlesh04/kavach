@@ -165,9 +165,8 @@ pub(crate) fn fake(text: &str) -> Vec<Listed> {
 pub(crate) type Real = (Listed, wgpu::Instance, wgpu::Adapter);
 
 /// Every GPU through Vulkan, Metal, DirectX 12 and OpenGL, in that
-/// order. Nothing is opened. Each interface is asked on a thread of its
-/// own: one after another they took about 500 ms on a Windows laptop,
-/// at once about as long as the slowest, Vulkan's 230 ms.
+/// order. Nothing is opened. One after another they take about 500 ms on
+/// a Windows laptop (`benchmarks/gpu`, "Starting the GPUs").
 pub(crate) fn real() -> Vec<Real> {
     let each = [
         wgpu::Backends::VULKAN,
@@ -175,14 +174,10 @@ pub(crate) fn real() -> Vec<Real> {
         wgpu::Backends::DX12,
         wgpu::Backends::GL,
     ];
-    std::thread::scope(|s| {
-        let asked: Vec<_> = (each.into_iter())
-            .map(|backends| s.spawn(move || through(backends)))
-            .collect();
-        (asked.into_iter())
-            .flat_map(|t| t.join().unwrap_or_else(|e| std::panic::resume_unwind(e)))
-            .collect()
-    })
+    // One interface after another: started on threads at once, several
+    // programs opening the GPU together hung inside the driver on Windows,
+    // past being stopped (2026-11-23), so the 0.25 s that saved isn't worth it.
+    each.into_iter().flat_map(through).collect()
 }
 
 /// Every GPU one interface (`backends`) lists.

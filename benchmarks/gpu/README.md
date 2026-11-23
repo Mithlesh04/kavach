@@ -133,11 +133,13 @@ The first GPU work lists every GPU through every interface, so that a device's n
 | Listing through Vulkan (the RTX 4050 and the UHD 770) | 221–236 |
 | Listing through DirectX 12 (the same two, and WARP) | 193–265 |
 | Listing through OpenGL (one, already listed) | 68–75 |
-| All four, one after another, as Kavach did | 483–571 |
-| **All four at once, as Kavach does now** | **296–776, best 296** |
+| All four, one after another, as Kavach does | 483–571 |
+| All four at once, tried and taken back | 296–776, best 296 |
 | Opening the RTX 4050 through Vulkan | 36–48 |
 
 Phase A's listing asked each interface in turn, about 500 ms before any GPU work could start, where finding one GPU through Vulkan and opening it took about 200 before phase A (Frames, above). Each interface is now asked on a thread of its own, so the listing takes about as long as the slowest one. One run of the five took 776 ms, with the machine busy. DirectX 12 is the slow one here and finds only WARP that Vulkan didn't; leaving it out on machines whose Vulkan lists their GPUs would save the rest, but WARP is the device the choosing tests use on Windows.
+
+Asking the four at once, each on its own thread, was taken back on 2026-11-23: with several programs opening the GPU at the same moment on Windows, they hung inside the driver for over half an hour and couldn't be stopped. Listing is one interface after another again.
 
 ## Running it
 
