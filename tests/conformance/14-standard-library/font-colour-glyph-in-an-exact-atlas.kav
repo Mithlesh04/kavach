@@ -1,0 +1,35 @@
+// Rule: In an exact atlas, a glyph the font gives in colour (a `COLR` table) is drawn in its colours, and its box's `color` is true; in a distance atlas it is its outline.
+// Spec: 14.31
+// expect output: colour: true
+// expect output: pixel: [255, 0, 0, 255]
+// expect output: in a distance atlas: false
+
+use std.base64
+use std.font
+
+/// runtime/font/src/sample.ttf: glyph 3, for `B`, is a colour glyph:
+/// one red layer, a square from 100 to 600 units across, 0 to 700 up.
+fn sample() -> Font ! Error {
+    const file = "AAEAAAAKAIAAAwAgQ09MUgAAAAAAAACsAAAAGENQQUwAAAAAAAAAxAAAABJjbWFwAAAAAA" +
+        "AAANgAAAA8Z2x5ZgAAAAAAAAEUAAAAWmhlYWQAAAAAAAABcAAAADZoaGVhAAAAAAAAAagA" +
+        "AAAkaG10eAAAAAAAAAHMAAAAEGxvY2EAAAAAAAAB3AAAABRtYXhwAAAAAAAAAfAAAAAGbm" +
+        "FtZQAAAAAAAAH4AAAARgAAAAEAAAAOAAAAFAABAAMAAAABAAEAAAAAAAEAAQABAAAADgAA" +
+        "AAD//wAAAAAAAQADAAEAAAAMAAQAMAAAAAgACAACAAAAIABBAEL//wAAACAAQQBC////4v" +
+        "/A/8EAAQAAAAAAAAAAAAEAZAAAAlgCvAADAAABAQEBAGQAAAH0AAAAAAK8AAD9RAACAGQA" +
+        "AAJYArwAAwAHAAABAQEBAQEBAQBkAAAB9AAA/qIAyAAA/zgAAAK8AAD9RADIAAABLAAAAA" +
+        "AAAQAAAAEAAAAAAABfDzz1AAAD6AAAAAAAAAAAAAAAAAAAAAAAZAAAAlgCvAAAAAgAAgAB" +
+        "AAAAAAABAAADIP84AGQCvABkAGQCWAABAAAAAAAAAAAAAAAAAAAABAH0AGQCvABkASwAZA" +
+        "K8AGQAAAAAAAAAAAAAACIAAAAiAAAAWgAAUAAABAAAAAAAAgAeAAMAAQQJAAEAGgAAAAMA" +
+        "AQQJAAIADgAaAEsAYQB2AGEAYwBoACAAUwBhAG0AcABsAGUAUgBlAGcAdQBsAGEAcgAA"
+    try font.load(try base64.decode(file))
+}
+
+fn main() ! Error {
+    const f = try sample()
+    const a = f.atlas("B", 15.0, exact: true)
+    const b = a.boxes[3] ?? GlyphBox(x: 0, y: 0, width: 0, height: 0, left: 0, top: 0)
+    print(`colour: {b.color}`)
+    const at = ((b.y + 5) * a.image.width + b.x + 4) * 4
+    print(`pixel: {a.image.pixels[at:at + 4]}`)
+    print(`in a distance atlas: {f.atlas("B", 15.0).boxes[3]?.color ?? true}`)
+}

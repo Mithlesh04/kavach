@@ -139,6 +139,12 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.31 | [font-shape-places-glyphs-from-the-line-start.kav](font-shape-places-glyphs-from-the-line-start.kav) | `f.shape(text, size)` gives a `Line` of glyphs, each its number in the font and where its origin goes in pixels from the start of the line, on the baseline, and the line's width. | runs |
 | 14.31 | [font-shape-size-below-1-panics.kav](font-shape-size-below-1-panics.kav) | Shaping at a size outside 1 to 1,000 pixels to the em is a panic (a contract). | panic |
 | 14.31 | [font-sizes-1-and-1000-are-allowed.kav](font-sizes-1-and-1000-are-allowed.kav) | Sizes from 1 to 1,000 pixels to the em, both ends included, shape and draw. | runs |
+| 14.31 | [font-glyphs-have-clusters-and-advances.kav](font-glyphs-have-clusters-and-advances.kav) | Each shaped glyph has `cluster`, the character of the text its cluster starts at, and `advance`, how far it moves the pen. | runs |
+| 14.31 | [font-exact-atlas-holds-coverage.kav](font-exact-atlas-holds-coverage.kav) | An exact atlas draws each glyph for its size only, each pixel how much of it the glyph covers. | runs |
+| 14.31 | [font-colour-glyph-in-an-exact-atlas.kav](font-colour-glyph-in-an-exact-atlas.kav) | In an exact atlas, a colour glyph is drawn in its colours, and its box says so. | runs |
+| 14.31 | [font-atlas-add-keeps-old-boxes.kav](font-atlas-add-keeps-old-boxes.kav) | `atlas.add(f, text)` draws the glyphs the atlas lacks below its image; its own boxes and pixels stay. | runs |
+| 14.31.1 | [font-installed-fonts-and-fallback.kav](font-installed-fonts-and-fallback.kav) | `font.installed()` gives each installed font's family, style and file; `font.fallback(text)` one with a glyph for each character; `load()` reads it. | runs |
+| 14.31.1, 8.1 | [font-installed-fonts-need-system.kav](font-installed-fonts-need-system.kav) | Listing the installed fonts and finding a fallback need `System`. | compile error |
 | 14.33 | [tensors-check-their-shapes.kav](tensors-check-their-shapes.kav) | Tensors: products, item-by-item operations, transposes and sums; a shape that doesn't fit is a panic naming both shapes. | runs |
 | 14.33 | [tensor-arange-counts-by-its-step.kav](tensor-arange-counts-by-its-step.kav) | `tensor.arange(start, end, step)` holds `start + i * step` while below `end`, or above it for a negative step. | runs |
 | 14.33 | [tensor-arange-step-of-zero-panics.kav](tensor-arange-step-of-zero-panics.kav) | `tensor.arange` with a step of 0 is a panic. | panic |

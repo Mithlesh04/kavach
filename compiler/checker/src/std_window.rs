@@ -161,6 +161,7 @@ impl Checker<'_> {
         let (bytes, text) = (Ty::Prim(Prim::Bytes), Ty::Prim(Prim::String));
         let p = |n: &str, t: &Ty| (n.to_string(), t.clone(), false);
         let drawn = vec![p("data", &bytes), p("text", &text), p("size", &float)];
+        let list = |t: &Ty| Ty::List(Box::new(t.clone()));
         Some(match name {
             "metrics_id" => {
                 let error = self.builtin_ty("FontError");
@@ -171,7 +172,29 @@ impl Checker<'_> {
                 )
             }
             "shape_id" => (drawn, Ty::List(Box::new(float))),
-            "atlas_id" => (drawn, int),
+            // The size, 1 when exact, and the atlas to add to (-1: none).
+            "atlas_id" => (
+                vec![
+                    p("data", &bytes),
+                    p("text", &text),
+                    p("settings", &list(&float)),
+                ],
+                int,
+            ),
+            // An atlas a program holds: its pixels, its width, height and
+            // boxes, and its size (spec 14.31).
+            "atlas_base_id" => (
+                vec![
+                    p("pixels", &bytes),
+                    p("layout", &list(&int)),
+                    p("size", &float),
+                ],
+                int,
+            ),
+            // The installed fonts (spec 14.31.1): three texts each.
+            "installed_id" => (vec![], list(&text)),
+            "fallback_id" => (vec![p("text", &text)], int),
+            "file_id" => (vec![p("path", &text)], bytes),
             "atlas_boxes_id" => (vec![p("id", &int)], Ty::List(Box::new(int))),
             "atlas_pixels_id" => (vec![p("id", &int)], bytes),
             _ => return None,

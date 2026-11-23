@@ -3,9 +3,9 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 // std.font (spec 14.31, decision 0121): fonts as values. The runtime
-// reads fonts and shapes text through `rustybuzz`, and draws glyphs as
-// distances into an atlas (`runtime/font`); this file gives them their
-// types.
+// reads fonts and shapes text through `rustybuzz`, draws glyphs into an
+// atlas as distances or as coverage, and finds the fonts installed on
+// the machine (`runtime/font`); this file gives them their types.
 
 use std.font
 use std.image
@@ -13,12 +13,16 @@ use std.image
 /// Why some bytes aren't a font.
 pub type FontError = BadFont(reason: String)
 
-/// A shaped glyph: its number in the font, and where its origin goes in
-/// pixels from the start of the line, on the baseline, `y` downwards.
+/// A shaped glyph: its number in the font, where its origin goes in
+/// pixels from the start of the line, on the baseline, `y` downwards;
+/// the character of the text its cluster starts at, and how far it moves
+/// the pen, in pixels.
 pub type Glyph {
     pub id: Int
     pub x: Float
     pub y: Float
+    pub cluster: Int = 0
+    pub advance: Float = 0.0
 }
 
 /// Text shaped: its glyphs in the order they are drawn, and its width in
@@ -28,8 +32,9 @@ pub type Line {
     pub width: Float
 }
 
-/// Where a glyph is in an atlas's image, and where that box goes from the
-/// glyph's origin: `left` pixels to the right, `top` above the baseline.
+/// Where a glyph is in an atlas's image, where that box goes from the
+/// glyph's origin: `left` pixels to the right, `top` above the baseline;
+/// and whether its pixels are its own colours (an emoji).
 pub type GlyphBox {
     pub x: Int
     pub y: Int
@@ -37,16 +42,42 @@ pub type GlyphBox {
     pub height: Int
     pub left: Int
     pub top: Int
+    pub color: Bool = false
 }
 
-/// Glyphs drawn as distances into one image, at `size` pixels to the em,
-/// reaching `spread` pixels from each glyph's edge; their boxes by glyph
-/// number.
+/// Glyphs drawn into one image, at `size` pixels to the em: as distances
+/// reaching `spread` pixels from each glyph's edge, or, when `exact`, as
+/// how much of each pixel the glyph covers; their boxes by glyph number.
 pub type Atlas {
     pub image: Image
     pub size: Float
     pub spread: Float
     pub boxes: {Int: GlyphBox}
+    pub exact: Bool = false
+
+    /// The atlas with each glyph of `text` it lacks drawn as its own
+    /// were, below them: its own glyphs stay where they are.
+    pub fn add(self, f: Font, text: String) -> Atlas {
+        let layout = [self.image.width, self.image.height]
+        for (id, b) in self.boxes {
+            layout += [id, b.x, b.y, b.width, b.height, b.left, b.top, if b.color { 1 } else { 0 }]
+        }
+        const base = font.atlas_base_id(Bytes(self.image.pixels), layout, self.size)
+        f.drawn(text, self.size, self.exact, base)
+    }
+}
+
+/// A font installed on the machine: its family (`Segoe UI`), its style
+/// (`Bold`) and its file.
+pub type InstalledFont {
+    pub family: String
+    pub style: String
+    pub path: String
+
+    /// The font, read from its file.
+    pub fn load(self) -> Font ! FontError uses System {
+        try load(font.file_id(self.path))
+    }
 }
 
 /// A font: its file, and its ascent, descent and line gap in ems.
@@ -62,29 +93,60 @@ pub type Font {
     {
         const parts = font.shape_id(self.data, text, size)
         let glyphs: [Glyph] = []
-        for i in 0..(parts.len() - 1) / 3 {
-            glyphs.push(Glyph(id: Int(parts[i * 3]), x: parts[i * 3 + 1], y: parts[i * 3 + 2]))
+        for i in 0..(parts.len() - 1) / 5 {
+            const at = i * 5
+            glyphs.push(Glyph(id: Int(parts[at]), x: parts[at + 1], y: parts[at + 2], cluster: Int(parts[at + 3]), advance: parts[at + 4]))
         }
         Line(glyphs: glyphs, width: parts[parts.len() - 1])
     }
 
-    /// Every glyph that shaping `text` uses, drawn as distances at `size`
-    /// pixels to the em.
-    pub fn atlas(self, text: String, size: Float) -> Atlas
+    /// Every glyph that shaping `text` uses, drawn at `size` pixels to the
+    /// em: as distances, or, when `exact`, as coverage for this size only,
+    /// colour glyphs in their colours.
+    pub fn atlas(self, text: String, size: Float, exact: Bool = false) -> Atlas
         require size >= 1.0 and size <= 1_000.0
     {
-        const id = font.atlas_id(self.data, text, size)
+        self.drawn(text, size, exact, -1)
+    }
+
+    /// The atlas of `text`, added to the atlas the runtime keeps as
+    /// `base` (-1 for none).
+    fn drawn(self, text: String, size: Float, exact: Bool, base: Int) -> Atlas
+        require size >= 1.0 and size <= 1_000.0
+    {
+        const id = font.atlas_id(self.data, text, [size, if exact { 1.0 } else { 0.0 }, Float(base)])
         const parts = font.atlas_boxes_id(id)
         let boxes: {Int: GlyphBox} = {:}
-        for i in 0..(parts.len() - 2) / 7 {
-            const at = 2 + i * 7
+        for i in 0..(parts.len() - 2) / 8 {
+            const at = 2 + i * 8
             boxes[parts[at]] = GlyphBox(
                 x: parts[at + 1], y: parts[at + 2], width: parts[at + 3],
-                height: parts[at + 4], left: parts[at + 5], top: parts[at + 6])
+                height: parts[at + 4], left: parts[at + 5], top: parts[at + 6],
+                color: parts[at + 7] == 1)
         }
         const img = image.new(parts[0], parts[1], font.atlas_pixels_id(id).to_list())
-        Atlas(image: img, size: size, spread: (size / 8.0).max(2.0), boxes: boxes)
+        Atlas(image: img, size: size, spread: (size / 8.0).max(2.0), boxes: boxes, exact: exact)
     }
+}
+
+/// The fonts installed on the machine, by family and style.
+pub fn installed() -> [InstalledFont] uses System {
+    const texts = font.installed_id()
+    let out: [InstalledFont] = []
+    for i in 0..texts.len() / 3 {
+        out.push(InstalledFont(family: texts[i * 3], style: texts[i * 3 + 1], path: texts[i * 3 + 2]))
+    }
+    out
+}
+
+/// An installed font with a glyph for each character of `text`, to draw
+/// what another font lacks: the system's own choices first.
+pub fn fallback(text: String) -> InstalledFont? uses System {
+    const k = font.fallback_id(text)
+    if k < 0 {
+        return none
+    }
+    installed()[k]
 }
 
 /// The font in an OpenType or TrueType file's bytes.

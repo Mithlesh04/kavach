@@ -291,3 +291,12 @@ WindowWake,
 /// `x`, `y`, width and height, owned) of window `a` (spec 14.22.2).
 WindowTextInput,
 WindowCaret,
+/// `std.font` (spec 14.31): an atlas a program holds, kept to add glyphs
+/// to (`a` its pixels, `b` its layout, both owned; `c` its size's bits);
+/// the installed fonts' texts; a fallback for text `a` (owned), an index
+/// or -1; and an installed font's file, path `a` (owned)
+/// (`runtime/native/src/rt_font.rs`).
+FontAtlasBase,
+FontInstalled,
+FontFallback,
+FontFile,

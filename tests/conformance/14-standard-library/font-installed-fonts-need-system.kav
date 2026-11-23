@@ -1,0 +1,13 @@
+// Rule: Listing the fonts installed on the machine, and finding a fallback, need `System`.
+// Spec: 14.31.1, 8.1
+// expect compile error
+
+use std.font
+
+fn families() uses Console {
+    print(font.installed().len())   // error: needs System
+}
+
+fn main() uses Console {
+    families()
+}

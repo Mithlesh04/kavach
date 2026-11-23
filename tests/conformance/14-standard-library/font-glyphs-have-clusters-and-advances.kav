@@ -1,0 +1,27 @@
+// Rule: Each shaped glyph has `cluster`, the character of the text its cluster starts at, and `advance`, how far it moves the pen, in pixels.
+// Spec: 14.31
+// expect output: [0, 1, 2, 3]
+// expect output: [70.0, 70.0, 30.0, 70.0]
+
+use std.base64
+use std.font
+
+/// runtime/font/src/sample.ttf: 1,000 units to the em; glyph 1 is a
+/// square for `A` (700 wide), 2 a space (300), 3 a square with a hole for `B`.
+fn sample() -> Font ! Error {
+    const file = "AAEAAAAHAEAAAgAwY21hcAAAAAAAAAB8AAAAPGdseWYAAAAAAAAAuAAAAFpoZWFkAAAAAA" +
+        "AAARQAAAA2aGhlYQAAAAAAAAFMAAAAJGhtdHgAAAAAAAABcAAAABBsb2NhAAAAAAAAAYAA" +
+        "AAAUbWF4cAAAAAAAAAGUAAAABgAAAAEAAwABAAAADAAEADAAAAAIAAgAAgAAACAAQQBC//" +
+        "8AAAAgAEEAQv///+L/wP/BAAEAAAAAAAAAAAABAGQAAAJYArwAAwAAAQEBAQBkAAAB9AAA" +
+        "AAACvAAA/UQAAgBkAAACWAK8AAMABwAAAQEBAQEBAQEAZAAAAfQAAP6iAMgAAP84AAACvA" +
+        "AA/UQAyAAAASwAAAAAAAEAAAABAAAAAAAAXw889QAAA+gAAAAAAAAAAAAAAAAAAAAAAGQA" +
+        "AAJYArwAAAAIAAIAAQAAAAAAAQAAAyD/OABkArwAZABkAlgAAQAAAAAAAAAAAAAAAAAAAA" +
+        "QB9ABkArwAZAEsAGQCvABkAAAAAAAAAAAAAAAiAAAAIgAAAFoAAFAAAAQAAA=="
+    try font.load(try base64.decode(file))
+}
+
+fn main() ! Error {
+    const line = (try sample()).shape("AB A", 100.0)
+    print(line.glyphs.map(g => g.cluster))
+    print(line.glyphs.map(g => g.advance))
+}

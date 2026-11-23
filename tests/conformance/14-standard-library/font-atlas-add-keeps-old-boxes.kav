@@ -1,0 +1,33 @@
+// Rule: `atlas.add(f, text)` draws each glyph of `text` the atlas lacks below its image; its own boxes and pixels stay where they were.
+// Spec: 14.31
+// expect output: boxes: [1, 3]
+// expect output: A stays: true
+// expect output: B below: true
+// expect output: old pixels kept: true
+
+use std.base64
+use std.font
+
+/// runtime/font/src/sample.ttf: 1,000 units to the em; glyph 1 is a
+/// square for `A` (700 wide), 2 a space (300), 3 a square with a hole for `B`.
+fn sample() -> Font ! Error {
+    const file = "AAEAAAAHAEAAAgAwY21hcAAAAAAAAAB8AAAAPGdseWYAAAAAAAAAuAAAAFpoZWFkAAAAAA" +
+        "AAARQAAAA2aGhlYQAAAAAAAAFMAAAAJGhtdHgAAAAAAAABcAAAABBsb2NhAAAAAAAAAYAA" +
+        "AAAUbWF4cAAAAAAAAAGUAAAABgAAAAEAAwABAAAADAAEADAAAAAIAAgAAgAAACAAQQBC//" +
+        "8AAAAgAEEAQv///+L/wP/BAAEAAAAAAAAAAAABAGQAAAJYArwAAwAAAQEBAQBkAAAB9AAA" +
+        "AAACvAAA/UQAAgBkAAACWAK8AAMABwAAAQEBAQEBAQEAZAAAAfQAAP6iAMgAAP84AAACvA" +
+        "AA/UQAyAAAASwAAAAAAAEAAAABAAAAAAAAXw889QAAA+gAAAAAAAAAAAAAAAAAAAAAAGQA" +
+        "AAJYArwAAAAIAAIAAQAAAAAAAQAAAyD/OABkArwAZABkAlgAAQAAAAAAAAAAAAAAAAAAAA" +
+        "QB9ABkArwAZAEsAGQCvABkAAAAAAAAAAAAAAAiAAAAIgAAAFoAAFAAAAQAAA=="
+    try font.load(try base64.decode(file))
+}
+
+fn main() ! Error {
+    const f = try sample()
+    const a = f.atlas("A", 64.0)
+    const b = a.add(f, "BA")
+    print(`boxes: {b.boxes.keys().sort()}`)
+    print(`A stays: {b.boxes[1] == a.boxes[1]}`)
+    print(`B below: {(b.boxes[3]?.y ?? 0) > a.image.height}`)
+    print(`old pixels kept: {b.image.pixels[0:a.image.pixels.len()] == a.image.pixels}`)
+}

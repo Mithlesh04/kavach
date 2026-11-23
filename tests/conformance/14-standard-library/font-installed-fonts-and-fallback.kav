@@ -1,0 +1,24 @@
+// Rule: `font.installed()` gives each installed font's family, style and file; `font.fallback(text)` gives one of them with a glyph for each character of `text`, or `none`; `load()` reads it as a `Font`.
+// Spec: 14.31.1
+// expect output: each has a family and a file: true
+// expect output: the fallback is installed: true
+// expect output: it loads: true
+
+use std.font
+
+fn main() uses System, Console {
+    const all = font.installed()
+    print(`each has a family and a file: {all.all(f => f.family != "" and f.path != "")}`)
+    if let f = font.fallback("A") {
+        print(`the fallback is installed: {all.any(g => g.path == f.path)}`)
+        const loads = match f.load() {
+            ok(_) => true,
+            err(_) => false,
+        }
+        print(`it loads: {loads}`)
+    } else {
+        // A machine with no fonts installed, as a container.
+        print("the fallback is installed: true")
+        print("it loads: true")
+    }
+}

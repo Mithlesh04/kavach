@@ -5,7 +5,9 @@
 //! A tiny TrueType font made by our own code, for tests here and in
 //! `tools/cli`: 1,000 units to the em, and four glyphs: 0 (`.notdef`,
 //! empty), 1 a square for `A`, 2 an empty space for ` `, and 3 a square
-//! with a square hole for `B`. `src/sample.ttf` is this font, written by
+//! with a square hole for `B`. Glyph 3 is a colour glyph too: one red
+//! layer, the square. Its family is `Kavach Sample`, its style `Regular`.
+//! `src/sample.ttf` is this font, written by
 //! `tests::the_sample_font_file_is_current`.
 
 /// A glyph: its advance, and its contours, each a list of on-curve
@@ -109,6 +111,42 @@ fn cmap() -> Vec<u8> {
     out
 }
 
+/// A `COLR` table (version 0): glyph 3 is one layer, glyph 1 in colour 0.
+fn colr() -> Vec<u8> {
+    let mut out = Vec::new();
+    u16s(&mut out, &[0, 1, 0, 14, 0, 20, 1]);
+    u16s(&mut out, &[3, 0, 1]);
+    u16s(&mut out, &[1, 0]);
+    out
+}
+
+/// A `CPAL` table: one palette of one colour, red (blue, green, red,
+/// opacity).
+fn cpal() -> Vec<u8> {
+    let mut out = Vec::new();
+    u16s(&mut out, &[0, 1, 1, 1, 0, 14, 0]);
+    out.extend([0, 0, 255, 255]);
+    out
+}
+
+/// A `name` table: the family and style, in English, for Windows.
+fn name() -> Vec<u8> {
+    let texts = ["Kavach Sample", "Regular"];
+    let utf16: Vec<Vec<u8>> = texts
+        .iter()
+        .map(|t| t.encode_utf16().flat_map(u16::to_be_bytes).collect())
+        .collect();
+    let mut out = Vec::new();
+    u16s(&mut out, &[0, 2, 6 + 12 * 2]);
+    let mut offset = 0;
+    for (id, text) in [1u16, 2].iter().zip(&utf16) {
+        u16s(&mut out, &[3, 1, 0x409, *id, text.len() as u16, offset]);
+        offset += text.len() as u16;
+    }
+    out.extend(utf16.concat());
+    out
+}
+
 /// The font file's bytes.
 pub fn sample_font() -> Vec<u8> {
     let glyphs = glyphs();
@@ -135,7 +173,9 @@ pub fn sample_font() -> Vec<u8> {
     }
     let mut maxp = Vec::new();
     u16s(&mut maxp, &[0, 0x5000, n]);
-    let tables: [(&[u8; 4], Vec<u8>); 7] = [
+    let tables: [(&[u8; 4], Vec<u8>); 10] = [
+        (b"COLR", colr()),
+        (b"CPAL", cpal()),
         (b"cmap", cmap()),
         (b"glyf", glyf),
         (b"head", head),
@@ -143,9 +183,10 @@ pub fn sample_font() -> Vec<u8> {
         (b"hmtx", hmtx),
         (b"loca", loca),
         (b"maxp", maxp),
+        (b"name", name()),
     ];
     let mut out = Vec::new();
-    u16s(&mut out, &[1, 0, tables.len() as u16, 64, 2, 48]);
+    u16s(&mut out, &[1, 0, tables.len() as u16, 128, 3, 32]);
     let mut offset = 12 + 16 * tables.len() as u32;
     let mut body = Vec::new();
     for (tag, data) in &tables {

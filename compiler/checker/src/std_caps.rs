@@ -84,5 +84,9 @@ impl Checker<'_> {
                 self.error(span, format!("a contract can't call `{module}.{name}`: it uses {cap}, and contracts must be pure (spec 7.5)"));
             }
         }
+        // The fonts installed on the machine are its details (spec 14.31.1).
+        if module == "font" && matches!(name, "installed_id" | "fallback_id" | "file_id") {
+            self.note_cap("System", span);
+        }
     }
 }
