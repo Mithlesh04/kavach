@@ -1,0 +1,16 @@
+// Rule: A `Decimal` or `BigInt` too big for a `bits` or range type doesn't fit it: the message names that type and shows every digit, as a panic or, under `catch`, a `SizeError`.
+// Spec: 2.1, 5.6
+// expect output: 123456789012345678901234567890.5 doesn't fit in UInt<bits: 12>
+// expect output: 0
+// expect panic: 99999999999999999999999 doesn't fit in Int<range: 1..=65535>
+
+fn main() {
+    let d: Decimal = 123456789012345678901234567890.5
+    const small = UInt<bits: 12>(d) catch e => {
+        print(e)
+        0
+    }
+    print(small)
+    let big = BigInt(10) ** 23 - BigInt(1)
+    print(Int<range: 1..=65535>(big))
+}

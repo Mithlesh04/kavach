@@ -38,9 +38,16 @@ fn limits(code: i64) -> (i128, i128, String) {
 }
 
 /// A slot holding a number of type `t`, as an exact whole number; a
-/// float is cut to its whole part, and `None` when it has none.
+/// float or `Decimal` is cut to its whole part, and `None` when it has
+/// none or is past `i128`.
 fn exact(slot: i64, t: Type) -> Option<i128> {
     match t {
+        // A `BigInt` or `Decimal`, held by reference.
+        t if t.is_ref() => {
+            let n = crate::rt_bigint::big_of(slot)
+                .unwrap_or_else(|| crate::rt_big_decimal::any_decimal_of(slot).trunc());
+            i128::try_from(&n).ok()
+        }
         Type::F64 => {
             let f = f64::from_bits(slot as u64);
             f.is_finite().then(|| f.trunc() as i128)
@@ -70,7 +77,15 @@ pub fn whole_op(a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
         )
     };
     let result = match op {
-        "fits" => return i64::from(exact(a, type_of(b)).is_some_and(fits)),
+        "fits" => {
+            let from = type_of(b);
+            let n = exact(a, from);
+            // A `BigInt` or `Decimal` comes owned, as every reference does.
+            if from.is_ref() {
+                crate::heap::release(a);
+            }
+            return i64::from(n.is_some_and(fits));
+        }
         "neg" if fits(-x) => -x,
         "neg" => overflow(format!("-({x})")),
         "~" if fits(!x) => !x,

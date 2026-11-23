@@ -100,3 +100,4 @@ Conformance tests for spec section [2.1 Built-in types](../../../docs/spec/02-ty
 | 2.1 | [an-empty-range-type-is-an-error.kav](an-empty-range-type-is-an-error.kav) | A range type with no values is a compile error. | compile error |
 | 2.1, 2.12 | [json-decode-checks-bits-and-range-numbers.kav](json-decode-checks-bits-and-range-numbers.kav) | `json.decode` checks a `bits` or range number at any depth; one that doesn't fit is a problem naming its type. | runs |
 | 2.1, 2.9, 5.6 | [generic-functions-check-bits-and-range-numbers.kav](generic-functions-check-bits-and-range-numbers.kav) | A generic function given a `bits` or range number checks that type's limits. | panic |
+| 2.1, 5.6 | [a-decimal-too-big-for-bits-names-the-type.kav](a-decimal-too-big-for-bits-names-the-type.kav) | A `Decimal` or `BigInt` too big for a `bits` or range type panics naming that type, with every digit; under `catch` it is a `SizeError`. | panic |

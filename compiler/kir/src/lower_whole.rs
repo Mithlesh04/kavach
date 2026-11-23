@@ -225,11 +225,10 @@ impl<'a> Lowerer<'a> {
     ) -> Lowered<ir::Expr> {
         let mut value = self.expr(arg)?;
         // A `Float32` is shown as the `Float` it becomes, as the
-        // interpreter shows it; a `Decimal` or `BigInt` becomes an `Int`.
+        // interpreter shows it. A `Decimal` or `BigInt` is checked as it
+        // is, and shown with all its digits.
         if value.ty == Type::F32 {
             value = self.at(K::Convert(Box::new(value), false), Type::F64, line);
-        } else if value.ty.is_ref() {
-            value = self.at(K::Convert(Box::new(value), true), Type::I64, line);
         }
         let from = value.ty;
         let held = self.new_local(from);
@@ -273,7 +272,8 @@ impl<'a> Lowerer<'a> {
         let converted = if from == ty {
             get(self)
         } else {
-            self.at(K::Convert(Box::new(get(self)), false), ty, line)
+            // A `Decimal` or `BigInt` always goes through the runtime.
+            self.at(K::Convert(Box::new(get(self)), from.is_ref()), ty, line)
         };
         let result = if checked {
             let zero = match ty {
