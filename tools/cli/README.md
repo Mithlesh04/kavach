@@ -52,6 +52,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/gpu_choice.rs` | Choosing a GPU (spec 15.6): `gpu.devices()`, a missing GPU stopping the start, `gpu.on`, `on:`, `on gpu(n)` and `gpu(n) fn` with fake AMD and NVIDIA GPUs and Windows' WARP as a real second device, and each real GPU by number, interpreted and natively |
 | `tests/gpu_split.rs` | One `map` split across GPUs (spec 15.6, decision 0144): the CPU's values in order, exact sums, records, several passes a part, `check`, the first part's panic, a chosen device never split, with two fake devices opening this machine's real GPUs |
 | `tests/gpu_passes.rs` | A `map` too big for one pass of the GPU (spec 15.2): records kept in a local after several passes, made small by `KAVACH_GPU_WORDS`, give the CPU's results, natively |
+| `tests/gpu_slices.rs` | Slices of lists in GPU memory, made there (spec 15.4): numbers and records, kept, mapped, summed and sliced again, give the CPU's items with `KAVACH_GPU=on`, `check` and `cpu`; a step of 0 panics at the CPU's line, natively |
 | `tests/limits_parallel.rs` | A limit's total holds when 30 handlers pay at once: exactly 10 refunds of 100 under `sum(amount) <= 1000 per day` |
 | `tests/version.rs` | `kavach --version`, `kavach version <program>`, and `--version` answered by a program only with `[build] version_flag` (spec 10.5) |
 | `tests/token_budget.rs` | Ten `ask`s at once under `tokens <= 200 per day`: each `asks_under_way` setting lets through what it promises (spec 8.3) |
