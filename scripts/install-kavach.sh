@@ -51,7 +51,20 @@ mv "$HOME_DIR.new" "$HOME_DIR"
 mkdir -p "$BIN_DIR"
 ln -sf "$HOME_DIR/bin/kavach" "$BIN_DIR/kavach"
 ln -sf "$HOME_DIR/bin/kavach" "$BIN_DIR/kv"
-echo "installed $("$HOME_DIR/bin/kavach" --version)"
+if version="$("$HOME_DIR/bin/kavach" --version 2>&1)"; then
+    echo "installed $version"
+else
+    echo "installed Kavach in $HOME_DIR, but it doesn't start yet:"
+    echo "  $version"
+    case "$version" in
+        *libasound*)
+            echo "  kavach needs ALSA's sound library, which desktop Linux has."
+            echo "  Ubuntu 24.04 and Debian 13: sudo apt install libasound2t64"
+            echo "  Older Ubuntu and Debian: sudo apt install libasound2"
+            echo "  Fedora: sudo dnf install alsa-lib"
+            ;;
+    esac
+fi
 
 case ":$PATH:" in
     *":$BIN_DIR:"*) ;;
