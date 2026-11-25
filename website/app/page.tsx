@@ -10,16 +10,17 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import versions from "@/data/versions.json";
 import { CARD, DESCRIPTION, LOGO, PUBLISHER, SITE_URL } from "@/lib/site";
 
-// The benchmark itself, read from the repository: what runs is what shows.
-const hero = fs.readFileSync(path.join(process.cwd(), "..", "benchmarks", "loops", "kavach", "loop.kav"), "utf8").trimEnd();
+// The benchmark itself, read from the repository: what runs is what shows. A
+// like-for-like race: each read waits on the one before, in every language, so
+// each side runs on one core.
+const hero = fs.readFileSync(path.join(process.cwd(), "..", "benchmarks", "lookups", "kavach", "dict.kav"), "utf8").trimEnd();
 
 // The home page's own address, as every docs page has one.
 export const metadata = { alternates: { canonical: `${SITE_URL}/` } };
 
 export default async function Home() {
   const heroHtml = await codeHtml(hero);
-  const loop = ratioOf("loops", "loop");
-  const sort = ratioOf("loops", "sort");
+  const race = ratioOf("lookups", "dict");
   const dict = ratioOf("lookups", "dict", "kavach", "python");
   const record = winsAgainstCpp();
   const ms = (v: number) => v.toLocaleString("en-US");
@@ -79,7 +80,7 @@ export default async function Home() {
             </h1>
             <p className="mb-7 max-w-[56ch] text-lg leading-relaxed text-[#c9c2b6] max-sm:text-[17px] min-[1600px]:text-xl">
               Every integer checked, every index checked, no garbage collector, and still faster
-              than C++ in {record.wins} of our {record.total} published benchmarks, with the losses
+              than C++ in {record.wins} of our {record.total} like-for-like benchmarks, with the losses
               published too. Every claim links to the line of code and the measurement behind it.
             </p>
             <div className="flex flex-wrap gap-3.5">
@@ -103,18 +104,18 @@ export default async function Home() {
                 <span className="h-2.5 w-2.5 rounded-full bg-[#3a352e]" />
                 <span className="h-2.5 w-2.5 rounded-full bg-[#3a352e]" />
                 <span className="flex-1" />
-                <span className="font-mono text-xs text-[#857c6e]">loop.kav</span>
+                <span className="font-mono text-xs text-[#857c6e]">dict.kav</span>
               </div>
               <div
                 className="code-body px-5 py-[18px] font-mono text-[13.5px] leading-[1.75] max-sm:px-4 max-sm:text-[12.5px] min-[1600px]:text-[15px] [&>pre]:m-0 [&>pre]:w-0 [&>pre]:min-w-full [&>pre]:overflow-x-auto [&>pre]:bg-transparent!"
                 dangerouslySetInnerHTML={{ __html: heroHtml }}
               />
               <div className="flex flex-wrap gap-[18px] border-t border-[#2b2721] px-5 py-3 font-mono text-[12.5px]">
-                <span className="text-[#9bb97f]">kavach {ms(loop.ours.value)} ms</span>
-                <span className="text-[#857c6e]">g++ -O2 {ms(loop.theirs.value)} ms</span>
+                <span className="text-[#9bb97f]">kavach {ms(race.ours.value)} ms</span>
+                <span className="text-[#857c6e]">g++ -O2 {ms(race.theirs.value)} ms</span>
                 <span className="text-[#e6a23c]">
-                  {loop.shown}× faster than g++ -O2 on every core (measured 2026-11-09, before loops needed{" "}
-                  <code>on cores</code>), and an overflow still panics at exactly the round where the plain loop would
+                  {race.shown}× faster than g++ -O2, both on one core: 20 million reads from a 2-million-entry map,
+                  every read and every multiply still checked
                 </span>
               </div>
             </div>
@@ -125,7 +126,7 @@ export default async function Home() {
       <section className="border-b border-line bg-panel">
         <div className="mx-auto grid w-full max-w-[1200px] min-[1600px]:max-w-[1480px] grid-cols-3 gap-7 px-8 py-9 max-md:grid-cols-1 max-md:gap-5 max-md:px-4">
           {[
-            [`${sort.shown}×`, "vs C++", "sorting 5 million integers: the buckets sort on every core"],
+            [`${record.wins} of ${record.total}`, "vs C++", "like-for-like benchmarks Kavach wins, each side on the same cores; the losses are published too"],
             [`${dict.shown}×`, "vs Python", "random reads from a 2-million-entry dict: one cache miss per lookup"],
             ["100%", "checked", "every integer operation and list index is checked at these speeds"],
           ].map(([big, small, text]) => (

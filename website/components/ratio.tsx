@@ -8,6 +8,8 @@ import { findBench } from "./race-chart";
  */
 export function ratioOf(suite: string, id: string, oursId = "kavach", vs = "cpp") {
   const bench = findBench(suite, id);
+  // No page may call a race that isn't like for like "N× faster".
+  if (bench.notLikeForLike) throw new Error(`benchmark ${suite}/${id} is not like for like (${bench.notLikeForLike}): no ratio may be shown`);
   const ours = bench.series.find((s) => s.id === oursId);
   const theirs = bench.series.find((s) => s.id === vs);
   if (!ours || !theirs) throw new Error(`benchmark ${suite}/${id} has no ${oursId} or ${vs} series`);
@@ -26,18 +28,28 @@ export function Ratio({ suite, id, ours = "kavach", vs = "cpp" }: { suite: strin
   );
 }
 
-/** Of the published benchmarks with a C++ side, how many Kavach wins. */
-export function winsAgainstCpp(): { wins: number; total: number } {
+/**
+ * Of the published benchmarks with a C++ side that are like for like, how
+ * many Kavach wins; `left` counts those left out, where Kavach ran on all
+ * cores and C++ on one.
+ */
+export function winsAgainstCpp(): { wins: number; total: number; left: number } {
   let wins = 0;
   let total = 0;
-  for (const suite of Object.values(benchmarks.suites)) {
-    for (const bench of Object.values(suite.benchmarks)) {
+  let left = 0;
+  for (const [suiteId, suite] of Object.entries(benchmarks.suites)) {
+    for (const id of Object.keys(suite.benchmarks)) {
+      const bench = findBench(suiteId, id);
       const k = bench.series.find((s) => s.id === "kavach");
       const c = bench.series.find((s) => s.id === "cpp");
       if (!k || !c) continue;
+      if (bench.notLikeForLike) {
+        left++;
+        continue;
+      }
       total++;
       if (k.value < c.value) wins++;
     }
   }
-  return { wins, total };
+  return { wins, total, left };
 }

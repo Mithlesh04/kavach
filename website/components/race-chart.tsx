@@ -24,13 +24,18 @@ export function RaceChart({ suite, id }: { suite: string; id: string }) {
       <p className="mb-3 text-[13px] text-soft">
         {bench.title} · <span className="font-mono text-[12px]">{bench.environment}</span>
       </p>
+      {bench.notLikeForLike ? (
+        <p className="mb-3 rounded-md border-l-4 border-[var(--bad)] bg-chip px-3 py-2 text-[13px] font-semibold text-ink">
+          {bench.notLikeForLike}. The times are shown, but not as a race.
+        </p>
+      ) : null}
       <div className="flex flex-col gap-3.5">
         {bench.series.map((s) => {
           const widthPct = (s.value / max) * 99;
           const dur = (s.value / max) * cycle;
           const ratio = s.value / fastest;
-          const verdict =
-            s.value === fastest ? "· finished 1st" : `· ${trim(ratio)}× behind`;
+          // A race that isn't like for like names no winner.
+          const verdict = bench.notLikeForLike ? "" : s.value === fastest ? "· finished 1st" : `· ${trim(ratio)}× behind`;
           const verdictColor =
             s.value === fastest ? "var(--ok)" : ratio >= 5 ? "var(--bad)" : "var(--muted)";
           return (
@@ -69,6 +74,8 @@ function trim(x: number): string {
 }
 
 export type Bench = {
+  /** Why this race isn't like for like (Kavach on all cores, the others on one), when it isn't. */
+  notLikeForLike?: string;
   title: string;
   unit: string;
   series: { id: string; label: string; color: string; value: number }[];

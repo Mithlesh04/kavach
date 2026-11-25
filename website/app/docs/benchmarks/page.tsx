@@ -40,7 +40,7 @@ type Suite = { title: string; environment: string; measured: string | null; benc
 const suites = benchmarks.suites as Record<string, Suite>;
 
 export default function BenchmarksPage() {
-  const { wins, total } = winsAgainstCpp();
+  const { wins, total, left } = winsAgainstCpp();
   const missing = Object.keys(suites).filter((s) => !order.some(([o]) => o === s));
   if (missing.length) throw new Error(`benchmarks page: suites not in its order: ${missing.join(", ")}`);
   const count = Object.values(suites).reduce((n, s) => n + Object.keys(s.benchmarks).length, 0);
@@ -50,7 +50,12 @@ export default function BenchmarksPage() {
       <h1 className="m-0 mb-2 text-[38px] font-extrabold tracking-tight max-md:text-3xl">Benchmarks</h1>
       <p className="m-0 mb-6 max-w-[64ch] text-[17px] leading-relaxed text-muted">
         {count} whole programs, each written in Kavach, C++ and often Python, Go or C#, run on one machine. Kavach is faster than
-        C++ in <strong className="text-ink">{wins} of {total}</strong> of them, and the others are here too.
+        C++ in <strong className="text-ink">{wins} of the {total}</strong> that are like for like, and the others are here too.
+      </p>
+      <p className="m-0 mb-6 max-w-[64ch] text-[15px] leading-relaxed text-muted">
+        {left} more are not counted: there, Kavach ran on all cores and C++ on one, so they don&apos;t say which language is
+        faster. Their charts say so and name no winner. Runs with both sides on one core, and both on all cores, are being
+        measured to replace them.
       </p>
 
       <section aria-label="How these are measured" className="mb-8 rounded-xl border border-line bg-panel px-6 py-5 text-[15px] leading-relaxed">
@@ -58,6 +63,7 @@ export default function BenchmarksPage() {
         <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-muted">
           <li>The same algorithm in every language, written the way a fluent programmer would.</li>
           <li>Whole programs, start to finish, on the same machine; the best of several runs.</li>
+          <li>Like for like: each side on the same number of cores. A race where they aren&apos;t says so above its bars.</li>
           <li>Every number is read from the benchmark&apos;s README, where each run is recorded, never typed into this page.</li>
           <li>Each suite ends with one command to run it yourself.</li>
           <li>

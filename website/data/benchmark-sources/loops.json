@@ -33,15 +33,18 @@
   "benchmarks": {
     "loop": {
       "row": "`loop`",
-      "title": "loop — 500M rounds of modular arithmetic"
+      "title": "loop — 500M rounds of modular arithmetic",
+      "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison"
     },
     "sort": {
       "row": "`sort`",
-      "title": "sort — 5M integers"
+      "title": "sort — 5M integers",
+      "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison"
     },
     "lists": {
       "row": "`lists`",
-      "title": "lists — build, read, change and sum 10M items"
+      "title": "lists — build, read, change and sum 10M items",
+      "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison"
     },
     "text": {
       "row": "`text`",

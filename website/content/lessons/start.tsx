@@ -73,7 +73,7 @@ function KindOfLanguage() {
     [
       "How fast is it?",
       <>
-        Faster than C++ in {wins} of our {total} published benchmarks, measured on one machine, with the losses
+        Faster than C++ in {wins} of our {total} like-for-like benchmarks, measured on one machine, with the losses
         published too.
       </>,
       <SrcRef key="n" file="benchmarks/README.md" label="benchmarks" />,

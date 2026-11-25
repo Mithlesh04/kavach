@@ -516,6 +516,7 @@
       "measured": "2026-11-11",
       "benchmarks": {
         "loop": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "loop — 500M rounds of modular arithmetic",
           "unit": "ms",
           "series": [
@@ -548,6 +549,7 @@
           "readme": "benchmarks/loops/README.md"
         },
         "sort": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sort — 5M integers",
           "unit": "ms",
           "series": [
@@ -580,6 +582,7 @@
           "readme": "benchmarks/loops/README.md"
         },
         "lists": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "lists — build, read, change and sum 10M items",
           "unit": "ms",
           "series": [
@@ -683,6 +686,7 @@
       "measured": "2026-11-09",
       "benchmarks": {
         "sum": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sum — 50 million integers, 10 times, every addition overflow-checked",
           "unit": "ms",
           "series": [
@@ -703,6 +707,7 @@
           "readme": "benchmarks/math/README.md"
         },
         "scale": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "scale — y = x * 2.5 + 1.0 over 20 million floats, 10 times",
           "unit": "ms",
           "series": [
@@ -723,6 +728,7 @@
           "readme": "benchmarks/math/README.md"
         },
         "roots": {
+          "notLikeForLike": "Kavach may spread this over all cores while C++ runs on one; being measured, so not counted as a like-for-like comparison yet",
           "title": "roots — sqrt over 20 million floats, 10 times",
           "unit": "ms",
           "series": [
@@ -966,6 +972,7 @@
           "readme": "benchmarks/sizes/README.md"
         },
         "sort-millions": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sort — 1,000,000 integers",
           "unit": "ms",
           "series": [
@@ -992,6 +999,7 @@
           "readme": "benchmarks/sizes/README.md"
         },
         "sort-tens-of-millions": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sort — 10,000,000 integers",
           "unit": "ms",
           "series": [
@@ -1018,6 +1026,7 @@
           "readme": "benchmarks/sizes/README.md"
         },
         "sort-hundreds-of-millions": {
+          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sort — 100,000,000 integers",
           "unit": "ms",
           "series": [
@@ -1071,6 +1080,7 @@
           "readme": "benchmarks/tasks/README.md"
         },
         "serial": {
+          "notLikeForLike": "Kavach spreads each sum over all cores, C++ runs them on one thread: not a like-for-like comparison",
           "title": "map: the same eight sums, one after another",
           "unit": "ms",
           "series": [

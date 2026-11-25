@@ -24,7 +24,8 @@
     },
     "serial": {
       "row": "`map` (one by one)",
-      "title": "map: the same eight sums, one after another"
+      "title": "map: the same eight sums, one after another",
+      "notLikeForLike": "Kavach spreads each sum over all cores, C++ runs them on one thread: not a like-for-like comparison"
     }
   }
 }

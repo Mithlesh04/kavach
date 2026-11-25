@@ -84,7 +84,7 @@ export const terminalDoc: LessonDoc = {
 const requirements: [string, React.ReactNode][] = [
   [
     "Use Kavach",
-    <>Windows 10 or 11, or Linux, on a 64-bit Intel or AMD processor (x86-64). WSL works. macOS and ARM processors (Apple silicon, Raspberry Pi) come later, in Phase 3 of the <a href={`${versions.repo}/blob/main/docs/vision/roadmap.md`}>roadmap</a>.</>,
+    <>Windows 10 or 11, or Linux, on a 64-bit Intel or AMD processor (x86-64). WSL works. On macOS you can build it yourself, untested so far (<a href="#on-macos">below</a>); full support for macOS and ARM processors (Apple silicon, Raspberry Pi) comes in Phase 3 of the <a href={`${versions.repo}/blob/main/docs/vision/roadmap.md`}>roadmap</a>.</>,
   ],
   [
     "Build Kavach",
@@ -150,6 +150,24 @@ export const installDoc: LessonDoc = {
         The build takes a few minutes, once. The program lands at <C>target/release/kavach</C>: add that folder to
         your PATH, and <C>kavach</C> works in every terminal.
       </P>
+      <H2>On macOS</H2>
+      <P>
+        Releases are built for Windows and Linux only. On a Mac you can build Kavach yourself, on Apple silicon or Intel:
+      </P>
+      <Terminal
+        commands
+        session={`xcode-select --install\ncurl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\nrustup component add llvm-tools\ngit clone ${versions.repo}\ncd kavach\ncargo build --release -p kavach-cli -p kavach-runtime-native`}
+      />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The first line installs Apple&apos;s command-line tools: the C compiler and linker <C>kavach build</C> needs. The second installs Rust.</li>
+        <li>The program lands at <C>target/release/kavach</C>, as on the other systems.</li>
+        <li>Without <C>llvm-tools</C>, Kavach still builds programs, through Cranelift, but they run slower.</li>
+        <li>Windows (<C>std.window</C>) and drawing on the GPU aren&apos;t available on macOS yet.</li>
+      </ul>
+      <Note>
+        Nothing on macOS is tested yet. If something fails, or works, say so in the project&apos;s{" "}
+        <a href={`${versions.repo}/discussions`}>Discussions</a>: it helps decide what comes first.
+      </Note>
       <H2>Your editor</H2>
       <P>
         The VS Code extension in <C>editors/vscode</C> adds colors, errors as you type, and go-to-definition.

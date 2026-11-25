@@ -88,7 +88,14 @@ for (const [suiteId, suite] of Object.entries(sources.suites)) {
   const benchmarks = {};
   for (const [benchId, bench] of Object.entries(suite.benchmarks)) {
     const where = `${suite.readme} (${suiteId}/${benchId})`;
+    // A Kavach program spread over all cores, against others on one, is not a
+    // like-for-like race: its source says so, and the chart must say it too.
+    const program = path.join(repo, path.dirname(suite.readme), "kavach", `${benchId}.kav`);
+    if (!bench.notLikeForLike && fs.existsSync(program) && /\bon cores\b/.test(fs.readFileSync(program, "utf8"))) {
+      throw new Error(`${where}: kavach/${benchId}.kav runs \`on cores\`, so its benchmark source needs "notLikeForLike" saying so`);
+    }
     benchmarks[benchId] = {
+      ...(bench.notLikeForLike ? { notLikeForLike: bench.notLikeForLike } : {}),
       title: bench.title,
       unit: "ms",
       series: suite.series.map((s) => ({
