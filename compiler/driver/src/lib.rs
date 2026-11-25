@@ -358,8 +358,11 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     let held: std::collections::HashSet<(u32, u32)> = (checked.drop_locals.iter())
         .filter_map(|d| resolution.defs[*d].span.map(|s| (s.start, s.end)))
         .collect();
+    let starts = files.iter().zip(&sources).map(|(f, s)| (f.start, &*s.text));
+    let made = limits::made_by_tools(starts);
     let warnings = (resolution.warnings.iter())
         .filter(|w| !held.contains(&(w.span.start, w.span.end)))
+        .filter(|w| !limits::unused_in(&made, w))
         .chain(&checked.warnings);
     messages.extend(warnings.map(|w| Message {
         severity: Severity::Warning,

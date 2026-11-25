@@ -8,6 +8,8 @@ Conformance tests for spec chapter [12. Maintainability](../../../docs/spec/12-m
 | 12.1 | [every-line-counts.kav](every-line-counts.kav) | Every line counts toward the file limit, including comments and blank lines. | compile error |
 | 12.1 | [long-functions-only-warn.kav](long-functions-only-warn.kav) | A function longer than `fn_lines` is only a warning; the program still runs. | runs |
 | 12.1 | [limit-exceptions-live-in-kavach-toml.kav](limit-exceptions-live-in-kavach-toml.kav) | A file can get its own limit in `[limits.files]` of kavach.toml. | runs |
+| 12.1 | [generated-files-are-not-counted.kav](generated-files-are-not-counted.kav) | A file a Kavach tool made, which says so in its opening comments, isn't counted toward `file_lines`. | runs |
+| 12.1 | [generated-files-get-no-unused-warnings.kav](generated-files-get-no-unused-warnings.kav) | A name nothing uses gets no warning in a file a Kavach tool made, which says so in its opening comments. | warning |
 | 12.6 | [deprecated-calls-warn.kav](deprecated-calls-warn.kav) | A call to a deprecated function gives a warning that shows its message; the function still works. | warning |
 | 12.6 | [deprecated-fix-names-must-exist.kav](deprecated-fix-names-must-exist.kav) | The names in a `fix` expression must exist. | compile error |
 | 12.6 | [deprecated-goes-before-a-function.kav](deprecated-goes-before-a-function.kav) | `deprecated` only goes before a function. | compile error |
