@@ -14,7 +14,7 @@ const r = minmax([3, 1, 4])
 print(r.lo)                          // named fields, not r.0
 ```
 
-- `(on: f, retries: 3)` builds an anonymous record of type `(on: fn(Int) -> Int, retries: Int)`. Fields are read and (through a `let`) assigned like any record's.
+- `(on: f, retries: 3)` builds an anonymous record of type `(on: fn(Int) -> Int, retries: Int)`. Fields are read and (through a `let`) assigned like any record's, and `with` copies one with some fields changed (2.4): `(w: 2, h: 3) with { h: 5 }` is `(w: 2, h: 5)`, of the same type. A field it doesn't have, or a value of another type, is a compile error, as for a declared record.
 - The same syntax works in parameter and return types: a tuple whose fields have names.
 - One named field still makes a record: `(on: f)`. `()` stays nothing, and a parenthesized expression `(x)` has no field name.
 - Anonymous record types match **structurally**: same field names and types, in any order. Declared `type`s stay **nominal** (2.4) and keep what anonymity can't give: methods, `invariant`s, `secret` fields, interfaces.
