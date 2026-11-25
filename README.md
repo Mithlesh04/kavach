@@ -50,6 +50,25 @@ agent RefundBot {
 
 The agent cannot call anything outside `can`. Refunds above 10,000 are blocked, refunds above 5,000 wait for a person from finance, and every call is written to an audit log.
 
+## Install
+
+Kavach is pre-alpha. Ready-built releases are on the [releases page](https://github.com/Mithlesh04/kavach/releases), for Windows and Linux on x86-64. Each archive has a `.sha256` file to check it against.
+
+- **Windows:** download and run [`scripts/install-kavach.ps1`](scripts/install-kavach.ps1). It installs the newest release.
+- **Linux:** download and run [`scripts/install-kavach.sh`](scripts/install-kavach.sh). It installs the newest release into `~/.kavach`, links `kavach` into `~/.local/bin`, and checks for a C compiler, which linking needs.
+- **Try it without installing:** the [playground](https://kavachlang.com/playground/) checks Kavach code in the browser.
+
+### macOS
+
+There is no ready-built macOS release yet: we have no Mac to test one on. You can build Kavach from source instead:
+
+1. Install the Xcode command-line tools, for the linker: `xcode-select --install`.
+2. Install Rust with [rustup](https://rustup.rs), then add LLVM's tools, which `kavach build` uses: `rustup component add llvm-tools`.
+3. Clone this repository and build: `cargo build --release -p kavach-cli -p kavach-runtime-native`.
+4. Run `target/release/kavach`, for example `target/release/kavach run hello.kav`.
+
+Without LLVM's tools, `kavach build` still works through its other backend, Cranelift, but the programs it makes are slower. Windows and pictures on screen (`std.window`, `std.gpu` drawing) aren't available on macOS yet. Nothing on macOS is tested yet, so please [tell us](https://github.com/Mithlesh04/kavach/discussions) what works and what doesn't.
+
 ## Repository map
 
 | Folder | What lives there |
