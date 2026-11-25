@@ -1640,6 +1640,7 @@ dependencies = [
  "kavach-lsp",
  "kavach-runtime-core",
  "kavach-runtime-native",
+ "kavach-runtime-net",
  "kavach-runtime-tracy",
  "kavach-runtime-unpack",
 ]
