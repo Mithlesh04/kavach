@@ -26,7 +26,7 @@
 | `kavach fix` | Apply safe fixes: compiler suggestions, deprecations (12.6), edition upgrades (10.8) |
 | `kavach api check` | Find breaking changes in `pub` signatures before a release (12.5) |
 | `kavach repl` / `kavach eval` | Try code interactively or evaluate one expression (10.9) |
-| `kavach --version` | Print the compiler's version and the commit it was built from: `kavach 0.1.0 (commit 8f8ae051)` |
+| `kavach --version` | Print the compiler's version and the commit it was built from: `kavach 0.2.0 (commit 8f8ae051)` |
 | `kavach version <program>` | Print what built an executable: its package's name and version, the compiler's version and commit, and when, for which system and with which options it was built (below) |
 | `kavach lsp` | Language server for editors, on stdin and stdout: errors as you type, with the same messages as `kavach check` and quick fixes, checked file by file (13.12); the type of what is under the cursor (hover); where a name is declared (go to definition); and the names in scope, or after a `.` the fields and methods of the value (completion) |
 | `kavach <command> --help` | Print that command's usage (`-h` too); `kavach --help` prints them all |
@@ -44,7 +44,7 @@ Inside a project (a folder with `kavach.toml`, or any folder below it), `run`, `
 ```
 $ kavach version .kavach/bin/my-app
 my-app 0.1.0
-built by kavach 0.1.0 (commit 8f8ae051)
+built by kavach 0.2.0 (commit 8f8ae051)
 built 2026-11-23T09:41:07Z for x86_64-linux with --tracy
 ```
 

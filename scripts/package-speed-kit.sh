@@ -27,7 +27,8 @@ echo "building kavach and compare (release)"
 cargo build -q --release -p kavach-cli -p kavach-speedkit
 kavach="$target/release/kavach"
 
-version="0.1.0-$(git rev-parse --short HEAD)"
+# The version is the workspace's, in Cargo.toml; the commit tells builds apart.
+version="$(grep -m1 '^version = ' Cargo.toml | cut -d'"' -f2)-$(git rev-parse --short HEAD)"
 name="kavach-speed-$version-$os-$arch"
 kit=".kavach/dist/$name"
 rm -rf "$kit"

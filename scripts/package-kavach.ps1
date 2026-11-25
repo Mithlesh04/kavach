@@ -25,7 +25,9 @@ if (-not (Test-Path (Join-Path $tools "llc.exe"))) {
 }
 
 $commit = (& git rev-parse --short HEAD).Trim()
-$version = "0.1.0-$commit"
+# The version is the workspace's, in Cargo.toml; the commit tells builds apart.
+$base = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"' | Select-Object -First 1).Matches[0].Groups[1].Value
+$version = "$base-$commit"
 $name = "kavach-$version-windows-x86_64"
 $dist = ".kavach\dist\$name"
 if (Test-Path $dist) { Remove-Item -Recurse -Force $dist }

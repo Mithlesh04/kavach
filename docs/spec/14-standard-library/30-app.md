@@ -37,7 +37,7 @@ panic: index 5 is out of range: the list has 2 items
   in total (shop.kav:7)
   in main (shop.kav:2)
 program: shop
-kavach: 0.1.0
+kavach: 0.2.0
 system: linux x86_64
 time: 1794950605 (seconds since 1970, UTC)
 ```

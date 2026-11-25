@@ -1559,7 +1559,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-ai"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-driver",
@@ -1573,14 +1573,14 @@ dependencies = [
 
 [[package]]
 name = "kavach-ast"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-lexer",
 ]
 
 [[package]]
 name = "kavach-backend-cranelift"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cc",
  "cranelift-codegen",
@@ -1596,7 +1596,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-backend-llvm"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-backend-cranelift",
  "kavach-driver",
@@ -1606,7 +1606,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-backend-wgsl"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-driver",
  "kavach-kir",
@@ -1615,7 +1615,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-checker"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-driver",
@@ -1626,7 +1626,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ai",
  "kavach-ast",
@@ -1648,7 +1648,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-driver"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-checker",
@@ -1662,7 +1662,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-fmt"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-checker",
@@ -1673,7 +1673,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-interp"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-checker",
@@ -1695,7 +1695,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-kir"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-checker",
@@ -1706,11 +1706,11 @@ dependencies = [
 
 [[package]]
 name = "kavach-lexer"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "kavach-lsp"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-checker",
@@ -1723,7 +1723,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-parser"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-lexer",
@@ -1731,7 +1731,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-playground"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-driver",
  "kavach-runtime-core",
@@ -1739,7 +1739,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-resolver"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-ast",
  "kavach-parser",
@@ -1747,7 +1747,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-audio"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cpal",
  "lewton",
@@ -1755,7 +1755,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "arboard",
  "brotli",
@@ -1775,21 +1775,21 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-dialog"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "rfd",
 ]
 
 [[package]]
 name = "kavach-runtime-font"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "rustybuzz",
 ]
 
 [[package]]
 name = "kavach-runtime-gpu"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-runtime-core",
  "kavach-runtime-window",
@@ -1798,7 +1798,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-image"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "jpeg-decoder",
  "png",
@@ -1806,7 +1806,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-input"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-runtime-window",
  "sdl3",
@@ -1815,14 +1815,14 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-matrix"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "gemm",
 ]
 
 [[package]]
 name = "kavach-runtime-native"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "corosensei",
  "kavach-kir",
@@ -1845,7 +1845,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-net"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "argon2",
  "bytes",
@@ -1861,7 +1861,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-process"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-runtime-core",
  "libc",
@@ -1870,7 +1870,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-tracy"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-runtime-core",
  "tracy-client",
@@ -1878,7 +1878,7 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-unpack"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cc",
  "lzma-rust2",
@@ -1887,25 +1887,25 @@ dependencies = [
 
 [[package]]
 name = "kavach-runtime-watch"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "notify",
 ]
 
 [[package]]
 name = "kavach-runtime-window"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "winit",
 ]
 
 [[package]]
 name = "kavach-speedkit"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "kavach-svd"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "kavach-driver",
 ]

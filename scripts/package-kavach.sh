@@ -31,7 +31,8 @@ if [ ! -f "$tools/opt" ] || [ ! -f "$tools/llc" ]; then
     exit 1
 fi
 
-version="0.1.0-$(git rev-parse --short HEAD)"
+# The version is the workspace's, in Cargo.toml; the commit tells builds apart.
+version="$(grep -m1 '^version = ' Cargo.toml | cut -d'"' -f2)-$(git rev-parse --short HEAD)"
 name="kavach-$version-$os-$arch"
 dist=".kavach/dist/$name"
 rm -rf "$dist"

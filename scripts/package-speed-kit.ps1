@@ -29,7 +29,9 @@ Set-Location $repo
 $cl_version = (cmd /c "cl 2>&1" | Select-Object -First 1).Trim()
 
 $commit = (& git rev-parse --short HEAD).Trim()
-$version = "0.1.0-$commit"
+# The version is the workspace's, in Cargo.toml; the commit tells builds apart.
+$base = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"' | Select-Object -First 1).Matches[0].Groups[1].Value
+$version = "$base-$commit"
 $name = "kavach-speed-$version-windows-x86_64"
 $kit = Join-Path $repo ".kavach\dist\$name"
 if (Test-Path $kit) { Remove-Item -Recurse -Force $kit }
