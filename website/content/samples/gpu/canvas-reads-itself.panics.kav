@@ -1,0 +1,29 @@
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0))
+}
+
+gpu fragment fn copy(s: Spot, t: Texture) -> (Float32, Float32, Float32, Float32) {
+    t.sample(0.5, 0.5)
+}
+
+fn main() uses Window {
+    match gpu.canvas(2, 2) {
+        ok(canvas) => {
+            const frame = canvas.frame() catch _ => panic("no frame")
+            const all = [Corner(x: -1.0, y: -1.0), Corner(x: 3.0, y: -1.0), Corner(x: -1.0, y: 3.0)]
+            frame.draw(gpu.pipeline(place, copy), all, textures: [canvas.texture()])
+        }
+        err(_) => panic("no GPU: nothing to draw into"),
+    }
+}

@@ -55,6 +55,11 @@ export const gpuScreenDoc: LessonDoc = {
         <li>A list a GPU <C>map</C> made is drawn from GPU memory, with nothing copied.</li>
         <li>A pipeline is compiled for the GPU when it is made, or when a screen opens, never in the middle of a frame.</li>
       </ul>
+      <H2>For user interfaces</H2>
+      <P>
+        Clipping, masks, smooth edges, canvases drawn off the screen, and textures that change in part are on their
+        own page: <Link href="/docs/standard-library/gpu-screens/drawing-for-user-interfaces/">Drawing for user interfaces</Link>.
+      </P>
       <H2>What the machine does</H2>
       <P>
         Step through one frame of a window program that draws two squares. It opens a window, so it is shown here,

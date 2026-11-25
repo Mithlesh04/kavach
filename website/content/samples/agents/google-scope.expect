@@ -1,0 +1,1 @@
+0: `Auth.GoogleToken` needs a scope that is not empty and has no line breaks or other control characters, not "" (spec 8.4)

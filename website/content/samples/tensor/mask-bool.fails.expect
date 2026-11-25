@@ -1,0 +1,1 @@
+error: `&` on a `Bool` is written `and` (spec 2.16)

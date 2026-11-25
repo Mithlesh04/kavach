@@ -1,0 +1,17 @@
+use std.gpu
+
+fn main() uses Window, Console {
+    const canvas = gpu.canvas(4, 4) catch e => {
+        print(`no GPU here: {e}`)
+        return
+    }
+    const frame = canvas.frame() catch e => {
+        print(e)
+        return
+    }
+    frame.clear(1.0, 0.0, 0.0)
+    frame.show()
+    const px = canvas.pixels()
+    print(`{px.len()} bytes, {canvas.width} x {canvas.height}`)
+    print(px[0:4])
+}

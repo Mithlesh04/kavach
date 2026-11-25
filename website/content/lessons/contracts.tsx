@@ -6,8 +6,15 @@ import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadProjectFiles } from "@/lib/samples";
 import { Ex, Files, H2, Note, P } from "./parts";
-import { fileFigure, specListAfter } from "@/lib/spec-tables";
-import { Cell, ModuleTable } from "./spec-table";
+import { fileFigure, specListAfter, specTables } from "@/lib/spec-tables";
+import { Cell, ModuleTable, Table } from "./spec-table";
+
+/** Spec 11.3's table of the values each type is tried with first. */
+function generatedValues() {
+  const t = specTables("11-testing.md", "11.3").find((x) => x.header[0] === "Type");
+  if (!t) throw new Error("spec 11.3: no Type table");
+  return t;
+}
 
 const beside = loadProjectFiles("testing/beside");
 const missed = loadProjectFiles("testing/missed");
@@ -302,13 +309,11 @@ export const testingDoc: LessonDoc = {
   ),
   deeper: (
     <>
-      <P>The values most likely to break code are tried first, then random ones:</P>
-      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Numbers: <C>0</C>, <C>1</C>, <C>-1</C>, the smallest and largest, and the values next to every number in a <C>require</C>.</li>
-        <li>Text: empty, one character, spaces, non-Latin text, very long.</li>
-        <li>Lists, dicts and sets: empty, one item, many, duplicates.</li>
-        <li>Unions: every variant. Records: generated fields that never break an <C>invariant</C>.</li>
-      </ul>
+      <P>
+        The values most likely to break code are tried first, then random ones. A sized or ranged integer gets only
+        values it holds:
+      </P>
+      <Table header={generatedValues().header} rows={generatedValues().rows} wrapFirst />
       <P>
         A failing input is shrunk to the smallest one that still fails, and saved under <C>tests/found/</C>. A
         function with no contract and no example is still checked for panics, and listed as weakly tested, so a

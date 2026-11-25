@@ -1,0 +1,2 @@
+marked, inside: [255, 0, 0, 255]
+unmarked, outside: [0, 0, 255, 255]

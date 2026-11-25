@@ -1,0 +1,9 @@
+use std.font
+
+fn families() uses Console {
+    print(font.installed().len())
+}
+
+fn main() uses Console {
+    families()
+}

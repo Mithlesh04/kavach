@@ -14,6 +14,7 @@ import { vecDoc } from "./stdlib-vec";
 import { imageDoc } from "./stdlib-image";
 import { appDoc } from "./stdlib-app";
 import { fontDoc } from "./stdlib-font";
+import { fontInstalledDoc } from "./stdlib-font-installed";
 import { reflectDoc } from "./stdlib-reflect";
 import { tensorDoc } from "./stdlib-tensor";
 import { tensorIndexDoc, tensorMakeDoc } from "./stdlib-tensor-make";
@@ -23,6 +24,7 @@ import { tensorFftDoc, tensorLinalgDoc } from "./stdlib-tensor-linalg";
 import { tableCsvDoc, tableDoc } from "./stdlib-table";
 import { loggingDoc } from "./stdlib-log";
 import { gpuScreenDoc } from "./stdlib-gpu";
+import { gpuUiDoc } from "./stdlib-gpu-ui";
 import { textCollectionsDoc } from "./stdlib-text";
 import { jsonBuildingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc } from "./stdlib-json";
 import { jsonDecodingDoc } from "./stdlib-json-decode";
@@ -62,6 +64,7 @@ export const stdlibLessons: Record<string, LessonDoc> = {
   "standard-library/windows": windowDoc,
   "standard-library/running-programs": processDoc,
   "standard-library/gpu-screens": gpuScreenDoc,
+  "standard-library/gpu-screens/drawing-for-user-interfaces": gpuUiDoc,
   "standard-library/the-machine": systemDoc,
   "standard-library/gamepads": gamepadDoc,
   "standard-library/sound": soundDoc,
@@ -69,6 +72,7 @@ export const stdlibLessons: Record<string, LessonDoc> = {
   "standard-library/images": imageDoc,
   "standard-library/desktop-apps": appDoc,
   "standard-library/fonts": fontDoc,
+  "standard-library/fonts/installed-fonts": fontInstalledDoc,
   "standard-library/reflection": reflectDoc,
   "standard-library/tensors": tensorDoc,
   "standard-library/tensors/making-tensors": tensorMakeDoc,

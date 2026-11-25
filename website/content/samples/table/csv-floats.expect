@@ -1,0 +1,7 @@
+name,level,gain
+a,0.1,NaN
+b,2.5,inf
+c,-0.0,-inf
+Sample(name: "a", level: 0.1, gain: NaN)
+Sample(name: "b", level: 2.5, gain: inf)
+Sample(name: "c", level: -0.0, gain: -inf)

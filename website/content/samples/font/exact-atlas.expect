@@ -1,0 +1,4 @@
+exact: true
+box: 8 x 11, 1 right and 11 up from the origin
+a pixel inside: 255
+a pixel half covered: 127

@@ -1,0 +1,5 @@
+glyph 1 at x 0.0: character 0, moves the pen 70.0
+glyph 3 at x 70.0: character 1, moves the pen 70.0
+glyph 2 at x 140.0: character 2, moves the pen 30.0
+glyph 1 at x 170.0: character 3, moves the pen 70.0
+width: 240.0

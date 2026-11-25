@@ -1,0 +1,2 @@
+Player(name: "Asha", at: Point(x: 1, y: 2), score: 0)
+Player(name: "Asha", at: Point(x: 2, y: 2), score: 10)

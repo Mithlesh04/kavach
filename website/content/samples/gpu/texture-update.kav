@@ -1,0 +1,11 @@
+use std.gpu
+
+fn main() uses Window, Console {
+    let t = gpu.texture(2, 2, [0, 0, 0, 0], channels: 1, nearest: true) catch e => {
+        print(`no GPU here: {e}`)
+        return
+    }
+    gpu.update(t, 1, 0, 1, 1, [255])
+    print(`top: {t.sample(0.25, 0.25)} {t.sample(0.75, 0.25)}`)
+    print(`bottom: {t.sample(0.25, 0.75)} {t.sample(0.75, 0.75)}`)
+}

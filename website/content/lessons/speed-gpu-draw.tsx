@@ -39,7 +39,7 @@ export const gpuDrawDoc: LessonDoc = {
           Each three vertices make a triangle. <C>indices:</C> names them by their place instead, so triangles share
           corners: see <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.
         </li>
-        <li>A vertex, an instance or a shared value is a record of 1 to 8 fields, each a <C>Float32</C>, <C>Int32</C> or <C>UInt32</C>.</li>
+        <li>A vertex, an instance or a shared value is a record of 1 to 16 fields, each a <C>Float32</C>, <C>Int32</C> or <C>UInt32</C>. A vertex and an instance have at most 16 between them, as a GPU reads at most 16 for each corner: a vertex of 2 leaves 14 for the instance.</li>
         <li>
           A list a GPU <Link href="/docs/speed/gpu/map-on-the-gpu/">map</Link> made, still in GPU memory, is drawn from
           there with nothing copied, as vertices or instances. A swarm moved by a <C>map</C> each frame is drawn where it

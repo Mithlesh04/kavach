@@ -1,0 +1,1 @@
+error: a `gpu fn` can't slice (`x[a:b:step]`): it holds no lists, and a `Slice` method takes a `Part`, whose ends are `Int?`s, which a `gpu fn` can't hold either. Slice the list before the `map` (`xs[a:b].map(f)`), or read the fields you need (spec 15.4)

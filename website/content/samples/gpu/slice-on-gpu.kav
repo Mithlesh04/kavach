@@ -1,0 +1,14 @@
+gpu fn glow(x: Float32, k: Float32) -> Float32 {
+    x * k + 1.0
+}
+
+fn main() {
+    let xs: [Float32] = []
+    for i in 0..1_000 {
+        xs.push(Float32(i))
+    }
+    const lit = xs.map(x => glow(x, 0.5))
+    const firsts = lit[0:4]
+    print(firsts.map(x => glow(x, 2.0)))
+    print(lit[::250])
+}

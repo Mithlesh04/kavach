@@ -1,0 +1,12 @@
+use std.window
+
+/// Opens the input method beside the text box: this reads what a person types.
+fn start_typing(win: AppWindow, x: Float, y: Float) uses Window {
+    win.set_text_input(true)
+    win.set_caret(x, y, 2.0, 18.0)
+}
+
+fn main() ! WindowError uses Window {
+    const win = try window.open("Notes", 640, 480)
+    start_typing(win, 20.0, 40.0)
+}

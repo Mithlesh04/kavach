@@ -23,6 +23,7 @@ const where: [op: string, runs: string, note: React.ReactNode][] = [
   ["calling a gpu fn directly", "the CPU", <>a <C>gpu fn</C> is also an ordinary function</>],
   ["sum, min, max of Int32 or UInt32", "the GPU, when the list is already in GPU memory", <>only the result comes back; a list on the CPU stays there</>],
   ["filter of a list already in GPU memory", "the GPU, when its items are one of the four number types and its lambda fits a gpu fn", <>the kept items stay there, in their order; not yet for records and tuples</>],
+  ["a slice xs[a:b:step] of a list in GPU memory", "the GPU, when the list is only there or the slice stays there too", <>only the slice&apos;s items come back when the CPU reads it</>],
   ["other filters; sum, min, max of floats", "the CPU, on one core", <>a loop of your own can use every core: see <Link href="/docs/speed/loops-on-all-cores/">Loops on All Cores</Link></>],
   ["sort", "the CPU; a long list of whole numbers on every core", <>see <Link href="/docs/speed/fast-sorting/">Fast Sorting</Link></>],
 ];
@@ -402,6 +403,11 @@ export const gpuCanDoc: LessonDoc = {
         the CPU would, leaves the type, the CPU adds the list again in order, so the panic names the same step:
       </P>
       <Ex name="gpu/sum-overflow.panics" />
+      <P>
+        A slice of a list in GPU memory is made there too, so a <C>map</C> can follow it without a copy back, and reading
+        it brings back only its items. The results are the CPU&apos;s, clamping and <C>#k</C> included:
+      </P>
+      <Ex name="gpu/slice-on-gpu" />
       <Note>For speed on the GPU, keep the CPU out of the middle: chain maps in one expression, and read a GPU list only when you need its items. The less a list travels between GPU and CPU, the faster.</Note>
       <Streams />
       <H2>Helpers and loops</H2>
@@ -413,6 +419,7 @@ export const gpuCanDoc: LessonDoc = {
       <Ex name="gpu/files.fails" />
       <Ex name="gpu/recursion.fails" />
       <Ex name="gpu/fail.fails" />
+      <Ex name="gpu/slice-in-gpu-fn.fails" />
     </>
   ),
 };

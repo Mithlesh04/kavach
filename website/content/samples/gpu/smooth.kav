@@ -1,0 +1,43 @@
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0))
+}
+
+gpu fragment fn white(s: Spot) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 1.0, 1.0, 1.0)
+}
+
+/// The red byte of the middle pixel of a 3 × 3 canvas, half covered by a
+/// triangle whose edge runs through its center, corner to corner.
+fn middle(samples: Int) -> Int ! GpuError uses Window {
+    const canvas = try gpu.canvas(3, 3, samples: samples)
+    const frame = try canvas.frame()
+    frame.clear(0.0, 0.0, 0.0)
+    const half = [Corner(x: -1.0, y: -1.0), Corner(x: 1.0, y: -1.0), Corner(x: 1.0, y: 1.0)]
+    frame.draw(gpu.pipeline(place, white), half)
+    frame.show()
+    Int(canvas.pixels()[16])
+}
+
+fn main() uses Window, Console {
+    const one = middle(1) catch e => {
+        print(`no GPU here: {e}`)
+        return
+    }
+    const four = middle(4) catch e => {
+        print(e)
+        return
+    }
+    print(`1 sample: the edge pixel is {if one == 0 or one == 255 { "all in or all out" } else { "partly in" }}`)
+    print(`4 samples: the edge pixel is {if four > 0 and four < 255 { "partly in" } else { "all in or all out" }}`)
+}

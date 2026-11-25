@@ -1,0 +1,2 @@
+Range(low: 1, high: 3)
+panic: contract failed: invariant low <= high

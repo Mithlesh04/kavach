@@ -1,0 +1,16 @@
+use std.font
+
+fn main() uses System, Console {
+    const all = font.installed()
+    print(`some fonts are installed: {all.len() > 0}`)
+    print(`each has a family and a file: {all.all(f => f.family != "" and f.path != "")}`)
+    if let f = font.fallback("नमस्ते") {
+        const loads = match f.load() {
+            ok(_) => true,
+            err(_) => false,
+        }
+        print(`a font for Hindi loads: {loads}`)
+    } else {
+        print("no installed font has Hindi's glyphs")
+    }
+}

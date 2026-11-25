@@ -1,0 +1,16 @@
+type Pair: Slice {
+    a: Float32
+    b: Float32
+
+    fn slice(self, part: Part) -> Pair {
+        Pair(a: self.b, b: self.a)
+    }
+}
+
+gpu fn turn(p: Pair) -> Pair {
+    p[::-1]
+}
+
+fn main() {
+    print(turn(Pair(a: 1.0, b: 2.0)))
+}
