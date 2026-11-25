@@ -60,8 +60,24 @@ repository. Building programs also needs the Visual Studio Build Tools
 Docs: https://kavachlang.com/
 "@ | Out-File -Encoding utf8 "$dist\README.txt"
 
-Compress-Archive -Path $dist -DestinationPath ".kavach\dist\$name.zip" -Force
-$hash = (Get-FileHash ".kavach\dist\$name.zip" -Algorithm SHA256).Hash.ToLower()
-"$hash  $name.zip" | Out-File -Encoding utf8 ".kavach\dist\$name.zip.sha256"
+# Each file is added under a name with `/` between folders, which every
+# unzip reads; Windows PowerShell 5.1's Compress-Archive writes `\`.
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+function Write-Zip($from, $to) {
+    $root = (Resolve-Path $from).Path
+    $top = Split-Path $root -Leaf
+    if (Test-Path $to) { Remove-Item -Force $to }
+    $zip = [IO.Compression.ZipFile]::Open($to, "Create")
+    foreach ($f in Get-ChildItem -Recurse -File $root) {
+        $inside = $f.FullName.Substring($root.Length + 1).Replace("\", "/")
+        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $f.FullName, "$top/$inside", "Optimal")
+    }
+    $zip.Dispose()
+}
+$zip = Join-Path (Get-Location) ".kavach\dist\$name.zip"
+Write-Zip $dist $zip
+$hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+# No byte order mark and a plain newline, so `sha256sum -c` reads it.
+[IO.File]::WriteAllText("$zip.sha256", "$hash  $name.zip`n")
 Remove-Item -Recurse -Force $dist
 Write-Host "wrote .kavach\dist\$name.zip"

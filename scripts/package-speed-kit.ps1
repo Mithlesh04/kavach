@@ -92,8 +92,23 @@ alike. kit.txt says what built the programs.
 Copy-Item LICENSE-APACHE, LICENSE-MIT $kit
 
 $zip = Join-Path $repo ".kavach\dist\$name.zip"
-Compress-Archive -Path $kit -DestinationPath $zip -Force
+# Each file is added under a name with `/` between folders, which every
+# unzip reads; Windows PowerShell 5.1's Compress-Archive writes `\`.
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+function Write-Zip($from, $to) {
+    $root = (Resolve-Path $from).Path
+    $top = Split-Path $root -Leaf
+    if (Test-Path $to) { Remove-Item -Force $to }
+    $zip = [IO.Compression.ZipFile]::Open($to, "Create")
+    foreach ($f in Get-ChildItem -Recurse -File $root) {
+        $inside = $f.FullName.Substring($root.Length + 1).Replace("\", "/")
+        [void][IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $f.FullName, "$top/$inside", "Optimal")
+    }
+    $zip.Dispose()
+}
+Write-Zip $kit $zip
 $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
-"$hash  $name.zip" | Out-File -Encoding ascii "$zip.sha256"
+# No byte order mark and a plain newline, so `sha256sum -c` reads it.
+[IO.File]::WriteAllText("$zip.sha256", "$hash  $name.zip`n")
 Remove-Item -Recurse -Force $kit
 Write-Host "wrote .kavach\dist\$name.zip"
