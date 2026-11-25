@@ -6,7 +6,9 @@ use super::*;
 use std::io::{Read, Write};
 use std::net::TcpListener;
 
+mod fake_google_key;
 mod fallbacks;
+mod google;
 mod signing;
 
 /// A provider written in Rust, as `std.ai`'s `wire` answers: the request
@@ -298,7 +300,7 @@ fn a_reply_the_runtime_cant_read_fails_the_ask() {
         Err(Failure::Failed(0, _))
     ));
     assert!(
-        matches!(wire::Call::read(r#"{"url":"x","auth":{"GoogleToken":{"scope":"s"}}}"#), Err(Failure::Failed(0, m)) if m.contains("not built yet"))
+        matches!(wire::Call::read(r#"{"url":"x","auth":{"Kerberos":{}}}"#), Err(Failure::Failed(0, m)) if m.contains("not built yet"))
     );
 }
 

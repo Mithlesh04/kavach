@@ -5,10 +5,11 @@
 //! Sending one try of an `ask` (spec 8.4): the key read and put where the
 //! provider's `auth` says, the address `KAVACH_AI_URL` may change, and the
 //! gate of the provider and key. Provider code never sees the key. A
-//! request for AWS is signed on each try, just before it is sent.
+//! request for AWS is signed on each try, just before it is sent; one for
+//! Google gets an access token then, kept while it lasts.
 
 use super::wire::{Auth, Call, Failure, Kind};
-use super::{Request, gate, http, sigv4};
+use super::{Request, gate, google, http, sigv4};
 use std::sync::{Arc, mpsc};
 
 /// A request ready to send, as often as it is sent again.
@@ -20,6 +21,8 @@ pub(crate) struct Sending {
     gate: String,
     /// The credentials and scope a request for AWS is signed with.
     aws: Option<Arc<Signer>>,
+    /// The service account and scope of a request for Google.
+    google: Option<Arc<(google::Account, String)>>,
 }
 
 struct Signer {
@@ -55,18 +58,31 @@ impl Pending {
 impl Sending {
     /// `call` with its key, or why it can't be sent: its key's variable
     /// (the `Model`'s `api_key_env`, else the provider's) is not set, or
-    /// for AWS, a credential's (spec 8.4).
+    /// for AWS, a credential's (spec 8.4); or, for Google, the key file
+    /// can't be read.
     pub(crate) fn new(call: Call, req: &Request) -> Result<Sending, Failure> {
         // As the program sees variables: `--env`, the environment, then
         // `[env.vars]` and `.env` (spec 10.13).
         let get = kavach_runtime_core::env_file::get;
         let mut headers = Vec::new();
         let mut aws = None;
+        let mut google = None;
         let variable = match call.auth {
             Auth::AwsSignature(scope) => {
                 let keys = sigv4::Keys::read(get).map_err(|v| Failure::NoKey(v.into()))?;
                 aws = Some(Arc::new(Signer { keys, scope }));
                 sigv4::KEY_ID.to_string()
+            }
+            Auth::GoogleToken(scope) => {
+                // The variable names the key file; empty text is not set.
+                let variable = (req.api_key_env.clone()).unwrap_or_else(|| google::VARIABLE.into());
+                let path = get(&variable)
+                    .map(|p| p.trim().to_string())
+                    .filter(|p| !p.is_empty())
+                    .ok_or_else(|| Failure::NoKey(variable.clone()))?;
+                let account = google::Account::load(&path, &variable).map_err(Failure::BadKey)?;
+                google = Some(Arc::new((account, scope)));
+                variable
             }
             Auth::NoKey => req.api_key_env.clone().unwrap_or(call.key_variable),
             auth => {
@@ -94,6 +110,7 @@ impl Sending {
             timeout: req.timeout,
             gate: format!("{} {variable}", req.provider),
             aws,
+            google,
         })
     }
 
@@ -111,7 +128,23 @@ impl Sending {
         let headers = self.headers.clone();
         let gate = gate::of(&self.gate);
         let aws = self.aws.clone();
+        let google = self.google.clone();
         std::thread::spawn(move || {
+            // The token first: a call that can't get one never reaches
+            // the provider's gate.
+            let mut headers = headers;
+            if let Some(g) = &google {
+                match google::token(&g.0, &g.1, timeout) {
+                    Ok(token) => {
+                        headers.retain(|(k, _)| !k.eq_ignore_ascii_case("authorization"));
+                        headers.push(("authorization".into(), format!("Bearer {token}")));
+                    }
+                    Err((kind, message)) => {
+                        let _ = send.send(Sent::Failed(kind, message));
+                        return;
+                    }
+                }
+            }
             gate.enter();
             let headers = match &aws {
                 Some(signer) => signed(&url, headers, &body, signer),

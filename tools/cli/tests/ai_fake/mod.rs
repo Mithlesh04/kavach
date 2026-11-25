@@ -98,6 +98,27 @@ pub fn run(program: &str, url: &str, key_variable: &str, native: bool) -> String
 /// `run` with each of `keys` set; with the audit log `audit.log` beside
 /// the program, if it wrote one.
 pub fn run_with(program: &str, url: &str, keys: &[(&str, &str)], native: bool) -> (String, String) {
+    run_in(program, url, keys, &[], native)
+}
+
+/// `run_with` with each of `forced` given as `--env NAME=value`, which
+/// wins over the environment (spec 10.13).
+pub fn run_forced(
+    program: &str,
+    url: &str,
+    forced: &[(&str, &str)],
+    native: bool,
+) -> (String, String) {
+    run_in(program, url, &[], forced, native)
+}
+
+fn run_in(
+    program: &str,
+    url: &str,
+    keys: &[(&str, &str)],
+    forced: &[(&str, &str)],
+    native: bool,
+) -> (String, String) {
     use std::sync::atomic::{AtomicU32, Ordering};
     static NEXT: AtomicU32 = AtomicU32::new(0);
     let n = NEXT.fetch_add(1, Ordering::Relaxed);
@@ -110,13 +131,17 @@ pub fn run_with(program: &str, url: &str, keys: &[(&str, &str)], native: bool) -
     if native {
         cmd.arg("--native").env("KAVACH_CHECK_LEAKS", "1");
     }
-    // No real key or AWS credential reaches the program: only the fake
-    // ones a test gives.
+    for (variable, value) in forced {
+        cmd.arg("--env").arg(format!("{variable}={value}"));
+    }
+    // No real key, AWS credential or Google key file reaches the
+    // program: only the fake ones a test gives.
     cmd.arg(&file)
         .env_remove("ANTHROPIC_API_KEY")
         .env_remove("AWS_ACCESS_KEY_ID")
         .env_remove("AWS_SECRET_ACCESS_KEY")
         .env_remove("AWS_SESSION_TOKEN")
+        .env_remove("GOOGLE_APPLICATION_CREDENTIALS")
         .env("KAVACH_AI_URL", url);
     for (variable, key) in keys {
         cmd.env(variable, key);

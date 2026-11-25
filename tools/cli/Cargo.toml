@@ -27,5 +27,9 @@ kavach-runtime-native = { path = "../../runtime/native" }
 kavach-runtime-tracy = { path = "../../runtime/tracy" }
 kavach-runtime-unpack = { path = "../../runtime/unpack" }
 
+[dev-dependencies]
+# A Google token's RS256 signature checked in tests/ai_google.rs.
+kavach-runtime-net = { path = "../../runtime/net" }
+
 [lints]
 workspace = true

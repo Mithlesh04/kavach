@@ -127,6 +127,9 @@ pub(crate) enum Auth {
     InHeader(String),
     /// Signed with SigV4 for this service and region (spec 8.4).
     AwsSignature(Scope),
+    /// A Google access token for this scope, from a service account's
+    /// key (spec 8.4).
+    GoogleToken(String),
 }
 
 /// A request to send, as the provider wrote it.
@@ -168,6 +171,18 @@ impl Call {
                     ));
                 }
                 Auth::AwsSignature(scope)
+            }
+            Some(("GoogleToken", f)) => {
+                let scope = text_of(field(f, "scope")).unwrap_or_default();
+                if scope.trim().is_empty() || scope.chars().any(char::is_control) {
+                    return Err(Failure::Failed(
+                        0,
+                        format!(
+                            "`Auth.GoogleToken` needs a scope that is not empty and has no line breaks or other control characters, not {scope:?} (spec 8.4)"
+                        ),
+                    ));
+                }
+                Auth::GoogleToken(scope)
             }
             Some((other, _)) => {
                 return Err(Failure::Failed(
