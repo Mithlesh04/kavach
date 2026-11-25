@@ -64,6 +64,17 @@ const TABLE: &[(&str, &[&str])] = &[
             "would have two meanings",
         ],
     ),
+    // Before `capability`: "nothing in this package uses it" is about a
+    // name, not a capability.
+    (
+        "unused",
+        &[
+            "never used",
+            "is unused",
+            "not used",
+            "nothing in this package uses it",
+        ],
+    ),
     (
         "capability",
         &[
@@ -157,7 +168,6 @@ const TABLE: &[(&str, &[&str])] = &[
         "not-covered",
         &["is not covered", "aren't covered", "does not cover"],
     ),
-    ("unused", &["never used", "is unused", "not used"]),
     (
         "style",
         &[
@@ -250,6 +260,10 @@ mod tests {
             (
                 "`show` uses Console, which `work` doesn't list",
                 "capability",
+            ),
+            (
+                "`tokenize` is `pub`, but nothing in this package uses it: remove it (spec 10.1)",
+                "unused",
             ),
             ("User has no field zip", "no-field"),
             ("`Square` has no method `name`", "no-method"),

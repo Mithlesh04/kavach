@@ -19,7 +19,34 @@ use std::path::{Path, PathBuf};
 /// `kavach.toml`, if there is one. With `quick`, the other files'
 /// bodies that can't change this file's messages are left out
 /// (`quick.rs`, spec 13.12): only this file's messages are whole.
+///
+/// As `kavach check` does, tagged literals are then checked by their
+/// tags' checkers, and models by their providers (spec 10.15, 8.4). Those
+/// run Kavach code from any file, so a quick check that needs them is
+/// done again whole.
 pub fn check(
+    path: &str,
+    text: &str,
+    open: impl Fn(&str) -> Option<String>,
+    quick: Option<&mut Outlines>,
+) -> (Compiled, Option<String>) {
+    let was_quick = quick.is_some();
+    let (mut compiled, config_error) = compile(path, text, &open, quick);
+    let c = &compiled;
+    let runs_code = !c.literal_uses.is_empty()
+        || !c.ai_written.is_empty()
+        || c.resolution.builtin_fn("std.ai", "wire").is_some();
+    if was_quick && runs_code {
+        return check(path, text, open, None);
+    }
+    if runs_code && !compiled.has_errors() {
+        let found = kavach_interp::check_literals(&compiled);
+        compiled.messages.extend(found);
+    }
+    (compiled, config_error)
+}
+
+fn compile(
     path: &str,
     text: &str,
     open: impl Fn(&str) -> Option<String>,
@@ -114,6 +141,7 @@ pub fn diagnostics(c: &Compiled) -> Vec<(String, Vec<Value>)> {
             "range": {"start": at(m.span.start), "end": at(m.span.end.max(m.span.start))},
             "severity": severity,
             "source": "kavach",
+            "code": m.code,
             "message": m.text,
         }));
     }

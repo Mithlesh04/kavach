@@ -1714,6 +1714,7 @@ dependencies = [
  "kavach-ast",
  "kavach-checker",
  "kavach-driver",
+ "kavach-interp",
  "kavach-parser",
  "kavach-resolver",
  "serde_json",

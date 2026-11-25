@@ -77,6 +77,26 @@ pub(crate) fn suggest(
     {
         return add_uses(c, base, text, at, uses);
     }
+    // A `Drop` value given to `_` (spec 6.1): kept to the block's end. It
+    // changes when `drop` runs, so the editor only.
+    if message.starts_with("`_` names nothing, so this value drops here")
+        && text[at..].starts_with('_')
+    {
+        return Some(edit("Name it `_guard`", at, at + 1, "_guard", false));
+    }
+    if let Some(cap) = message
+        .split("but its `uses` clause doesn't list it: add `")
+        .nth(1)
+        .and_then(|rest| rest.split('`').next())
+    {
+        let f = around(&c.file.items, (base + at) as u32)?;
+        let end = (f.uses.last()?.span.end as usize).checked_sub(base)?;
+        let title = format!("Add `{cap}` to `uses`");
+        return Some(edit(&title, end, end, &format!(", {cap}"), true));
+    }
+    if message.starts_with("`.unwrap()` panics on `none` and says nothing of why") {
+        return say_why(c, base, text, at);
+    }
     if message.contains("hiding the one declared above") {
         // `let total = total + i` made `total = total + i`: it changes what
         // the code does, so the editor only.
@@ -99,6 +119,65 @@ pub(crate) fn suggest(
         return Some(edit(&title, at, at + wrong.len(), name, false));
     }
     None
+}
+
+/// `x.unwrap()` made `x ?? panic("…")`, for the reason to be written in
+/// (spec 2.7): in brackets unless it stands alone. The editor only, as the
+/// reason is still to write.
+fn say_why(c: &Compiled, base: usize, text: &str, at: usize) -> Option<Edit> {
+    let mut find = UnwrapAt {
+        at: (base + at) as u32,
+        found: None,
+    };
+    walk_file(&mut find, &mut c.file.clone());
+    let (receiver, whole) = find.found?;
+    let local = |x: u32| (x as usize).checked_sub(base);
+    let (from, to) = (local(whole.start)?, local(whole.end)?);
+    let new = format!(
+        "{} ?? panic(\"…\")",
+        &text[local(receiver.start)?..local(receiver.end)?]
+    );
+    let before = text[..from].trim_end_matches([' ', '\t']);
+    let after = text[to..].trim_start_matches([' ', '\t']);
+    let alone_before = before.is_empty()
+        || before.ends_with(['(', ',', '[', '{', '\n'])
+        || before.ends_with("return")
+        || (before.ends_with('=') && !before[..before.len() - 1].ends_with(['=', '!', '<', '>']));
+    let alone_after = after.is_empty() || after.starts_with([')', ',', ']', '}', '\n', '\r']);
+    let new = if alone_before && alone_after {
+        new
+    } else {
+        format!("({new})")
+    };
+    Some(Edit {
+        title: "Say why it can't be `none`".to_string(),
+        from,
+        to,
+        text: new,
+        safe: false,
+    })
+}
+
+/// The `.unwrap()` call that starts at `at`, the smallest if several do:
+/// its receiver's span and its own.
+struct UnwrapAt {
+    at: u32,
+    found: Option<(Span, Span)>,
+}
+
+impl VisitMut for UnwrapAt {
+    fn expr(&mut self, e: &mut Expr) {
+        if let ExprKind::Call { callee, args, .. } = &e.kind
+            && let ExprKind::Field { base, name, .. } = &callee.kind
+            && name.name == "unwrap"
+            && args.is_empty()
+            && e.span.start == self.at
+            && self.found.is_none_or(|(_, w)| e.span.end < w.end)
+        {
+            self.found = Some((base.span, e.span));
+        }
+        walk_expr(self, e);
+    }
 }
 
 /// `x % 2 == 1` made `x % 2 != 0`, and `x % 2 != 1` made `x % 2 == 0`.
@@ -239,6 +318,10 @@ mod tests {
                 "pub fn hi(n: Int)\n    require n > 0\n{\n    print(n)\n}\n\nfn main() {\n    hi(1)\n}\n",
                 "pub fn hi(n: Int)\n    uses Console\n    require n > 0\n{",
             ),
+            (
+                "fn shout(s: String) uses Fs {\n    print(s)\n}\n\nfn main() {\n    shout(\"x\")\n}\n",
+                "fn shout(s: String) uses Fs, Console {\n",
+            ),
         ];
         for (src, want) in cases {
             let (out, safe) = fixed(src);
@@ -257,6 +340,42 @@ mod tests {
         let (out, safe) = fixed(src);
         assert!(out.contains("        total = total + i\n"), "{out}");
         assert!(!safe);
+    }
+
+    /// A `Drop` value given to `_` is named, to keep it to the block's
+    /// end (spec 6.1); `.unwrap()` says why it can't be `none` (spec 2.7).
+    /// Both change what the code does, or wait for words: offered only.
+    #[test]
+    fn fixes_that_change_the_code_are_only_offered() {
+        let guard = "type Guard: Drop {\n    name: String\n\n    fn drop(self) {\n        print(self.name)\n    }\n}\n\nfn main() {\n    const _ = Guard(name: \"x\")\n    print(1)\n}\n";
+        let (out, safe) = fixed(guard);
+        assert!(
+            out.contains("    const _guard = Guard(name: \"x\")\n"),
+            "{out}"
+        );
+        assert!(!safe);
+        let cases = [
+            ("const y = x.unwrap()", "const y = x ?? panic(\"…\")"),
+            ("print(x.unwrap())", "print(x ?? panic(\"…\"))"),
+            ("print(x.unwrap() + 1)", "print((x ?? panic(\"…\")) + 1)"),
+            ("print(1 == x.unwrap())", "print(1 == (x ?? panic(\"…\")))"),
+        ];
+        for (line, want) in cases {
+            let src = format!(
+                "fn find() -> Int? {{\n    none\n}}\n\nfn main() {{\n    const x = find()\n    {line}\n    print(y)\n}}\n"
+            );
+            let src = src.replace(
+                "    print(y)\n",
+                if line.starts_with("const") {
+                    "    print(y)\n"
+                } else {
+                    ""
+                },
+            );
+            let (out, safe) = fixed(&src);
+            assert!(out.contains(want), "{out}");
+            assert!(!safe);
+        }
     }
 
     /// The closest name may not be the one meant: offered, not applied.

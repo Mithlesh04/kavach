@@ -167,10 +167,40 @@ For each task the benchmark records input and output tokens, and whether the res
 
 ## 13.12 Mistakes shown while you type: the language server
 
-`kavach lsp` (10.5) shows the errors and warnings of `kavach check` as the code is typed, before it is saved. The words and places are the same.
+`kavach lsp` (10.5) shows every error and warning `kavach check` gives, as the code is typed, before it is saved. The words and places are the same. Each diagnostic carries its code (13.6), so an editor or an AI tool acts on the kind of mistake.
 
+So mistakes that would otherwise show up only in a test or in production show up in the editor:
+
+| Mistake | Spec | The editor shows | Quick fix |
+|---|---|---|---|
+| A call whose known arguments break a `require`; a known result that breaks an `ensure` | 7.7 | an error at the call or the result | none: the code or the contract is wrong |
+| `.unwrap()` on a value known to be `none` | 1.8 | an error | none: handle `none` |
+| `.unwrap()` outside `test` and `example` | 2.7 | a warning | `x ?? panic("…")`, to say why it can't be `none` |
+| `none`, or an optional, where a value is needed | 2.7 | a type error | none |
+| Arithmetic whose known values overflow, or divide by zero; an index past a known list's end | 1.8 | an error | none |
+| A `Drop` value given to `_` | 6.1 | a warning: it drops at once | name it `_guard` |
+| A capability used but not listed | 8.1 | an error | add it to `uses`, or write the `uses` of a `pub` function |
+| A tagged literal its tag's checker rejects | 10.15 | an error or a warning, from the checker | none |
+
+```kavach
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print(`released {self.name}`)
+    }
+}
+
+fn work() {
+    const _ = Guard(name: "data")   // warning: `_` names nothing, so this value drops here …
+    print("working")                // quick fix: `const _guard = Guard(name: "data")`
+}
+```
+
+- **Quick fixes.** Where the message names one change, the editor offers it. A fix with one right answer, such as adding `Fs` to `uses`, is also what `kavach fix` applies. A fix that changes what the code does, or leaves something to write, is offered only: naming a `_` value `_guard` changes when it drops, and `?? panic("…")` waits for its reason.
 - **Checked file by file.** Opening a file checks the whole program. After that, an edit that changes only what is inside the bodies of functions, methods and tests checks that file alone: the other files are read for their declarations, and for the bodies the file can reach through its calls or that name what it declares. So in a big project, a change inside a function doesn't check every other function again. The other files keep the messages they had.
 - An edit that changes a declaration (a signature, a type, a `use`, a constant, or the lines between items), a file opened, or a file saved checks the whole program again, and every file's messages are shown anew. Until then, a file that only another file's body change affects (a `pub` function no longer used anywhere) shows its old messages.
+- A program whose tags' checkers or models' providers run while it is checked (10.15, 8.4) is checked whole, as their code may be anywhere.
 
 ## Open questions
 
