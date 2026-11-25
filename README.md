@@ -62,7 +62,7 @@ Kavach is pre-alpha. Ready-built releases are on the [releases page](https://git
 
 There is no ready-built macOS release yet: we have no Mac to test one on. You can build Kavach from source instead:
 
-1. Install the Xcode command-line tools, for the linker: `xcode-select --install`.
+1. Install the Xcode command-line tools, for the linker: `xcode-select --install`. Then install CMake, which building the gamepad library needs: `brew install cmake`.
 2. Install Rust with [rustup](https://rustup.rs), then add LLVM's tools, which `kavach build` uses: `rustup component add llvm-tools`.
 3. Clone this repository and build: `cargo build --release -p kavach-cli -p kavach-runtime-native`.
 4. Run `target/release/kavach`, for example `target/release/kavach run hello.kav`.
