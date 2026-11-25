@@ -28,7 +28,8 @@ fn work<T: Num>(args: &Args, from: fn(u64) -> T, to: fn(T) -> u64) -> Result<Vec
     let a: Vec<T> = args.a.iter().map(|s| from(*s)).collect();
     let b: Vec<T> = args.b.iter().map(|s| from(*s)).collect();
     let size = |i: usize| args.sizes.get(i).copied().unwrap_or(0);
-    let out = mx::product(&a, &b, (size(0), size(1), size(2)), size(3) != 0)?;
+    let cores = kavach_runtime_core::cores();
+    let out = mx::product(&a, &b, (size(0), size(1), size(2)), size(3) != 0, cores)?;
     Ok(out.into_iter().map(to).collect())
 }
 

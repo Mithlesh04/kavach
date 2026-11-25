@@ -37,16 +37,18 @@ fn numbers(n: usize, seed: u64) -> Vec<f64> {
 
 #[test]
 fn the_product_is_the_plain_loop_bit_for_bit() {
-    // Small, and big enough to be spread over threads.
-    for (n, m, p) in [(1, 1, 1), (3, 4, 5), (7, 1, 3), (130, 97, 211)] {
+    // Small, and big enough to be spread over threads; on one core (the
+    // program's cap, spec 4.9), on several, and with more asked than rows.
+    let sizes = [(1, 1, 1), (3, 4, 5), (7, 1, 3), (130, 97, 211)];
+    for ((n, m, p), cores) in sizes.into_iter().flat_map(|s| [1, 4, 500].map(|c| (s, c))) {
         let (a, b) = (numbers(n * m, 1), numbers(m * p, 2));
-        let got = product(&a, &b, (n, m, p), false).unwrap();
+        let got = product(&a, &b, (n, m, p), false, cores).unwrap();
         let want = by_hand(&a, &b, n, m, p);
         assert!(
             got.iter()
                 .zip(&want)
                 .all(|(x, y)| x.to_bits() == y.to_bits()),
-            "{n}×{m}×{p}"
+            "{n}×{m}×{p} on {cores} cores"
         );
     }
 }
@@ -55,15 +57,15 @@ fn the_product_is_the_plain_loop_bit_for_bit() {
 fn fast_is_close_to_the_exact_product() {
     let (n, m, p) = (150, 120, 170);
     let (a, b) = (numbers(n * m, 3), numbers(m * p, 4));
-    let exact = product(&a, &b, (n, m, p), false).unwrap();
-    let fast = product(&a, &b, (n, m, p), true).unwrap();
+    let exact = product(&a, &b, (n, m, p), false, 4).unwrap();
+    let fast = product(&a, &b, (n, m, p), true, 4).unwrap();
     for (x, y) in exact.iter().zip(&fast) {
         assert!((x - y).abs() <= 1e-9 * (1.0 + x.abs()), "{x} {y}");
     }
     let small: Vec<f32> = a.iter().map(|x| *x as f32).collect();
     let other: Vec<f32> = b.iter().map(|x| *x as f32).collect();
-    let fast32 = product(&small, &other, (n, m, p), true).unwrap();
-    let exact32 = product(&small, &other, (n, m, p), false).unwrap();
+    let fast32 = product(&small, &other, (n, m, p), true, 4).unwrap();
+    let exact32 = product(&small, &other, (n, m, p), false, 4).unwrap();
     for (x, y) in exact32.iter().zip(&fast32) {
         assert!((x - y).abs() <= 1e-2 * (1.0 + x.abs()), "{x} {y}");
     }
@@ -71,12 +73,12 @@ fn fast_is_close_to_the_exact_product() {
 
 #[test]
 fn whole_numbers_say_when_they_overflow() {
-    assert_eq!(product(&[2i64, 3], &[4, 5], (1, 2, 1), true), Ok(vec![23]));
+    assert_eq!(product(&[2i64, 3], &[4, 5], (1, 2, 1), true, 4), Ok(vec![23]));
     assert_eq!(
-        product(&[i64::MAX, 1], &[2, 1], (1, 2, 1), false),
+        product(&[i64::MAX, 1], &[2, 1], (1, 2, 1), false, 4),
         Err(Overflow)
     );
-    assert_eq!(product(&[100i8], &[2], (1, 1, 1), false), Err(Overflow));
+    assert_eq!(product(&[100i8], &[2], (1, 1, 1), false, 4), Err(Overflow));
 }
 
 #[test]
