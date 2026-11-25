@@ -103,7 +103,7 @@ const groups: Group[] = [
       {
         q: "Is Kavach ready for production?",
         a: [
-          "Not yet, and it's better to say that plainly. Kavach is before its first public release. The compiler builds native programs on Windows and Linux, agents work end to end, and every conformance test passes in the interpreter and in native code. But the language can still change, and there is no stability promise until version 1.0.",
+          "Not yet, and it's better to say that plainly. Kavach is before its first public release: the core language (Phase 1) is done, and agents (Phase 2) are under way. The compiler builds native programs on Windows and Linux, agents work end to end, and every conformance test passes in the interpreter and in native code. But the language can still change, and there is no stability promise until version 1.0.",
           `Use it to learn, to try ideas and for internal tools. Wait for a stable release before you put a production system on it. The [roadmap](${ROADMAP}) says what each phase has to prove before the next one starts.`,
         ],
       },

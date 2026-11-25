@@ -1,0 +1,18 @@
+use std.fs
+
+fn header(path: String) -> Bytes ! FsError uses Fs.read {
+    const data = try fs.map(path)
+    print(data.len())
+    data[0:4]
+}
+
+fn main() ! FsError uses Fs, Console {
+    try fs.write_bytes("weights.bin", Bytes([71, 71, 85, 70, 3, 0, 0, 0]))
+    print(try header("weights.bin"))
+    const missing = fs.map("missing.bin") catch e => {
+        print(e)
+        Bytes([])
+    }
+    print(missing.is_empty())
+    try fs.remove("weights.bin")
+}

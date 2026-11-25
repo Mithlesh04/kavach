@@ -1,0 +1,13 @@
+fn mean(xs: [Float]) -> Float {
+    let total = 0.0
+    for x in xs {
+        total += x
+    }
+    total / Float(xs.len())
+}
+
+fn main() {
+    const scores = [mean([1.0, 2.0]), mean([]), mean([4.0])]
+    print(scores)
+    print(scores.sum(s => s))
+}

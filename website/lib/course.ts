@@ -106,6 +106,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["The Error Catch-all", "5.5"],
     ["Adding Context", "5.7"],
     ["Panics", "5.6", ["Panics", "When a program stops"]],
+    ["Watching for NaN", "5.9"],
     ["Contracts", "7", ["require", "ensure", "invariant", "example", "How they are checked"]],
     ["Testing", "11", ["Tests from types", "Your own values", "test blocks", "Fakes"]],
   ]],

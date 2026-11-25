@@ -111,7 +111,7 @@ export const whyDoc: LessonDoc = {
         AI&apos;s, is stopped before it does harm.
       </P>
       <Note>
-        Kavach is young: it is in its first phase, before its first public release. Learn it, try it and build
+        Kavach is young: the core language (Phase 1) is done, agents (Phase 2) are under way, and there is no public release yet. Learn it, try it and build
         tools with it now; see <Link href="/docs/start/who-kavach-is-for/">Who Kavach Is For</Link> for what comes later.
       </Note>
       <div className="flex flex-wrap gap-2.5">

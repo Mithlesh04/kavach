@@ -34,6 +34,7 @@ import { fromJsPythonDoc } from "./memory-from";
 import { freedDoc } from "./memory-freed";
 import { memoryStepsDoc } from "./memory-steps";
 import { errorKindsDoc } from "./errors-kinds";
+import { nanDoc } from "./errors-nan";
 import { monitorDoc } from "./agents-monitor";
 import { practiceDoc } from "./agents-practice";
 import {
@@ -310,6 +311,7 @@ export const lessons: Record<string, LessonDoc> = {
   "errors/panics": panicsDoc,
   "errors/panics/panics": panicsWhatDoc,
   "errors/panics/when-a-program-stops": stopsDoc,
+  "errors/watching-for-nan": nanDoc,
   "errors/contracts": contractsDoc,
   "errors/contracts/require": requireDoc,
   "errors/contracts/ensure": ensureDoc,

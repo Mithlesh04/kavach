@@ -58,7 +58,7 @@ export const whoDoc: LessonDoc = {
         </li>
       </ul>
       <Note>
-        Kavach is young: it is in its first phase, before its first public release. It is ready to learn, try and build
+        Kavach is young: the core language (Phase 1) is done, agents (Phase 2) are under way, and there is no public release yet. It is ready to learn, try and build
         tools with; wait for a stable release before betting a production system on it.
       </Note>
       <div className="flex flex-wrap gap-2.5">

@@ -28,6 +28,7 @@ export const aliases: Record<string, string> = {
   "types/interface-values": "interface value dynamic dispatch polymorphism trait object virtual heterogeneous list",
   "types/writing-types": "type annotation type inference type hints signature",
   "errors/kinds-of-errors": "error types kinds of errors compile error warning runtime error exception panic crash bug parse error file not found network error",
+  "errors/watching-for-nan": "nan not a number floating point exception fpe trap divide by zero 0/0 inf nan propagation debug nan loss nan pytorch detect_anomaly numpy seterr",
   "errors/panics": "panic crash abort fatal error division by zero index out of range overflow exit code panic in a task unwinding thread panic",
   "memory/values-not-references": "value semantics copy reference aliasing mutable shared pointer",
   "memory/values-not-references/coming-from-javascript-and-python": "javascript python java c# reference b = a same object alias shallow copy spread deep copy default argument mutable default list of lists react state",

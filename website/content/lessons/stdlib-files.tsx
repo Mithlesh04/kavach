@@ -103,9 +103,28 @@ export const readingDoc: LessonDoc = {
       <P>
         What it gains is measured on <Link href="/docs/speed/gpu/can-i-use-it-on-the-gpu/">Can I use it on the GPU?</Link>.
       </P>
+      <H2>Mapping a file</H2>
+      <P>
+        <C>fs.map(path)</C> gives a file&apos;s contents as <C>Bytes</C> without reading them first. The system maps
+        the file into the program&apos;s memory and loads each part from the disk when it is first used, so a model&apos;s
+        weights or a recording of several gigabytes is ready at once, and a part never used is never read:
+      </P>
+      <Ex name="files/map" />
+      <P>
+        The result is ordinary <C>Bytes</C>: every method works on it, and a slice of it is a copy. But it is not quite
+        a value, so only code that asks for a mapping gets one. <C>fs.read_bytes</C> never maps.
+      </P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><strong className="text-ink">Another program&apos;s writes can show through</strong> while you hold the <C>Bytes</C>. Map only files nobody changes meanwhile, such as a finished download or a model file.</li>
+        <li><strong className="text-ink">A file made shorter can end the program</strong> on Linux and macOS, when it reads past the new end, with no panic message. Windows refuses to shorten a mapped file instead.</li>
+        <li><strong className="text-ink">Replacing the file is safe:</strong> <C>fs.write_bytes</C> writes a new file and renames it, so <C>Bytes</C> mapped before keep the old contents.</li>
+        <li>The interpreter and <C>kavach test</C>&apos;s fake files read the whole file instead: the same bytes, without the sharing.</li>
+      </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/14-standard-library/03-fs.md" label="spec 14.3 · files" />
         <SrcRef file="tests/conformance/14-standard-library/big-chunks-read-the-whole-file-in-order.kav" label="big pieces, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/fs-map-gives-the-file-as-bytes.kav" label="fs.map, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/fs-map-of-a-missing-file-or-folder-fails.kav" label="fs.map failing, tested" />
       </div>
     </>
   ),

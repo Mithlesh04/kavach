@@ -16,7 +16,7 @@ const SPEC = "docs/spec/15-gpu.md";
 const TESTS = "tests/conformance/15-gpu";
 
 export const gpuChooseDoc: LessonDoc = {
-  lead: "A machine may have several GPUs, of any vendors. Kavach numbers them from 0, the best first, and sends each map to the least busy one; gpu.on, on:, on gpu(n) and gpu(n) fn choose one yourself.",
+  lead: "A machine may have several GPUs, of any vendors. Kavach numbers them from 0, the best first, sends each map to the least busy one, and splits a big one across them; gpu.on, on:, on gpu(n) and gpu(n) fn choose one yourself.",
   simple: <>A laptop often has two GPUs: a fast one on its own card and a slower one inside the processor. Kavach uses the fast one first and spreads work to the other when the first is busy. You can also point a job at one GPU, as you would send a parcel with one courier.</>,
   minutes: 6,
   before: ["speed/gpu/map-on-the-gpu", "speed/gpu/cpu-or-gpu"],
@@ -73,6 +73,29 @@ export const gpuChooseDoc: LessonDoc = {
         panic instead:
       </P>
       <Files name="gpu/missing-device" first={["src/main.kav"]} />
+      <H2>One big map across several GPUs</H2>
+      <P>
+        A big <C>map</C> is cut into parts, one for each GPU, as an <C>on cores</C> loop is cut across cores. It
+        happens on its own, when all of these hold:
+      </P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The code chose no device: no <C>on:</C>, <C>gpu.on</C>, <C>on gpu(n)</C> or <C>gpu(n) fn</C>, and none named by <C>KAVACH_GPU</C> or <C>[run] gpu</C>. A choice sends the work there whole.</li>
+        <li>The list is in main memory. A list already in one GPU&apos;s memory is worked on there.</li>
+        <li>Two or more GPUs can take the work.</li>
+        <li>The work is big enough to pay for moving the data: about a second of the CPU&apos;s time, with enough work for each item moved. Once each GPU has done some work, its measured speed decides whether a split ends sooner.</li>
+      </ul>
+      <P>
+        The best GPU takes the first items, the next GPU the next ones, each part as long as that GPU&apos;s speed. The
+        parts run at once, and their results come back as one list, in order. They are exactly the results one GPU, or
+        the CPU, gives: each item is worked out by the same <C>gpu fn</C>, on its own. A GPU that fails during its part
+        hands it to the next one, or to the CPU.
+      </P>
+      <P>
+        <C>KAVACH_PAR_LOG=1</C> notes each split, with each GPU&apos;s items:{" "}
+        <C>kavach: a map of 4096 items split across GPUs: 0 (2048), 1 (2048)</C>. For tests and comparisons,{" "}
+        <C>KAVACH_GPU_SPLIT=on</C> splits every <C>map</C> that may split, at any size, and <C>off</C> never splits.
+      </P>
+      <SrcRef file="docs/decisions/0144-one-map-across-gpus.md" label="decision 0144 · one map across GPUs" />
       <H2>With no code change</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>
@@ -89,7 +112,8 @@ export const gpuChooseDoc: LessonDoc = {
         To test code that chooses, <C>KAVACH_FAKE_GPUS</C> replaces the machine&apos;s list with one of its own. Work
         sent to a made-up device the machine has no GPU of that name for is skipped as a device that fails, so it runs
         on the next device, or the CPU. See <Link href="/docs/standard-library/the-machine/">The Machine</Link>.
-        Not built yet: one big job split across all GPUs at once, and ranking by memory size.
+        GPUs of one kind keep the system&apos;s order: the GPU interface Kavach uses doesn&apos;t report a device&apos;s
+        memory, so they aren&apos;t ranked by it. Not built yet: a matrix product split across GPUs.
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 15.6 · choosing a GPU" />

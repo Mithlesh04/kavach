@@ -1,0 +1,12 @@
+fn mean(xs: [Float]) -> Float {
+    let total = 0.0
+    for x in xs {
+        total += x
+    }
+    total / Float(xs.len())
+}
+
+fn main() {
+    print(mean([1.0, 2.0]))
+    print(mean([]))
+}

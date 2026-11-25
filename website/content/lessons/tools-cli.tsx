@@ -42,7 +42,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach query tokens --format json", "say where each name comes from, as the editor colors it, for tools such as a docs site"],
   ["kavach mcp, kavach lsp", "serve the tools to AI assistants, and errors as you type to editors"],
   ["kavach --version", "print the compiler's version and the commit it was built from"],
-  ["kavach version <program>", "print what built an executable: its package's name and version, and the compiler's version and commit"],
+  ["kavach version <program>", "print what built an executable: its package's name and version, the compiler's version and commit, and when, for which system and with which options it was built"],
   ["kavach <command> --help", "print that command's usage (-h too); kavach --help prints every command's"],
 ];
 
@@ -209,16 +209,27 @@ export const buildDoc: LessonDoc = {
       </P>
       <H2>A program&apos;s version</H2>
       <P>
-        Every executable carries its package&apos;s <C>name</C> and <C>version</C> from <C>kavach.toml</C>, and the
-        version and commit of the compiler that built it. <C>kavach version</C> prints them, so a program found on a
-        server can be traced to its source:
+        Every executable carries its package&apos;s <C>name</C> and <C>version</C> from <C>kavach.toml</C>, the
+        version and commit of the compiler that built it, and how it was built. <C>kavach version</C> prints them, so a
+        program found on a server, or the program that trained a model, can be traced to its source and its build:
       </P>
       <Terminal session={versionShown} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>
+          The third line says when <C>kavach build</C> ran, in UTC; the system the program is for, as{" "}
+          <C>&lt;processor&gt;-&lt;system&gt;</C> (<C>x86_64-windows</C>, <C>aarch64-macos</C>); and the options that
+          change what is built: <C>--tracy</C>, <C>--watch-nan</C>, <C>--compress</C> and{" "}
+          <C>KAVACH_BACKEND=cranelift</C>. Without them, the line ends after the system.
+        </li>
+        <li>
+          With <C>SOURCE_DATE_EPOCH</C> set to a number of seconds since 1970, as tools for repeatable builds set it, that
+          moment is written instead of the clock&apos;s, so building the same source again gives the same text.
+        </li>
+        <li><C>kavach run</C> keeps no executable, so a program run that way has the first two lines only.</li>
         <li>A program built from one file has the file&apos;s name and no version.</li>
         <li>
           With <C>version_flag = true</C> under <C>[build]</C> in <C>kavach.toml</C>, the program answers{" "}
-          <C>--version</C> itself: given that one argument, it prints the same two lines and ends with exit code 0,
+          <C>--version</C> itself: given that one argument, it prints the same lines and ends with exit code 0,
           before <C>main</C> runs. This holds however it runs: <C>kavach run -- --version</C>, <C>run --native</C> and
           the built executable.
         </li>

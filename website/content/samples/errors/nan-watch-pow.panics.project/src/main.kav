@@ -1,0 +1,6 @@
+fn main() {
+    const third = 1.0 / 3.0
+    for x in [8.0, -8.0] {
+        print(x ** third)
+    }
+}
