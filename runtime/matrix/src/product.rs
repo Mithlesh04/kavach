@@ -31,7 +31,11 @@ pub fn product<T: Num>(
     if out.is_empty() {
         return Ok(out);
     }
-    let threads = if n * m * p >= SPREAD { cores.clamp(1, n) } else { 1 };
+    let threads = if n * m * p >= SPREAD {
+        cores.clamp(1, n)
+    } else {
+        1
+    };
     let band = n.div_ceil(threads);
     let work = |rows: &mut [T], first: usize| {
         if fast && T::FLOAT {

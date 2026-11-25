@@ -73,7 +73,10 @@ fn fast_is_close_to_the_exact_product() {
 
 #[test]
 fn whole_numbers_say_when_they_overflow() {
-    assert_eq!(product(&[2i64, 3], &[4, 5], (1, 2, 1), true, 4), Ok(vec![23]));
+    assert_eq!(
+        product(&[2i64, 3], &[4, 5], (1, 2, 1), true, 4),
+        Ok(vec![23])
+    );
     assert_eq!(
         product(&[i64::MAX, 1], &[2, 1], (1, 2, 1), false, 4),
         Err(Overflow)
@@ -84,7 +87,7 @@ fn whole_numbers_say_when_they_overflow() {
 #[test]
 fn a_product_with_no_rows_is_empty() {
     assert_eq!(
-        product::<f64>(&[], &[], (0, 3, 2), false).unwrap(),
+        product::<f64>(&[], &[], (0, 3, 2), false, 4).unwrap(),
         Vec::<f64>::new()
     );
 }
