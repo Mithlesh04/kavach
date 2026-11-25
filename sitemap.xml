@@ -693,6 +693,10 @@
 <priority>0.6</priority>
 </url>
 <url>
+<loc>https://kavachlang.com/docs/errors/watching-for-nan/</loc>
+<priority>0.8</priority>
+</url>
+<url>
 <loc>https://kavachlang.com/docs/errors/contracts/</loc>
 <priority>0.8</priority>
 </url>

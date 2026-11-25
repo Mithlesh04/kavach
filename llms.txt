@@ -160,8 +160,9 @@ kavach context NAME file.kav --budget 2000
 Kavach is compiled, statically typed and general-purpose: as quick to
 try as a script (`kavach run`), compiled to one native executable
 (`kavach build`), with no garbage collector. Every integer and index is
-checked, and it is faster than C++ in 31 of 36 published,
-reproducible benchmarks.
+checked, and it is faster than C++ in 21 of 26 published,
+reproducible benchmarks that are like for like (each side on the same
+number of cores).
 
 Kavach (also searched as KavachLang) is a serious, general-purpose
 language for real programs, not an esoteric or joke language. Its
@@ -363,6 +364,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Panics](https://kavachlang.com/docs/errors/panics/): A panic stops the program at once, or only its task in a task. It is for bugs, not for failures you expect.
 - [Panics: Panics](https://kavachlang.com/docs/errors/panics/panics/): Write panic("message") for a state that must never happen. For overflow you expect, use checked_add.
 - [Panics: When a program stops](https://kavachlang.com/docs/errors/panics/when-a-program-stops/): How a program ends tells the shell what happened: 0 for success, 1 for an error from main, 101 for a panic in main.
+- [Watching for NaN](https://kavachlang.com/docs/errors/watching-for-nan/): The NaN watch stops a program at the first float operation that gives NaN, and names it, instead of letting NaN spread through every sum it touches.
 - [Contracts](https://kavachlang.com/docs/errors/contracts/): A contract states in one line what a function needs and what it promises, and Kavach checks it.
 - [Contracts: require](https://kavachlang.com/docs/errors/contracts/require/): require states what callers must make true. A call that breaks it stops the program, naming the rule.
 - [Contracts: ensure](https://kavachlang.com/docs/errors/contracts/ensure/): ensure states what the function promises; result is the value it gives back.
@@ -567,7 +569,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [GPU: Can I use it on the GPU?](https://kavachlang.com/docs/speed/gpu/can-i-use-it-on-the-gpu/): Pointers, inout, files and recursion stay on the CPU; helpers, loops and pipelines of maps run on the GPU. Every rule is checked when compiling.
 - [GPU: Sums in a loop](https://kavachlang.com/docs/speed/gpu/sums-in-a-loop/): A loop that adds up what the GPU works out doesn't wait for each sum, so the next chunk is read and copied over while the GPU works.
 - [GPU: Drawing triangles](https://kavachlang.com/docs/speed/gpu/drawing-triangles/): A gpu vertex fn places each corner of a triangle, a gpu fragment fn colors each pixel inside it, and gpu.pipeline joins the two for frame.draw, with depth for 3D and textures for pictures.
-- [GPU: Choosing a GPU](https://kavachlang.com/docs/speed/gpu/choosing-a-gpu/): A machine may have several GPUs, of any vendors. Kavach numbers them from 0, the best first, and sends each map to the least busy one; gpu.on, on:, on gpu(n) and gpu(n) fn choose one yourself.
+- [GPU: Choosing a GPU](https://kavachlang.com/docs/speed/gpu/choosing-a-gpu/): A machine may have several GPUs, of any vendors. Kavach numbers them from 0, the best first, sends each map to the least busy one, and splits a big one across them; gpu.on, on:, on gpu(n) and gpu(n) fn choose one yourself.
 - [GPU: Use cases](https://kavachlang.com/docs/speed/gpu/use-cases/): Work that does the same thing to many items, with enough math in each, is GPU work: images, audio, maps, finance, science and simulation.
 - [Native Executables](https://kavachlang.com/docs/speed/native-executables/): kavach build turns a program into one executable file of native machine code, about half a megabyte, that runs on its own.
 
