@@ -45,7 +45,8 @@ impl<'a> Lowerer<'a> {
         let [Some(names), Some(texts)] = [given[0], given[1]] else {
             return Err(self.unsupported("`json.decode_texts` without its lists", span));
         };
-        if self.decodes_whole(span) {
+        // Bits and range types get no checks here yet (round 7 merge).
+        if !self.whole_plan(span)?.is_empty() {
             return Err(self.unsupported(
                 "decoding into an `Int<bits: n>` or an `Int<range: …>`",
                 span,
