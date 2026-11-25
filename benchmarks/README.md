@@ -5,6 +5,7 @@ Honest performance comparisons between Kavach and C#, Go, Rust, Java and Python.
 ## Rules
 
 - Same algorithm in every language, written idiomatically by someone fluent in that language.
+- Same number of cores: one core against one core, all cores against all cores. A Kavach program that uses all cores (a loop written `on cores`, a big `sort`, a tensor product) gets a row on one core (`KAVACH_CORES=1`) and a row on all cores, against programs in the other languages written for all cores (`<name>_cores.cpp` and the like). "N× faster" is said only of such pairs.
 - Publish the code, machine, versions and raw numbers, not only charts.
 - Measure startup time, peak memory and latency percentiles (p50/p99), not only throughput.
 - Report where Kavach loses, too.
@@ -22,6 +23,8 @@ Every suite here ran on one laptop, unless its README says otherwise:
 | Linux | WSL 2 on the same machine: Ubuntu 24.04, kernel 5.15.167.4-microsoft-standard-WSL2 |
 
 Each suite's README gives the compilers and their flags, how many runs there were and how its figure is chosen. Results measured before 2026-11-07 came from commits that are no longer in the history, which was started again that day. From now on, each new result names the Kavach commit it was measured at, which `kavach --version` prints (spec 10.5).
+
+From 2026-11-02 to 2026-11-17, Kavach spread some loops over all cores by itself ([decision 0031](../docs/decisions/0031-loops-on-all-cores.md)); since then a loop uses all cores only when written `on cores` ([decision 0126](../docs/decisions/0126-loops-on-one-core-unless-on-cores.md)). Rows known to have compared Kavach on all cores with another language on one are split into a one-core and an all-core row in their README, with *to measure* where a new run is needed. A row measured in those days whose Kavach program sums whole numbers in a long loop should be measured again before its ratio is quoted.
 
 ## Running them
 
