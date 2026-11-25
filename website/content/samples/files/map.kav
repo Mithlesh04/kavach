@@ -1,6 +1,6 @@
 use std.fs
 
-fn header(path: String) -> Bytes ! FsError uses Fs.read {
+fn header(path: String) -> Bytes ! FsError uses Fs.read, Console {
     const data = try fs.map(path)
     print(data.len())
     data[0:4]

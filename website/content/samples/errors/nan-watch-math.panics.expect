@@ -1,0 +1,2 @@
+2.0
+panic: NaN watch: math.sqrt(-4.0) gives NaN

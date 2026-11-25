@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { loadProject } from "@/lib/samples";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, Files, H2, Note, P } from "./parts";
 
 // ---------- Watching for NaN ----------
 //
@@ -12,7 +10,6 @@ import { Ex, H2, Note, P } from "./parts";
 // the first float operation of its own code that gives NaN, and names it.
 
 const TESTS = "tests/conformance/05-errors";
-const watch = loadProject("errors/nan-watch.panics", ["kavach.toml", "src/main.kav"]);
 
 export const nanDoc: LessonDoc = {
   lead: "The NaN watch stops a program at the first float operation that gives NaN, and names it, instead of letting NaN spread through every sum it touches.",
@@ -31,8 +28,11 @@ export const nanDoc: LessonDoc = {
         Turn the watch on with <C>watch_nan = true</C> under <C>[run]</C> in <C>kavach.toml</C>. The program now
         stops at the first operation that makes a <C>NaN</C>, names it with its operands, and says where it is:
       </P>
-      <CodeBlock code={watch.files[0].code} file="kavach.toml" lang="toml" />
-      <Ex name="errors/nan-watch.panics" />
+      <Files name="errors/nan-watch.panics" first={["kavach.toml", "src/main.kav"]} outcome="panic" />
+      <P>
+        Under the panic, standard error says where: <C>at src/main.kav:6</C>, the division in <C>mean</C>. The first
+        call, with two scores, never made a <C>NaN</C>, so it printed as usual.
+      </P>
       <P>For one run or build, <C>kavach run --watch-nan</C> or <C>kavach build --watch-nan</C> does the same without the setting.</P>
       <H2>What it watches</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
@@ -40,9 +40,9 @@ export const nanDoc: LessonDoc = {
         <li><C>std.math</C>&apos;s functions of floats. <C>math.pow(x, y)</C> shows as <C>x ** y</C>.</li>
         <li>A <C>NaN</C> that comes from outside, from a file or <C>Float.parse</C>, stops the program at the first watched operation it reaches.</li>
       </ul>
-      <Ex name="errors/nan-watch-math.panics" />
+      <Files name="errors/nan-watch-math.panics" first={["src/main.kav"]} outcome="panic" />
       <P>A negative number to a fractional power has no real answer either:</P>
-      <Ex name="errors/nan-watch-pow.panics" />
+      <Files name="errors/nan-watch-pow.panics" first={["src/main.kav"]} outcome="panic" />
       <H2>What it doesn&apos;t watch</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The standard library&apos;s own code, which makes <C>NaN</C> on purpose, for a missing value in a <Link href="/docs/standard-library/tables/">table</Link>.</li>
