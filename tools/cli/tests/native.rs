@@ -158,12 +158,19 @@ fn native_code_matches_the_interpreter() {
     fs::create_dir_all(&work).unwrap();
     let home = std::env::current_dir().unwrap();
     std::env::set_current_dir(&work).unwrap();
-    // The programs are checked on all cores at once: most of the time goes
-    // to waiting for `kavach` and the linker. Each worker has a large
-    // stack, as the interpreter runs deep recursion in it.
+    // The programs are checked several at once: most of the time goes to
+    // waiting for `kavach` and the linker. At most 8 at a time, or
+    // `KAVACH_TEST_WORKERS`: each build runs its own linker, and 24 at once
+    // took a shared 32 GB machine down to 0.5 GB free (2026-11-25). Each
+    // worker has a large stack, as the interpreter runs deep recursion in it.
     let next = std::sync::atomic::AtomicUsize::new(0);
     let results = std::sync::Mutex::new(Vec::new());
-    let workers = std::thread::available_parallelism().map_or(4, |n| n.get());
+    let cores = std::thread::available_parallelism().map_or(4, |n| n.get());
+    let workers = std::env::var("KAVACH_TEST_WORKERS")
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .filter(|n| *n > 0)
+        .unwrap_or(cores.min(8));
     let running = common::Running::new(workers);
     // The watch ends once every worker has, or one panicked.
     std::thread::scope(|outer| {
