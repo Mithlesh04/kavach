@@ -1,0 +1,9 @@
+// Rule: `with` on an anonymous record refuses a field the record doesn't have.
+// Spec: 2.14
+// expect compile error
+
+fn main() {
+    const r = (w: 2, h: 3)
+    const d = r with { depth: 4 }      // error: no field `depth`
+    print(d)
+}

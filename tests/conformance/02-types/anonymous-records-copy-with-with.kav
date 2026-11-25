@@ -1,0 +1,17 @@
+// Rule: `with` copies an anonymous record with some fields changed, of the same type, and the original keeps its values.
+// Spec: 2.14
+// expect output: 2 5
+// expect output: 2 3
+// expect output: 10
+
+fn area(r: (w: Int, h: Int)) -> Int {
+    r.w * r.h
+}
+
+fn main() {
+    const r = (w: 2, h: 3)
+    const taller = r with { h: 5 }
+    print(`{taller.w} {taller.h}`)
+    print(`{r.w} {r.h}`)
+    print(area(taller))
+}

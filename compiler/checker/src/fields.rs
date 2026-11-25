@@ -200,6 +200,9 @@ impl Checker<'_> {
 
     pub(crate) fn with(&mut self, base: &Expr, fields: &[(Ident, Expr)]) -> Ty {
         let t = self.value(base, None);
+        if let Ty::Anon(shape) = self.inf.resolve(&t) {
+            return self.with_anon(&t, shape, fields);
+        }
         let Ty::Adt(def, args) = self.inf.resolve(&t) else {
             if !matches!(self.inf.resolve(&t), Ty::Error | Ty::Var(_)) {
                 self.error(base.span, "`with` needs a record value");
@@ -233,6 +236,28 @@ impl Checker<'_> {
         match self.inf.shallow_keep(&t) {
             Ty::Frozen(..) => Ty::Adt(def, args),
             _ => t,
+        }
+    }
+
+    /// `with` on an anonymous record (spec 2.14): a copy of the same type,
+    /// each field set to a value of that field's type.
+    fn with_anon(&mut self, t: &Ty, shape: Vec<(String, Ty)>, fields: &[(Ident, Expr)]) -> Ty {
+        for (name, value) in fields {
+            match shape.iter().find(|(n, _)| *n == name.name) {
+                Some((_, ft)) => {
+                    self.check_expect(value, ft);
+                }
+                None => {
+                    let shown = self.show(&Ty::Anon(shape.clone()));
+                    self.error(name.span, format!("`{shown}` has no field `{}`", name.name));
+                    self.value(value, None);
+                }
+            }
+        }
+        // A new value, not frozen (spec 2.20).
+        match self.inf.shallow_keep(t) {
+            Ty::Frozen(..) => Ty::Anon(shape),
+            _ => t.clone(),
         }
     }
 
