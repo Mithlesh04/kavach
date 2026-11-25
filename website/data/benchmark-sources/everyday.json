@@ -20,7 +20,8 @@
   "benchmarks": {
     "alloc": {
       "row": "`alloc`",
-      "title": "alloc — a short-lived list made, read and freed 20 million times"
+      "title": "alloc — a short-lived list made, read and freed 20 million times",
+      "notLikeForLike": "Not comparable: in Kavach the list is optimized away, so its loop does no work, while C++ still makes each list"
     },
     "callbacks": {
       "row": "`callbacks`",

@@ -152,6 +152,7 @@
       "measured": "2026-11-09",
       "benchmarks": {
         "alloc": {
+          "notLikeForLike": "Not comparable: in Kavach the list is optimized away, so its loop does no work, while C++ still makes each list",
           "title": "alloc — a short-lived list made, read and freed 20 million times",
           "unit": "ms",
           "series": [
@@ -516,15 +517,14 @@
       "measured": "2026-11-11",
       "benchmarks": {
         "loop": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
-          "title": "loop — 500M rounds of modular arithmetic",
+          "title": "loop — 500M rounds of modular arithmetic, one core each",
           "unit": "ms",
           "series": [
             {
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 60
+              "value": null
             },
             {
               "id": "cpp",
@@ -549,15 +549,14 @@
           "readme": "benchmarks/loops/README.md"
         },
         "sort": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
-          "title": "sort — 5M integers",
+          "title": "sort — 5M integers, one core each",
           "unit": "ms",
           "series": [
             {
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 32
+              "value": null
             },
             {
               "id": "cpp",
@@ -582,15 +581,14 @@
           "readme": "benchmarks/loops/README.md"
         },
         "lists": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
-          "title": "lists — build, read, change and sum 10M items",
+          "title": "lists — build, read, change and sum 10M items, one core each",
           "unit": "ms",
           "series": [
             {
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 32
+              "value": null
             },
             {
               "id": "cpp",
@@ -686,7 +684,6 @@
       "measured": "2026-11-09",
       "benchmarks": {
         "sum": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sum — 50 million integers, 10 times, every addition overflow-checked",
           "unit": "ms",
           "series": [
@@ -694,7 +691,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 135
+              "value": null
             },
             {
               "id": "cpp",
@@ -707,7 +704,6 @@
           "readme": "benchmarks/math/README.md"
         },
         "scale": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "scale — y = x * 2.5 + 1.0 over 20 million floats, 10 times",
           "unit": "ms",
           "series": [
@@ -715,7 +711,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 110
+              "value": null
             },
             {
               "id": "cpp",
@@ -728,7 +724,6 @@
           "readme": "benchmarks/math/README.md"
         },
         "roots": {
-          "notLikeForLike": "Kavach may spread this over all cores while C++ runs on one; being measured, so not counted as a like-for-like comparison yet",
           "title": "roots — sqrt over 20 million floats, 10 times",
           "unit": "ms",
           "series": [
@@ -736,7 +731,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 201
+              "value": null
             },
             {
               "id": "cpp",
@@ -972,7 +967,6 @@
           "readme": "benchmarks/sizes/README.md"
         },
         "sort-millions": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sort — 1,000,000 integers",
           "unit": "ms",
           "series": [
@@ -999,7 +993,6 @@
           "readme": "benchmarks/sizes/README.md"
         },
         "sort-tens-of-millions": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sort — 10,000,000 integers",
           "unit": "ms",
           "series": [
@@ -1007,7 +1000,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 80
+              "value": null
             },
             {
               "id": "cpp",
@@ -1026,7 +1019,6 @@
           "readme": "benchmarks/sizes/README.md"
         },
         "sort-hundreds-of-millions": {
-          "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison",
           "title": "sort — 100,000,000 integers",
           "unit": "ms",
           "series": [
@@ -1034,7 +1026,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 988
+              "value": null
             },
             {
               "id": "cpp",
@@ -1080,7 +1072,6 @@
           "readme": "benchmarks/tasks/README.md"
         },
         "serial": {
-          "notLikeForLike": "Kavach spreads each sum over all cores, C++ runs them on one thread: not a like-for-like comparison",
           "title": "map: the same eight sums, one after another",
           "unit": "ms",
           "series": [
@@ -1088,7 +1079,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 164
+              "value": null
             },
             {
               "id": "cpp",

@@ -20,18 +20,15 @@
   "benchmarks": {
     "sum": {
       "row": "`sum`",
-      "title": "sum — 50 million integers, 10 times, every addition overflow-checked",
-      "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison"
+      "title": "sum — 50 million integers, 10 times, every addition overflow-checked"
     },
     "scale": {
       "row": "`scale`",
-      "title": "scale — y = x * 2.5 + 1.0 over 20 million floats, 10 times",
-      "notLikeForLike": "Kavach on all cores, C++ on one core: not a like-for-like comparison"
+      "title": "scale — y = x * 2.5 + 1.0 over 20 million floats, 10 times"
     },
     "roots": {
       "row": "`roots`",
-      "title": "roots — sqrt over 20 million floats, 10 times",
-      "notLikeForLike": "Kavach may spread this over all cores while C++ runs on one; being measured, so not counted as a like-for-like comparison yet"
+      "title": "roots — sqrt over 20 million floats, 10 times"
     },
     "dot": {
       "row": "`dot`",

@@ -257,9 +257,9 @@ export const coresDoc: LessonDoc = {
         total that would overflow in the middle, in one-core order, is caught too.
       </P>
       <P>
-        The race below was measured on 2026-11-09, before loops needed <C>on cores</C> (decision 0126), when this loop
-        was split over the cores by itself. The program below now says <C>on cores</C>; new numbers come with the next
-        measurement.
+        The race below is one core each: Kavach run with <C>KAVACH_CORES=1</C>, against the plain C++ loop. Kavach&apos;s
+        time is still to measure, and so is the race with both on all cores, against C++ with OpenMP. Until 2026-11-25
+        this chart compared Kavach on all cores with C++ on one, which says nothing about either language.
       </P>
       <RaceChart suite="loops" id="loop" />
       <VerifyBlock suite="loops" id="loop" />

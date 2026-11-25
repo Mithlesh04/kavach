@@ -56,13 +56,18 @@ function sectionOf(markdown, heading, where) {
   return lines.slice(start, end).join("\n");
 }
 
-/** The number in the first table that has this row and column. */
+/**
+ * The number in the first table that has this row and column, or null when
+ * the README says the cell is still "to measure": a chart shows that side as
+ * to measure, and no ratio or win is drawn from it.
+ */
 function lookup(all, row, column, where) {
   for (const t of all) {
     const col = t.header.indexOf(column);
     if (col < 0) continue;
     const r = t.rows.find((cells) => cells[0] === row);
     if (!r) continue;
+    if (/^\*?to measure\*?$/i.test(r[col].trim())) return null;
     const value = Number(r[col].replace(/\*\*/g, "").replace(/[,_\s]/g, ""));
     if (!Number.isFinite(value)) throw new Error(`${where}: "${r[col]}" in row ${row}, column ${column} is not a number`);
     return value;
@@ -89,10 +94,12 @@ for (const [suiteId, suite] of Object.entries(sources.suites)) {
   for (const [benchId, bench] of Object.entries(suite.benchmarks)) {
     const where = `${suite.readme} (${suiteId}/${benchId})`;
     // A Kavach program spread over all cores, against others on one, is not a
-    // like-for-like race: its source says so, and the chart must say it too.
+    // like-for-like race: the row it reads must name its cores (`loop` · 1 core,
+    // run with KAVACH_CORES=1), or its source must say it isn't like for like.
     const program = path.join(repo, path.dirname(suite.readme), "kavach", `${benchId}.kav`);
-    if (!bench.notLikeForLike && fs.existsSync(program) && /\bon cores\b/.test(fs.readFileSync(program, "utf8"))) {
-      throw new Error(`${where}: kavach/${benchId}.kav runs \`on cores\`, so its benchmark source needs "notLikeForLike" saying so`);
+    const namesCores = /\bcores?\b/.test(bench.row ?? "");
+    if (!bench.notLikeForLike && !namesCores && fs.existsSync(program) && /\bon cores\b/.test(fs.readFileSync(program, "utf8"))) {
+      throw new Error(`${where}: kavach/${benchId}.kav runs \`on cores\`, so it must read a row that names its cores, or say "notLikeForLike"`);
     }
     benchmarks[benchId] = {
       ...(bench.notLikeForLike ? { notLikeForLike: bench.notLikeForLike } : {}),

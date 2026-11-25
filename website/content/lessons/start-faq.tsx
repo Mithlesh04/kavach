@@ -38,7 +38,7 @@ const ai = {
   tools: passRange("Pass@1", "tools"),
   python: passRange("Against Python", "Python, zero"),
 };
-const { wins, total, left } = winsAgainstCpp();
+const { wins, total, left, waiting } = winsAgainstCpp();
 const ROADMAP = `${versions.repo}/blob/main/docs/vision/roadmap.md`;
 
 type Question = { q: string; a: string[] };
@@ -143,7 +143,7 @@ const groups: Group[] = [
         q: "Is it fast?",
         a: [
           `In the like-for-like benchmarks, where Kavach and C++ run on the same number of cores, Kavach's native code is faster in ${wins} of ${total}. Each one comes with a single command to run it yourself, and the losses are shown next to the wins.`,
-          `${left} more aren't counted: Kavach ran on all cores there and C++ on one, which says nothing about which language is faster. Their charts say so, and fair runs of them are being measured. See [Benchmarks](/docs/benchmarks/).`,
+          `${waiting + left} more aren't counted yet. Most used to compare Kavach on all cores with C++ on one, which says nothing about which language is faster, so they are being run again with both sides on the same cores. Their charts say so. See [Benchmarks](/docs/benchmarks/).`,
         ],
       },
       {

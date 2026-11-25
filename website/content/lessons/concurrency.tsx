@@ -35,7 +35,7 @@ const alone = loadProject("tasks/spawn-alone", ["src/main.kav"]);
 // The tasks benchmark's Kavach times, read from its README by build-benchmarks.
 const kavachMs = (id: "parallel" | "serial") => {
   const s = benchmarks.suites.tasks.benchmarks[id].series.find((x) => x.id === "kavach");
-  if (!s) throw new Error(`benchmarks.json: tasks/${id} has no Kavach time`);
+  if (!s || s.value === null) throw new Error(`benchmarks.json: tasks/${id} has no Kavach time`);
   return s.value.toLocaleString("en-US");
 };
 
@@ -243,11 +243,10 @@ export const manyDoc: LessonDoc = {
         Each task runs as <C>spawn thread</C> makes it (<Link href="/docs/concurrency/how-tasks-run/">How Tasks Run</Link>),
         so in an LLVM build (<C>kavach build</C>) the items compute on several cores at once. In{" "}
         <Link href="/docs/benchmarks/#tasks">the benchmark</Link>, eight sums of 150 million rounds each take{" "}
-        {kavachMs("parallel")} ms with <C>parallel_map</C> — and {kavachMs("serial")} ms with plain <C>map</C>.
-        That was measured before loops needed <C>on cores</C> (decision 0126), when each of these math loops was
-        split over the cores by itself; today such a loop is written{" "}
-        <Link href="/docs/speed/loops-on-all-cores/"><C>on cores for</C></Link>. <C>parallel_map</C> is for items
-        that can&apos;t spread themselves like that: downloads, files, work of uneven sizes.
+        {kavachMs("parallel")} ms with <C>parallel_map</C>, a thread for each sum, as the C++ version has. The same
+        sums one after another, with plain <C>map</C>, are being measured again on one core. A loop that can be
+        split is written <Link href="/docs/speed/loops-on-all-cores/"><C>on cores for</C></Link> instead;{" "}
+        <C>parallel_map</C> is for items that can&apos;t be split like that: downloads, files, work of uneven sizes.
       </P>
       <div><SrcRef file="docs/spec/09-concurrency.md" line={68} symbol="Each task runs as `spawn thread` makes it" label="spec 9.3" /></div>
       <H2>When an item fails or panics</H2>

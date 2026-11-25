@@ -15,9 +15,12 @@ const seriesColor: Record<string, string> = {
  */
 export function RaceChart({ suite, id }: { suite: string; id: string }) {
   const bench = findBench(suite, id);
-  const max = Math.max(...bench.series.map((s) => s.value));
-  const fastest = Math.min(...bench.series.map((s) => s.value));
+  const measured = bench.series.flatMap((s) => (s.value === null ? [] : [s.value]));
+  const max = Math.max(...measured);
+  const fastest = Math.min(...measured);
   const cycle = 8; // seconds for the slowest bar
+  // A race with a side still to measure, or not like for like, names no winner.
+  const noRace = Boolean(bench.notLikeForLike) || measured.length < bench.series.length;
 
   return (
     <div className="rounded-xl border border-line bg-panel px-6 py-5">
@@ -31,11 +34,22 @@ export function RaceChart({ suite, id }: { suite: string; id: string }) {
       ) : null}
       <div className="flex flex-col gap-3.5">
         {bench.series.map((s) => {
+          if (s.value === null) {
+            return (
+              <div key={s.id}>
+                <div className="mb-1 flex justify-between">
+                  <span className="text-[13px] font-bold">{s.label}</span>
+                  <span className="font-mono text-[12.5px] text-soft">to measure</span>
+                </div>
+                <div className="h-3.5 rounded-[7px] border border-dashed border-line" aria-label={`${s.label}: to measure`} role="img" />
+              </div>
+            );
+          }
           const widthPct = (s.value / max) * 99;
           const dur = (s.value / max) * cycle;
           const ratio = s.value / fastest;
           // A race that isn't like for like names no winner.
-          const verdict = bench.notLikeForLike ? "" : s.value === fastest ? "· finished 1st" : `· ${trim(ratio)}× behind`;
+          const verdict = noRace ? "" : s.value === fastest ? "· finished 1st" : `· ${trim(ratio)}× behind`;
           const verdictColor =
             s.value === fastest ? "var(--ok)" : ratio >= 5 ? "var(--bad)" : "var(--muted)";
           return (
@@ -78,7 +92,8 @@ export type Bench = {
   notLikeForLike?: string;
   title: string;
   unit: string;
-  series: { id: string; label: string; color: string; value: number }[];
+  /** null: the README says this side is still to measure. */
+  series: { id: string; label: string; color: string; value: number | null }[];
   verify: string;
   readme: string;
   environment: string;
