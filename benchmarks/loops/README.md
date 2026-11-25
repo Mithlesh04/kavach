@@ -22,13 +22,18 @@ Linux (WSL Ubuntu 24.04), Intel i7-13700HX. Kavach: `kavach build` (LLVM backend
 
 Measured 2026-11-09 at commit b65b7ae7 (`kavach --version`), in three rounds of best of 9 one after another; each row is the best of the three rounds. On 2026-11-02 the same programs gave other times on both sides (C++'s `lists` took 189 ms then, 74–83 now), so compare ratios measured the same day.
 
+**One core or all cores.** Every row compares programs on the same number of cores. Three Kavach programs use all cores: `loop` and `lists` have a loop written `on cores` ([spec 4.9](../../docs/spec/04-control-flow.md#49-where-a-loop-runs)), and `sort` sorts 5 million numbers, which the library sorts in 256 buckets on up to 8 cores. Each of these has two rows: **1 core**, Kavach run with `KAVACH_CORES=1` against the plain C++ program, and **all cores**, Kavach as built against a C++ program on all cores (`cpp/<name>_cores.cpp`, `g++ -O2 -fopenmp`). Every other program runs on one core in every language. Until 2026-11-25 these rows compared Kavach on all cores with C++ on one core; a cell that says *to measure* waits for a new run.
+
 | Benchmark | Kavach ms | C++ ms | Ratio | Status |
 |---|---|---|---|---|
-| `loop` | 56 | 1435 | **0.04** | 26× faster than C++: the modular accumulation is a sum in disguise, and it runs on all cores (decision 0031) |
-| `sort` | 34 | 378 | **0.09** | 11× faster than C++: after the top-digit split, the 256 buckets sort on all cores |
-| `closures` | 20 | 98 | **0.20** | 4.9× faster than C++: the fused `map`/`filter`/`sum` pipeline runs on all cores (decision 0031); C++'s time varied most (98–284 ms) |
+| `loop` · 1 core | to measure | 1435 | to measure | one core each; Kavach's `(total + x) % m` needs a compare and a subtract where C++ divides ([below](#progress)) |
+| `loop` · all cores | 56 | to measure | to measure | both on all cores: Kavach's `on cores` loop, C++ with an OpenMP reduction of the same sums |
+| `sort` · 1 core | to measure | 378 | to measure | one core each: radix sort against `std::sort` |
+| `sort` · all cores | 34 | to measure | to measure | both on all cores: 256 buckets by the top digit, sorted on up to 8 cores (Kavach) and on all of them (C++) |
+| `closures` | to measure | 98 | to measure | one core each: the fused `map`/`filter`/`sum` pipeline. The 20 ms measured 2026-11-09 was on all cores, before loops ran on one core unless written `on cores` ([decision 0126](../../docs/decisions/0126-loops-on-one-core-unless-on-cores.md)); C++'s time varied most (98–284 ms) |
 | `records` | 44 | 115 | **0.38** | 2.6× faster than C++ |
-| `lists` | 30 | 74 | **0.41** | 2.5× faster than C++: byte-packed lists (decision 0030), and the summing pass on all cores |
+| `lists` · 1 core | to measure | 74 | to measure | one core each: byte-packed lists (decision 0030) |
+| `lists` · all cores | 30 | to measure | to measure | both on all cores: pushing stays on one core, the summing pass is spread |
 | `text` | 32 | 63 | **0.51** | 2.0× faster than C++; most of the time is the kernel zeroing fresh pages (C++ pays it too) |
 | `matrix` | 8 | 15 | **0.53** | 1.9× faster than C++ (times this short vary by a millisecond) |
 | `sizedmaps` | 45 | 73 | **0.62** | 1.6× faster than C++ when both are told the size: no index to grow, which is most of what `maps` spends ([hash maps](../../docs/architecture/hash-maps.md#open-questions)) |
@@ -36,7 +41,7 @@ Measured 2026-11-09 at commit b65b7ae7 (`kavach --version`), in three rounds of 
 | `fib` | 49 | 58 | **0.84** | 1.2× faster than C++ |
 | `floats` | 372 | 362 | 1.03 | as fast as C++: each round waits for the last multiply and add, for every compiler |
 
-The ratio in each round, in order: `loop` 0.04, 0.04, 0.04; `sort` 0.09, 0.09, 0.09; `closures` 0.20, 0.12, 0.20; `records` 0.39, 0.39, 0.38; `lists` 0.39, 0.41, 0.38; `text` 0.51, 0.51, 0.52; `matrix` 0.53, 0.56, 0.53; `sizedmaps` 0.66, 0.58, 0.61; `maps` 0.73, 0.67, 0.71; `fib` 0.84, 0.84, 0.85; `floats` 1.03, 1.02, 1.02.
+The ratio in each round, in order (the rows measured one core against one core): `records` 0.39, 0.39, 0.38; `text` 0.51, 0.51, 0.52; `matrix` 0.53, 0.56, 0.53; `sizedmaps` 0.66, 0.58, 0.61; `maps` 0.73, 0.67, 0.71; `fib` 0.84, 0.84, 0.85; `floats` 1.03, 1.02, 1.02.
 
 `kavach build` uses the LLVM backend ([decision 0018](../../docs/decisions/0018-llvm-backend-through-llvm-tools.md)) for every benchmark.
 
@@ -44,25 +49,30 @@ The ratio in each round, in order: `loop` 0.04, 0.04, 0.04; `sort` 0.09, 0.09, 0
 
 The same eleven programs written in Go ([go/](go)) and C# ([csharp/](csharp)), line for line as the C++ ones: plain loops, the standard library's list (`append`, `List<T>`), map (`map`, `Dictionary`), text and sort. Go 1.23.4 (`go build`), C# on .NET 8.0.428 (`dotnet publish -c Release`, the default JIT). Measured 2026-11-11 with `kavach 0.1.0 (commit 445b5b61)` and this table's commit's change to freeing lists, in three rounds of best of 9 runs, all four languages in turns; each cell is the best of the three rounds, in milliseconds. Every program printed the same result in every language. An empty C# program takes 105 ms to start .NET and end (Go: 3 ms), and every C# time below includes it.
 
+As in [Results](#results), `loop`, `sort` and `lists` have a row for one core and a row for all cores. The all-core programs are `go/<name>_cores.go` (a goroutine per core) and `csharp/<name>_cores.cs` (`Parallel.ForEach` over ranges, `Parallel.For` over the sort's buckets); each prints the one-core result. The figures from 2026-11-11 for these three compared Kavach on all cores with the others on one core, so each now stands in the row it was measured for, and the rest wait for a new run.
+
 | Benchmark | Kavach ms | C++ ms | Go ms | C# ms | Kavach against Go | Kavach against C# |
 |---|---|---|---|---|---|---|
-| `loop` | 60 | 1361 | 1377 | 1561 | **23× faster** | **26× faster** |
-| `sort` | 32 | 361 | 450 | 572 | **14× faster** | **18× faster** |
-| `closures` | 21 | 95 | 136 | 238 | **6.5× faster** | **11× faster** |
+| `loop` · 1 core | to measure | 1361 | 1377 | 1561 | to measure | to measure |
+| `loop` · all cores | 60 | to measure | to measure | to measure | to measure | to measure |
+| `sort` · 1 core | to measure | 361 | 450 | 572 | to measure | to measure |
+| `sort` · all cores | 32 | to measure | to measure | to measure | to measure | to measure |
+| `closures` | to measure | 95 | 136 | 238 | to measure | to measure |
 | `maps` | 60 | 86 | 403 | 232 | **6.7× faster** | **3.9× faster** |
 | `sizedmaps` | 49 | 69 | 250 | 218 | **5.1× faster** | **4.4× faster** |
 | `matrix` | 8 | 14 | 37 | 135 | **4.6× faster** | **17× faster** |
-| `lists` | 32 | 73 | 124 | 211 | **3.9× faster** | **6.6× faster** |
+| `lists` · 1 core | to measure | 73 | 124 | 211 | to measure | to measure |
+| `lists` · all cores | 32 | to measure | to measure | to measure | to measure | to measure |
 | `fib` | 48 | 59 | 166 | 267 | **3.5× faster** | **5.6× faster** |
 | `text` | 38 | 71 | 109 | 257 | 2.9× faster | **6.8× faster** |
 | `records` | 43 | 107 | 102 | 196 | 2.4× faster | **4.6× faster** |
 | `floats` | 347 | 348 | 355 | 433 | about the same | 1.2× faster |
 
-In bold: at least 3× as fast, the target for plain loops ([to-do item 1](../../docs/vision/todo.md)). `floats` is as fast in every language: each round waits for the last multiply and add, whatever compiles it. Go's map and C#'s start-up cost them most; Go's `fib` pays for its growable stacks. Each time in round 1, 2 and 3 is in the run's log; round 3 ran on a busier machine, about 1.6× slower for all four languages alike.
+In bold: at least 3× as fast, the target for plain loops ([to-do item 1](../../docs/vision/todo.md)). `closures` is on one core in every language now; its Kavach time of 21 ms was the pipeline on all cores, before [decision 0126](../../docs/decisions/0126-loops-on-one-core-unless-on-cores.md). `floats` is as fast in every language: each round waits for the last multiply and add, whatever compiles it. Go's map and C#'s start-up cost them most; Go's `fib` pays for its growable stacks. Each time in round 1, 2 and 3 is in the run's log; round 3 ran on a busier machine, about 1.6× slower for all four languages alike.
 
 ## Progress
 
-**40 improvements on 2026-10-31.** How much faster Kavach got on each benchmark, from its first measured ratio to 2026-11-02 (C++ didn't change). [Results](#results) has the latest ratios:
+**40 improvements on 2026-10-31.** How much faster Kavach got on each benchmark, from its first measured ratio to 2026-11-02 (C++ didn't change). [Results](#results) has the latest ratios. These tables are a record of Kavach's own progress, not like-for-like comparisons: C++ always ran on one core, and from [decision 0031](../../docs/decisions/0031-loops-on-all-cores.md) (2026-11-02) until [decision 0126](../../docs/decisions/0126-loops-on-one-core-unless-on-cores.md), Kavach spread eligible loops over all cores by itself, so the column "Now" for `loop`, `lists`, `closures` and `sort` is Kavach on all cores:
 
 | Benchmark | First ratio | Now | Kavach got faster by |
 |---|---|---|---|
@@ -138,4 +148,4 @@ sh scripts/run-benchmarks.sh
 
 On Windows, `powershell -File scripts/run-benchmarks.ps1` runs the same script in WSL.
 
-With `go` and `dotnet` on the path (or `GO` and `DOTNET` pointing at them), the script times the Go and C# programs too.
+With `go` and `dotnet` on the path (or `GO` and `DOTNET` pointing at them), the script times the Go and C# programs too. For `loop`, `sort` and `lists` it prints two rows, `(1 core)` and `(all cores)`, and builds the all-core twins with `g++ -O2 -fopenmp`.
