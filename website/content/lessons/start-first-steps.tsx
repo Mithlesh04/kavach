@@ -156,10 +156,10 @@ export const installDoc: LessonDoc = {
       </P>
       <Terminal
         commands
-        session={`xcode-select --install\ncurl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\nrustup component add llvm-tools\ngit clone ${versions.repo}\ncd kavach\ncargo build --release -p kavach-cli -p kavach-runtime-native`}
+        session={`xcode-select --install\nbrew install cmake\ncurl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\nrustup component add llvm-tools\ngit clone ${versions.repo}\ncd kavach\ncargo build --release -p kavach-cli -p kavach-runtime-native`}
       />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>The first line installs Apple&apos;s command-line tools: the C compiler and linker <C>kavach build</C> needs. The second installs Rust.</li>
+        <li>The first line installs Apple&apos;s command-line tools: the C compiler and linker <C>kavach build</C> needs. The second installs CMake through <a href="https://brew.sh">Homebrew</a>, which builds the gamepad library, as on every system. The third installs Rust.</li>
         <li>The program lands at <C>target/release/kavach</C>, as on the other systems.</li>
         <li>Without <C>llvm-tools</C>, Kavach still builds programs, through Cranelift, but they run slower.</li>
         <li>Windows (<C>std.window</C>) and drawing on the GPU aren&apos;t available on macOS yet.</li>
