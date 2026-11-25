@@ -1,0 +1,13 @@
+fn main() {
+    unsafe {
+        // Two "registers" in memory of our own, as a test gives them.
+        const status: Ptr<UInt32> = alloc(2)
+        const data: Ptr<UInt32> = Ptr.at(status.address() + 4)
+        status.write_volatile(0x80)
+        while status.read_volatile() & 0x80 == 0 {}
+        data.write_volatile(65)
+        print(data.read_volatile())
+        print(data.address() - status.address())
+        free(status)
+    }
+}

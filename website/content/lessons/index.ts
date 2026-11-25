@@ -30,6 +30,7 @@ import { buildDoc, whoDoc } from "./start-who";
 import { faqDoc } from "./start-faq";
 import { whyDoc } from "./start-why";
 import { arenasDoc, automaticDoc, fastDoc, sharedDoc, unsafeDoc, valuesDoc } from "./memory";
+import { registersDoc } from "./memory-registers";
 import { fromJsPythonDoc } from "./memory-from";
 import { freedDoc } from "./memory-freed";
 import { memoryStepsDoc } from "./memory-steps";
@@ -47,8 +48,9 @@ import {
   aiToolsDoc, contextDoc as aiContextDoc, mcpDoc, modulesDoc, outlineDoc, packagesDoc, pubDoc, queryDoc, smallFilesDoc, useDoc, workspacesDoc,
 } from "./tools-project";
 import {
-  buildDoc as kavachBuildDoc, checkDoc, commandDoc, editorDoc, fixDoc, formatterDoc, newDoc, runDoc, testDoc,
+  buildDoc as kavachBuildDoc, checkDoc, commandDoc, fixDoc, formatterDoc, newDoc, runDoc, testDoc,
 } from "./tools-cli";
+import { editorDoc } from "./tools-editor";
 import {
   channelsDoc, deadlockDoc, leakDoc, manyDoc, putTakeDoc, racesDoc, sendersDoc, taskFailsDoc, tasksDoc,
   timeoutsDoc as taskTimeoutsDoc,
@@ -57,6 +59,7 @@ import { howTasksRunDoc, turnsDoc } from "./concurrency-running";
 import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc, httpSocketsDoc } from "./networks-http";
 import { frozenDoc, frozenKeyDoc } from "./types-frozen";
 import { distinctDoc } from "./types-distinct";
+import { withDoc } from "./types-with";
 import { matricesDoc } from "./types-matrices";
 import { aiWritesDoc } from "./tools-ai-writes";
 import {
@@ -95,7 +98,7 @@ import {
 } from "./contracts";
 import {
   anonDoc, declareRecordDoc, declareUnionDoc, defaultsRecordDoc, interfacesDoc, interfaceValuesDoc,
-  matchUnionDoc, methodsDoc, optionalReadDoc, optionalsDoc, optionalWhatDoc, recordsDoc, unionsDoc, withDoc,
+  matchUnionDoc, methodsDoc, optionalReadDoc, optionalsDoc, optionalWhatDoc, recordsDoc, unionsDoc,
   writingTypesDoc,
 } from "./types";
 import { genericsDoc } from "./types-generics";
@@ -333,6 +336,7 @@ export const lessons: Record<string, LessonDoc> = {
   "memory/shared-state": sharedDoc,
   "memory/arenas": arenasDoc,
   "memory/unsafe": unsafeDoc,
+  "memory/hardware-registers": registersDoc,
 
   ...stdlibLessons,
 

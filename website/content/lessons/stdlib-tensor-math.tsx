@@ -63,7 +63,7 @@ export const tensorMathDoc: LessonDoc = {
 };
 
 export const tensorMasksDoc: LessonDoc = {
-  lead: "t > 0.5 compares item by item and gives a mask, a Tensor<Bool>. t[mask] picks the numbers where it is true, and tensor.where chooses between two tensors.",
+  lead: "t > 0.5 compares item by item and gives a mask, a Tensor<Bool>. Masks combine with & | ~, t[mask] picks the numbers where it is true, and tensor.where chooses between two tensors.",
   simple: <>A mask is a grid of yes and no, one for each number. It can pick the numbers you want out of a tensor, or replace them, without a loop.</>,
   minutes: 4,
   before: ["standard-library/tensors/arithmetic-and-broadcasting"],
@@ -79,6 +79,19 @@ export const tensorMasksDoc: LessonDoc = {
       </ul>
       <P>A mask has the shape of the tensor it picks from; another shape is a panic naming both:</P>
       <Ex name="tensor/mask-shape.panics" />
+      <H2>Combining masks</H2>
+      <P>
+        <C>m &amp; n</C> is true where both are, <C>m | n</C> where either is, and <C>~m</C> where <C>m</C> isn&apos;t.
+        A combined mask picks and sets numbers as any mask does:
+      </P>
+      <Ex name="tensor/mask-combine" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>&amp;</C> and <C>|</C> bind tighter than the comparisons, so each comparison they join goes in parentheses, as in NumPy.</li>
+        <li>On whole-number tensors they work on the bits, as on numbers.</li>
+        <li>They come through the interfaces <C>BitAnd</C>, <C>BitOr</C> and <C>BitNot</C>, so your own types can have them too.</li>
+      </ul>
+      <P>On two plain <C>Bool</C>s, you write <C>and</C> and <C>or</C>, as everywhere in Kavach:</P>
+      <Ex name="tensor/mask-bool.fails" />
       <H2>Every call</H2>
       {tensorTable("Comparisons, masks and `where`")}
       <P>
@@ -94,6 +107,7 @@ export const tensorMasksDoc: LessonDoc = {
         <SrcRef file={`${TENSOR_TESTS}/tensor-mask-picks-numbers.kav`} label="masks, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-where-chooses-item-by-item.kav`} label="where, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-eq-compares-item-by-item.kav`} label="eq, tested" />
+        <SrcRef file="docs/spec/02-types/16-operators.md" label="spec 2.16 · BitAnd, BitOr, BitNot" />
       </div>
     </>
   ),

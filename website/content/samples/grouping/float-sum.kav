@@ -1,0 +1,8 @@
+fn main() {
+    const xs = [0.1, 0.2, 0.3]
+    print(xs.sum(x => x))
+    print(xs[0] + xs[1] + xs[2])
+    print([1e20, 1.0, -1e20].sum(x => x))
+    const ys: [Float32] = [0.1, 0.2, 0.3]
+    print(ys.sum(y => y))
+}

@@ -168,6 +168,12 @@ export const ownOperatorsDoc: LessonDoc = {
         <li>Like the other operator methods, these are pure. An index out of range may panic, as a list&apos;s does.</li>
       </ul>
       <P>
+        Setting a slice, <C>r[1:3] = v</C>, calls <C>index_set</C> too, with the slice&apos;s <C>Part</C> as its key. A
+        type may implement <C>IndexSet</C> once for each pair of key and value types, so it can take a number at one
+        key and a list at a slice:
+      </P>
+      <Ex name="types/own-slice-set" />
+      <P>
         <C>Part</C> is a record of <Link href="/docs/std/std-text-and-std-collections/">std.collections</Link>, written in Kavach,
         which every file sees without a <C>use</C>. <C>part.bounds(len)</C> gives its start, end and step as plain
         numbers for <C>len</C> items, as Python&apos;s <C>slice.indices</C> does: <C>#k</C> becomes{" "}

@@ -100,6 +100,21 @@ export const providersDoc: LessonDoc = {
       </ul>
       <P>The service and the region are letters, digits and <C>-</C>. Anything else fails the call before any variable is read, so nothing is sent:</P>
       <Ex name="agents/aws-region" />
+      <H2>Google access tokens</H2>
+      <P>
+        A provider for a Google Cloud service, such as Vertex AI, gives <C>Auth.GoogleToken(scope:)</C>. The runtime
+        gets an access token from a service account&apos;s key, as Google&apos;s own libraries do, and sends it as{" "}
+        <C>authorization: Bearer …</C>. Provider code never holds the key or the token:
+      </P>
+      <CodeBlock code={specBlockWith(SPEC_84, "8.4", "type Vertex: Provider")} file="std.ai, as spec 8.4 gives it" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The key file is the JSON key Google gives a service account. Its path is in <C>GOOGLE_APPLICATION_CREDENTIALS</C>, or in the variable the <C>Model</C>&apos;s <C>api_key_env</C> names, so two accounts can be used at once.</li>
+        <li>Without the variable, the call fails with <C>NoKey</C>. A file that isn&apos;t there, or isn&apos;t a service account&apos;s key, fails it with <C>BadKey</C>, saying which. Nothing is sent.</li>
+        <li>A token is kept for the run, and fetched again 5 minutes before it ends. Calls that need one at the same time wait for one fetch.</li>
+        <li>A failed fetch fails the try as the provider&apos;s trouble would: a bad key is <C>BadKey</C>, a busy server <C>RateLimited</C> or <C>Overloaded</C>, and so on. The key and the token never appear in an error, the journal or the audit log.</li>
+      </ul>
+      <P>An empty scope fails the call before any variable or file is read:</P>
+      <Ex name="agents/google-scope" />
       <H2>Trust the providers you use</H2>
       <Note>
         The key goes to the address in the provider&apos;s request. So a package&apos;s provider decides where your key is
@@ -109,7 +124,7 @@ export const providersDoc: LessonDoc = {
       <P>Decision 0140 sets how each of these will work, but none works today:</P>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Other providers. They will come in a package of their own repository: first OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI&apos;s Responses API. Today only <C>Anthropic()</C> ships; a service that speaks Anthropic&apos;s API is reached through <C>api_url</C>.</li>
-        <li>Google&apos;s signed tokens, <C>Auth.GoogleToken</C>. For now, an <C>ask</C> whose provider gives one fails with <C>Failed(status: 0, …)</C>.</li>
+        <li>For <C>Auth.GoogleToken</C>, Google&apos;s other kinds of credentials (a user&apos;s from <C>gcloud auth application-default login</C>, workload identity, the metadata server, impersonation) and the default file <C>gcloud</C> writes: only a service account&apos;s key file, named by a variable, is read.</li>
         <li>For <C>Auth.AwsSignature</C>, credentials from AWS&apos;s files (<C>~/.aws/credentials</C>, <C>~/.aws/config</C>) and profiles, and from roles: only the variables above are read.</li>
         <li>A counting call for each of those providers that has one.</li>
       </ul>

@@ -105,6 +105,18 @@ export const tensorIndexDoc: LessonDoc = {
       <H2>Setting a number</H2>
       <P><C>t[i, j] = v</C> changes one number of a <C>let</C> tensor. The tensor is a value, so its copies keep their numbers:</P>
       <Ex name="tensor/set" />
+      <H2>Setting a slice</H2>
+      <P>
+        <C>t[0, :] = u</C> sets every number the slice picks. <C>u</C> is a tensor broadcast to the slice&apos;s shape,
+        or one number that each of them takes:
+      </P>
+      <Ex name="tensor/set-slice" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>u</C> is read whole before any number changes, so <C>g[1:, :] = g[:#1, :]</C> moves rows down, as NumPy does.</li>
+        <li>The slice is clamped first, as every slice is.</li>
+      </ul>
+      <P>A shape that doesn&apos;t broadcast to the slice&apos;s is a panic naming both:</P>
+      <Ex name="tensor/set-slice-shape.panics" />
       <H2>Every call</H2>
       {tensorTable("Shape, items and indexing")}
       <P>

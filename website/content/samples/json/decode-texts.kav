@@ -1,0 +1,18 @@
+use std.json
+
+type Reading {
+    sensor: String
+    value: Float32
+    ok: Bool = true
+}
+
+fn main() ! JsonError {
+    const r = try json.decode_texts<Reading>(["sensor", "value"], ["a7", "0.1"])
+    print(r)
+    print(json.encode_texts(r))
+    const bad = json.decode_texts<Reading>(["sensor", "value"], ["a8", "0,5"]) catch e => {
+        print(e)
+        return
+    }
+    print(bad)
+}

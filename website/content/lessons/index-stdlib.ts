@@ -24,7 +24,8 @@ import { tableCsvDoc, tableDoc } from "./stdlib-table";
 import { loggingDoc } from "./stdlib-log";
 import { gpuScreenDoc } from "./stdlib-gpu";
 import { textCollectionsDoc } from "./stdlib-text";
-import { jsonBuildingDoc, jsonDecodingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc } from "./stdlib-json";
+import { jsonBuildingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc } from "./stdlib-json";
+import { jsonDecodingDoc } from "./stdlib-json-decode";
 import { bytesDoc } from "./stdlib-bytes";
 import {
   argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, watchDoc, writingDoc,

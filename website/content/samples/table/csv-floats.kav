@@ -1,0 +1,21 @@
+use std.table
+
+type Sample {
+    name: String
+    level: Float32
+    gain: Float
+}
+
+fn main() ! CsvError {
+    const rows = table.of([
+        Sample(name: "a", level: 0.1, gain: 0.0 / 0.0),
+        Sample(name: "b", level: 2.5, gain: 1.0 / 0.0),
+        Sample(name: "c", level: -0.0, gain: -1.0 / 0.0),
+    ])
+    const text = rows.to_csv()
+    print(text.trim_end())
+    const back = try table.parse_csv<Sample>(text)
+    print(back[0])
+    print(back[1])
+    print(back[2])
+}

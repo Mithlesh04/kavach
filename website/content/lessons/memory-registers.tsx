@@ -1,0 +1,84 @@
+import Link from "next/link";
+import { CodeBlock } from "@/components/code-block";
+import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
+import type { LessonDoc } from "@/lib/chapter";
+import { loadProject } from "@/lib/samples";
+import { specTables } from "@/lib/spec-tables";
+import { H2, Note, P, SpecCode } from "./parts";
+import { Table } from "./spec-table";
+
+// ---------- Hardware Registers ----------
+//
+// Spec 6.5 (decision 0145): volatile reads and writes through a Ptr, for a
+// device's registers, and `kavach svd`, which turns a chip's CMSIS-SVD file
+// into typed register blocks. The sample uses memory of its own as its
+// "registers", as a test does: real addresses only exist on the device.
+
+const SPEC = "06-memory.md";
+const registers = loadProject("memory/volatile.native", ["kavach.toml", "src/main.kav"]);
+
+/** Spec 6.5's table of volatile operations. */
+function operations() {
+  const t = specTables(SPEC, "6.5").find((x) => x.header[0] === "Operation");
+  if (!t) throw new Error("spec 6.5: no Operation table");
+  return t;
+}
+
+export const registersDoc: LessonDoc = {
+  lead: "A device's registers are memory with side effects. read_volatile and write_volatile read and write them exactly once each time the code runs, in order, and kavach svd turns a chip's description into typed register blocks.",
+  simple: <>A register is a tiny window into a chip: writing a number to one can send a byte down a wire, and reading one can tell you whether the wire is free. The compiler must not skip or merge those reads and writes, so you mark them volatile.</>,
+  minutes: 6,
+  before: ["memory/unsafe"],
+  body: (
+    <>
+      <P>
+        The compiler may merge, drop or reorder ordinary pointer reads and writes, which is right for ordinary memory
+        and wrong for a register: reading a status register can clear it, and writing a data register sends a byte.
+        Registers are read and written with <strong className="text-ink">volatile</strong> operations instead. Here two
+        words of memory of our own stand in for a status register and a data register:
+      </P>
+      {registers.files.map((f) => (
+        <CodeBlock key={f.path} code={f.code} file={f.path} lang={f.path.endsWith(".toml") ? "toml" : "kavach"} />
+      ))}
+      <figure className="m-0 rounded-[10px] border border-line px-4 py-[11px]">
+        <span className="mb-1.5 block text-[11.5px] font-extrabold uppercase tracking-wider text-soft">Output</span>
+        <pre className="m-0 w-0 min-w-full overflow-x-auto whitespace-pre font-mono text-[13px] text-ink">{registers.output}</pre>
+      </figure>
+      <P>On a chip, the pointers come from the addresses in its manual, as the spec&apos;s example has them:</P>
+      <SpecCode file={SPEC} number="6.5" text={"Ptr.at(0x4000_4400)"} />
+      <H2>Every operation</H2>
+      <Table header={operations().header} rows={operations().rows} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each volatile read or write happens once each time the program reaches it, in order with the other volatile ones. The compiler never merges two, drops one whose value isn&apos;t used, or moves one past another.</li>
+        <li>Ordinary reads and writes may still move around them, as in C. Volatile is not atomic, and not a way to share memory between threads: use <Link href="/docs/memory/shared-state/">Shared</Link>.</li>
+        <li>A number, <C>Bool</C> or <C>Ptr</C> is one access of its size; a record is read or written field by field.</li>
+        <li>The address must be a multiple of the value&apos;s size, as a register&apos;s is.</li>
+        <li>Like every pointer operation, they need <Link href="/docs/memory/unsafe/">unsafe</Link>, and run in native code.</li>
+      </ul>
+      <H2>Typed register blocks: kavach svd</H2>
+      <P>
+        A chip&apos;s vendor describes its registers in a CMSIS-SVD file. <C>kavach svd chip.svd</C> prints a Kavach
+        module with a type for each peripheral and a method for each register and field, so code names{" "}
+        <C>gpio.set_moder_moder5(1)</C> instead of masks and shifts. Save it in the project with{" "}
+        <C>kavach svd chip.svd &gt; src/chip.kav</C>:
+      </P>
+      <SpecCode file={SPEC} number="6.5" text={"use chip.{Gpioa"} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Only making a block is <C>unsafe</C>: its methods read and write through volatile operations, and are safe to call.</li>
+        <li>Each register gives <C>reg()</C> and <C>set_reg(v)</C>; each field <C>reg_f()</C> and <C>set_reg_f(v)</C>, which changes only that field&apos;s bits. A one-bit field is a <C>Bool</C>.</li>
+        <li>A read-only register has no setter, and a write-only one no getter. A field&apos;s value must fit its bits: the setter has a <C>require</C>.</li>
+        <li>The module says <C>// Generated by kavach svd from chip.svd</C> at its top, so the file length limit and unused-name warnings leave it alone.</li>
+      </ul>
+      <Note>
+        A test runs the blocks on memory of its own, <C>alloc(n)</C>, as the first sample does, so register code can be
+        tested on any computer. Not read yet from SVD files: clusters and enumerated values, each named in a comment.
+      </Note>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={`docs/spec/${SPEC}`} label="spec 6.5 · hardware registers" />
+        <SrcRef file="docs/decisions/0145-volatile-pointer-access.md" label="decision 0145" />
+        <SrcRef file="tools/svd/README.md" label="kavach svd" />
+      </div>
+    </>
+  ),
+};

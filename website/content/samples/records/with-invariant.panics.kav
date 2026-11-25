@@ -1,0 +1,12 @@
+type Range {
+    low: Int
+    high: Int
+
+    invariant low <= high
+}
+
+fn main() {
+    const r = Range(low: 1, high: 5)
+    print(r with { high: 3 })
+    print(r with { high: 0 })
+}

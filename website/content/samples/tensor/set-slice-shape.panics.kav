@@ -1,0 +1,7 @@
+use std.tensor
+
+fn main() {
+    let m = tensor.zeros<Int>([2, 3])
+    m[:, :] = tensor.of([1, 2])
+    print(m.to_rows())
+}

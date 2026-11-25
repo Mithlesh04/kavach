@@ -1,0 +1,5 @@
+fn main() {
+    const a = true
+    const b = false
+    print(a & b)
+}

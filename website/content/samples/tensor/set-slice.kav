@@ -1,0 +1,11 @@
+use std.tensor
+
+fn main() {
+    let m = tensor.zeros<Int>([2, 3])
+    m[0, :] = tensor.of([1, 2, 3])
+    m[:, #1] = 9
+    print(m.to_rows())
+    let g = tensor.of_rows([[1, 2], [3, 4], [5, 6]])
+    g[1:, :] = g[:#1, :]
+    print(g.to_rows())
+}

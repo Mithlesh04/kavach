@@ -31,6 +31,7 @@ export const aliases: Record<string, string> = {
   "errors/watching-for-nan": "nan not a number floating point exception fpe trap divide by zero 0/0 inf nan propagation debug nan loss nan pytorch detect_anomaly numpy seterr",
   "errors/panics": "panic crash abort fatal error division by zero index out of range overflow exit code panic in a task unwinding thread panic",
   "memory/values-not-references": "value semantics copy reference aliasing mutable shared pointer",
+  "memory/hardware-registers": "volatile register mmio memory mapped io embedded microcontroller svd cmsis-svd peripheral bare metal read_volatile write_volatile stm32",
   "memory/values-not-references/coming-from-javascript-and-python": "javascript python java c# reference b = a same object alias shallow copy spread deep copy default argument mutable default list of lists react state",
   "memory/automatic-memory": "memory management garbage collector gc reference counting arc rc ownership borrow copy on write malloc free",
   "memory/automatic-memory/freed-immediately": "delete del free a variable null undefined dispose destructor drop raii release memory early unset",

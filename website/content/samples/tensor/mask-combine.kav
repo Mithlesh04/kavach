@@ -1,0 +1,10 @@
+use std.tensor
+
+fn main() {
+    let t = tensor.of([0.5, 4.0, -1.0, 2.0])
+    print(((t > 0.0) & (t < 3.5)).items)
+    print(((t < 0.0) | (t > 3.0)).items)
+    print((~t.eq(-1.0)).items)
+    t[(t > 0.0) & (t < 3.5)] = 0.0
+    print(t.items)
+}

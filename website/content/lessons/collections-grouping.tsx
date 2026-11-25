@@ -42,11 +42,23 @@ export const groupingDoc: LessonDoc = {
       <Ex name="grouping/group" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>group_by</C> gives a dict of lists: the keys in the order first seen, each group&apos;s items in their order.</li>
-        <li><C>map_values</C> turns each group into one value, keeping the keys. A sum per key is <C>group_by(key).map_values(g =&gt; g.sum(f))</C>.</li>
+        <li><C>map_values</C> turns each group into one value, keeping the keys. A sum per key is <C>group_by(key).map_values(g =&gt; g.sum(f))</C>, and it makes no groups at all: one pass through the items, with a running sum for each key, as pandas&apos; <C>groupby().sum()</C> does.</li>
         <li><C>to_list()</C> gives the dict&apos;s pairs as a list, so the list&apos;s methods apply: sorting by count, taking the top two.</li>
         <li>A key is any value, compared as a dict compares its keys. A tuple groups by several keys at once.</li>
         <li><C>unique()</C> keeps each item once, and <C>unique_by(key)</C> the first item with each key.</li>
       </ul>
+      <H2>Float sums are exact</H2>
+      <P>
+        <C>sum(f)</C> of floats is the exact sum of the values, rounded once, so the order of the items never changes
+        it. Adding them one by one rounds at every step:
+      </P>
+      <Ex name="grouping/float-sum" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A <C>Float32</C> sum is rounded once, straight to a <C>Float32</C>.</li>
+        <li>A <C>NaN</C>, or infinities of both signs, give <C>NaN</C>; one infinity gives that infinity; an empty sum is <C>0.0</C>.</li>
+        <li>A <C>+</C> or <C>+=</C> you write still adds in its order: only <C>sum</C> is exact.</li>
+      </ul>
+      <SrcRef file="docs/decisions/0135-tables-and-grouping.md" label="decision 0135 · exact sums" />
       <H2>Statistics</H2>
       <Ex name="grouping/stats" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">

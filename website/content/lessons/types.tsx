@@ -61,22 +61,6 @@ export const defaultsRecordDoc: LessonDoc = {
   ),
 };
 
-export const withDoc: LessonDoc = {
-  lead: "record with { field: value } makes a copy with some fields changed.",
-  simple: <>Like photocopying a filled-in form and changing one box on the copy: you get a new form, and the original stays as it was.</>,
-  minutes: 3,
-  body: (
-    <>
-      <Ex name="records/sub-record" />
-      <P>
-        <C>asha with {"{ age: 32 }"}</C> is a new <C>User</C>; <C>asha</C> is still 31. Through a <C>let</C>, you
-        can also assign a field directly, as <C>copy.city = &quot;Delhi&quot;</C> does: that changes only{" "}
-        <C>copy</C>.
-      </P>
-    </>
-  ),
-};
-
 // ---------- Methods ----------
 
 export const methodsDoc: LessonDoc = {

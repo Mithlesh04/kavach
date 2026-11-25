@@ -1,0 +1,17 @@
+type Point {
+    x: Int
+    y: Int
+}
+
+type Player {
+    name: String
+    at: Point
+    score: Int = 0
+}
+
+fn main() {
+    const p = Player(name: "Asha", at: Point(x: 1, y: 2))
+    const moved = p with { at: p.at with { x: p.at.x + 1 }, score: p.score + 10 }
+    print(p)
+    print(moved)
+}

@@ -284,6 +284,14 @@ export const mathFunctionsDoc: LessonDoc = {
         <SrcRef file="tests/conformance/14-standard-library/math-roots-logs-and-gamma.kav" label="roots and logs, tested" />
         <SrcRef file="tests/conformance/14-standard-library/fract-is-the-part-above-the-floor.kav" label="fract, tested" />
       </div>
+      <H2>Smooth steps, for graphics</H2>
+      <P>
+        <C>math.smoothstep(edge0, edge1, x)</C> goes from 0 at <C>edge0</C> to 1 at <C>edge1</C>, easing in and out.{" "}
+        <C>math.mix(a, b, t)</C> is the point <C>t</C> of the way from <C>a</C> to <C>b</C>. Both take{" "}
+        <C>Float32</C>, as in GPU shaders, and work on the CPU and in a <C>gpu fn</C> alike:
+      </P>
+      <Ex name="math/smooth" />
+      <P><C>math.fwidth(x)</C>, how fast a value changes from one pixel to the next, works only in a <C>gpu fragment fn</C>.</P>
       <H2>Smaller, larger, between</H2>
       <P>
         <C>x.min(y)</C>, <C>x.max(y)</C> and <C>x.clamp(lo, hi)</C> are methods of every number, not in{" "}

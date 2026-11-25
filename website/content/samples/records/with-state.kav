@@ -1,0 +1,18 @@
+type Tally {
+    count: Int
+    total: Int
+    largest: Int
+}
+
+/// The next state, from the last one and one more number.
+fn add(t: Tally, n: Int) -> Tally {
+    t with { count: t.count + 1, total: t.total + n, largest: if n > t.largest { n } else { t.largest } }
+}
+
+fn main() {
+    let t = Tally(count: 0, total: 0, largest: 0)
+    for n in [5, 20, 10] {
+        t = add(t, n)
+    }
+    print(t)
+}

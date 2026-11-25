@@ -167,7 +167,8 @@ export const tableCsvDoc: LessonDoc = {
       <P>
         A cell is read as <C>Int(s)</C>, <C>Float(s)</C> and <C>Decimal(s)</C> read text: <C>1,299</C> isn&apos;t a
         number, and neither is <C> 12</C> with its space. A <C>Bool</C> is <C>true</C> or <C>false</C>, a category is
-        its variant&apos;s name, and a <C>Date</C> is written as ISO 8601 writes it:
+        its variant&apos;s name, and a <C>Date</C> is written as ISO 8601 writes it. Each row is read straight into its
+        type, cell by cell, with <Link href="/docs/standard-library/json/decoding-into-a-type/#fields-read-from-text">json.decode_texts</Link>:
       </P>
       <Ex name="table/csv-types" />
       <P>Each row is checked against the type&apos;s <C>invariant</C>s too. When no one column broke it, <C>column</C> is empty and <C>found</C> is the row:</P>
@@ -208,6 +209,11 @@ export const tableCsvDoc: LessonDoc = {
       </P>
       <Ex name="table/csv-write" />
       <Ex name="table/csv-tabs" />
+      <P>
+        Each cell is written as <C>print</C> writes its field, so reading takes every one back: a <C>Float32</C> with its
+        own shortest digits, <C>NaN</C>, <C>inf</C>, <C>-inf</C> and <C>-0.0</C>:
+      </P>
+      <Ex name="table/csv-floats" />
       <P>A <C>secret</C> field is written as <C>&lt;secret&gt;</C>, as JSON writes it, so a table never leaks one:</P>
       <Ex name="table/csv-secret" />
       <H2>Every type</H2>

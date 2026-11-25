@@ -116,6 +116,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Shared State", "6.2"],
     ["Arenas", "6.3"],
     ["Unsafe", "6.4"],
+    ["Hardware Registers", "6.5"],
   ]],
   ["standard-library", "Standard Library", "intermediate", [
     ["Files", "14.3", ["Reading", "Writing", "Folders", "Details and permissions", "Watching for changes"]],
