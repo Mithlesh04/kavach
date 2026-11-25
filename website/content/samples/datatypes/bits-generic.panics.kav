@@ -1,0 +1,8 @@
+fn twice<T: Number>(x: T) -> T {
+    x + x
+}
+
+fn main() {
+    print(twice(UInt<bits: 12>(1000)))
+    print(twice(UInt<bits: 12>(3000)))
+}

@@ -252,7 +252,6 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["std.image", "—"],
     ["std.app", "—"],
     ["std.font", "—"],
-    ["std.matrix", "—"],
     ["std.reflect", "—"],
     ["std.tensor", "—"],
     ["std.table", "—"],

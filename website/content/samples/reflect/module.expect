@@ -1,5 +1,8 @@
-["factorial", "gcd", "is_prime", "lcm"]
+["factorial", "fwidth", "gcd", "is_prime", "lcm", "mix", "smoothstep"]
 Function factorial -> Int
+Function fwidth -> Float32
 Function gcd -> Int
 Function is_prime -> Bool
 Function lcm -> Int?
+Function mix -> Float32
+Function smoothstep -> Float32

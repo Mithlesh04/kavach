@@ -1,0 +1,9 @@
+fn main() {
+    const wide: UInt<bits: 128> = 2 ** 100
+    print(wide)
+    const top = ~UInt<bits: 128>(0)
+    print(top)
+    print(top.wrapping_add(1))
+    print(top >> 120)
+    print(top.checked_add(1) ?? 0)
+}

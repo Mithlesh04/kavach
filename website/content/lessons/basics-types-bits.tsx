@@ -67,15 +67,22 @@ export const bitsDoc: LessonDoc = {
       <H2>In lists, records and JSON</H2>
       <P>They print, sort, compare, and go in lists, dicts and records. JSON gets the plain number:</P>
       <Ex name="datatypes/bits-record" />
+      <H2>Wider than 64 bits</H2>
       <P>
-        The spec allows widths up to 65,535 bits, but only 64 are built so far. A wider one is refused, and the
-        message names <Link href="/docs/basics/data-types/bigint/"><C>BigInt</C></Link>:
+        A width goes up to 65,535 bits: <C>Int&lt;bits: 128&gt;</C> or <C>UInt&lt;bits: 256&gt;</C>. Such a value is held
+        as a <Link href="/docs/basics/data-types/bigint/"><C>BigInt</C></Link> is, so each operation is slower than on
+        64 bits or fewer, but every rule above holds: a result that doesn&apos;t fit panics, and <C>wrapping_add</C>,{" "}
+        <C>~</C>, <C>&gt;&gt;</C> and the other bit operators work at its width:
       </P>
-      <Ex name="datatypes/bits-wide.fails" />
+      <Ex name="datatypes/bits-wide" />
+      <P>
+        A generic function given one checks the type&apos;s limits too, and <C>json.decode</C> checks them wherever the
+        number sits in the type:
+      </P>
+      <Ex name="datatypes/bits-generic.panics" />
       <Note>
-        Not built yet: widths over 64 bits; keeping a value in the smallest of 1, 2, 4 or 8 bytes (today each takes 8, as an{" "}
-        <C>Int</C>), and, in a native build, <C>json.decode</C> into a type holding one of these numbers, and a
-        generic function given one. The interpreter runs both.
+        Not built yet: keeping a value of 64 bits or fewer in the smallest of 1, 2, 4 or 8 bytes. Today each takes 8,
+        as an <C>Int</C>.
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 2.1 · Int<bits: n>" />

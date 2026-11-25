@@ -1,1 +1,0 @@
-error: `UInt<bits: 128>`: widths over 64 bits are not built yet; `BigInt` holds a whole number of any size (spec 2.1)

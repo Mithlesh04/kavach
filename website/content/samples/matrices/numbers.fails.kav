@@ -1,4 +1,4 @@
-fn main() uses Console {
+fn main() {
     const area = 3 @ 4
     print(area)
 }

@@ -1,0 +1,7 @@
+fn rows(m: Matrix<Float>) -> Int {
+    0
+}
+
+fn main() {
+    print(1)
+}

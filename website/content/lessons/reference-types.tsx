@@ -144,7 +144,7 @@ function groups(): { title: string; entries: Entry[] }[] {
         { names: ["Drop"], says: said(MEMORY, /(Types that hold resources can run cleanup by implementing `Drop`)/), number: "6.1", file: MEMORY },
         { names: ["Number", "Floating"], says: said("02-types/09-generics.md", /(Two built-in bounds let generic code do arithmetic)/), number: "2.9", file: "02-types/09-generics.md" },
         { names: ["Comparable"], says: said("02-types/09-generics.md", /(`<T: Comparable>` means "any type `T` that implements the interface `Comparable`"\.)/), number: "2.9", file: "02-types/09-generics.md" },
-        { names: ["Add", "Sub", "Mul", "Div", "Rem", "Pow", "Neg", "MatMul", "Compare"], says: said("02-types/16-operators.md", /(A type gets an operator by implementing its built-in interface)/), number: "2.16", file: "02-types/16-operators.md" },
+        { names: ["Add", "Sub", "Mul", "Div", "Rem", "Pow", "Neg", "MatMul", "Compare", "BitAnd", "BitOr", "BitNot"], says: said("02-types/16-operators.md", /(A type gets an operator by implementing its built-in interface)/), number: "2.16", file: "02-types/16-operators.md" },
         { names: ["Index", "IndexSet", "Slice"], says: said("02-types/16-operators.md", /(`x\[k\]`, `x\[k\] = v` and `x\[start:end:step\]` \(2\.19\) come through interfaces too)/).replace(" (2.19)", ""), number: "2.16", file: "02-types/16-operators.md" },
       ],
     },

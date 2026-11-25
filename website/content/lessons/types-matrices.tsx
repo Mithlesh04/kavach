@@ -2,96 +2,71 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { fileTables } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
-import { Table } from "./spec-table";
+import { Ex, H2, P } from "./parts";
 
 // ---------- Matrices ----------
 //
-// Spec 2.17: Matrix<T> in std.matrix, with `a @ b` for the product and
-// + - * working item by item. The table of what a matrix has is the
-// spec's own, read at build time.
+// Spec 2.17 (decision 0136): a matrix is a Tensor<T, dims: 2> from
+// std.tensor, Kavach's one array type. `Matrix<T>` and `std.matrix` are
+// gone, and naming them is a compile error that says what to write.
 
 const SPEC = "docs/spec/02-types/17-matrices.md";
 const TESTS = "tests/conformance/02-types";
-const BENCH = "benchmarks/math/README.md";
-
-/** The spec's table of ways to make and use a matrix. */
-const written = () => {
-  const t = fileTables(SPEC).find((x) => x.header[0] === "Written");
-  if (!t) throw new Error(`${SPEC}: no Written table`);
-  return t;
-};
 
 export const matricesDoc: LessonDoc = {
-  lead: "A Matrix<T> is a grid of numbers in std.matrix. a @ b is the matrix product, + - * work item by item, and a product gives the same bits on every machine.",
-  simple: <>A matrix is a table of numbers: rows and columns, like a spreadsheet. Many calculations are a matrix times another: scores times weights, points times a turn, inputs times a layer of a neural network. <C>a @ b</C> does that in one step, spread over every core.</>,
-  minutes: 6,
+  lead: "A matrix is a tensor of two dimensions, Tensor<T, dims: 2>, from std.tensor. a @ b is the matrix product, and + - * work item by item.",
+  simple: <>A matrix is a table of numbers: rows and columns, like a spreadsheet. Many calculations are a matrix times another: scores times weights, points times a turn, inputs times a layer of a neural network. <C>a @ b</C> does that in one step.</>,
+  minutes: 4,
   before: ["types/operators-for-your-types", "collections/lists"],
   body: (
     <>
       <Ex name="matrices/basics" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>matrix.of</C> takes the rows. They must all be as long, or the program panics, saying both lengths.</li>
+        <li><C>tensor.of_rows</C> takes the rows. They must all be as long.</li>
         <li><C>a @ b</C> is the matrix product: each item is a row of <C>a</C> times a column of <C>b</C>, added up.</li>
         <li><C>a * b</C> multiplies item by item, as do <C>+</C>, <C>-</C> and <C>-a</C>.</li>
-        <li><C>items</C> holds every item row by row, in one flat list. <C>at(i, j)</C> reads one, counting from 0.</li>
+        <li><C>a[i, j]</C> reads one item, counting from 0, and <C>shape</C> says how many rows and columns there are.</li>
       </ul>
+      <P>
+        A matrix is an ordinary <Link href="/docs/standard-library/tensors/">tensor</Link>, so everything a tensor has
+        works on it: slices, masks, sums along an axis, sorting, and the{" "}
+        <Link href="/docs/standard-library/tensors/linear-algebra/">linear algebra</Link> of inverses, solving and
+        decompositions.
+      </P>
       <H2>A use: weighted scores</H2>
       <P>
         Each row is a student and each column a test. Times a column of weights, the product gives each student&apos;s
-        final score in one step:
+        final score in one step. <C>sum(axis: 0)</C> adds each column, the total of each test:
       </P>
       <Ex name="matrices/grades" />
-      <H2>Making, reading and changing one</H2>
-      <Ex name="matrices/make" />
-      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>slice(0, 2, 1, 3)</C> takes rows 0 up to 2 and columns 1 up to 3, not including the ends, as a new matrix.</li>
-        <li><C>matrix.identity(n, one)</C> is given its <C>one</C>, so it works for every number type: <C>1</C>, <C>1.0</C> or a <C>Float32</C>.</li>
-        <li>
-          <C>m.index(i, j)</C> says where an item is in <C>items</C>, so <C>m.items[m.index(i, j)] = v</C> changes it. The
-          matrix must be a <C>let</C>; nothing is copied when nothing else holds it.
-        </li>
-      </ul>
-      <H2>Everything a matrix has</H2>
-      <Table header={written().header} rows={written().rows} />
       <H2>Sizes must fit</H2>
       <P>
-        <C>a @ b</C> needs as many columns in <C>a</C> as rows in <C>b</C>. A size that doesn&apos;t fit breaks a{" "}
-        <Link href="/docs/errors/contracts/require/">require</Link> and stops the program, with the rule it broke:
+        <C>a @ b</C> needs as many columns in <C>a</C> as rows in <C>b</C>. A size that doesn&apos;t fit stops the
+        program with both shapes, at the line of your code that asked for the product:
       </P>
       <Ex name="matrices/sizes.panics" />
-      <P>
-        <C>@</C> is only the matrix product. Two numbers are multiplied with <C>*</C>, and the compiler says so:
-      </P>
+      <P><C>@</C> is only the matrix product. Two numbers are multiplied with <C>*</C>, and the compiler says so:</P>
       <Ex name="matrices/numbers.fails" />
-      <P>
-        The type is <C>{"Matrix<T: Number>"}</C>: its items are numbers, so a matrix of anything else is a compile
-        error:
-      </P>
-      <Ex name="matrices/text.fails" />
-      <SrcRef file="tests/conformance/02-types/matrix-holds-only-numbers.kav" label="numbers only, tested" />
       <H2>The same bits everywhere</H2>
       <P>
-        Each item of <C>a @ b</C> adds its products in one fixed order, a multiply and then an add each time. So a{" "}
-        <C>Float</C> product gives exactly the same bits on every machine and in every build, as a loop written by hand
-        would. The work is still spread over the cores and the processor&apos;s vector units.
-      </P>
-      <P>
-        <C>a.product(b, fast: true)</C> is free to add in another order, for the full speed of the machine. A{" "}
-        <C>Float</C> result may then differ in its last bits between machines. Whole numbers give the same result
-        either way:
+        Each item of <C>a @ b</C> adds its products in one fixed order, so a <C>Float</C> product gives exactly the same
+        bits on every machine and in every build, as a loop written by hand would. <C>a.matmul(b, fast: true)</C> is
+        free to add in another order, for the full speed of the machine; a <C>Float</C> result may then differ in its
+        last bits. Whole numbers give the same result either way:
       </P>
       <Ex name="matrices/fast" />
       <P>
-        The exact product spreads its rows over every core. Its speed against other languages is being measured again,
+        The product spreads its rows over the cores the program may use: all of them, or as many as{" "}
+        <C>[run] cores</C> and <C>on cores(n)</C> allow. Its speed against other languages is being measured again,
         with each side on the same number of cores.
       </P>
-      <div className="flex flex-wrap gap-2.5">
-        <SrcRef file={BENCH} label="math benchmarks" />
-        <SrcRef file="benchmarks/math/kavach/matmul.kav" label="matmul.kav" />
-        <SrcRef file="benchmarks/math/cpp/matmul.cpp" label="matmul.cpp" />
-      </div>
+      <H2>No Matrix type</H2>
+      <P>
+        <C>Tensor</C> is Kavach&apos;s one array type, so there is no separate <C>Matrix</C>. Naming the old type or its
+        module is a compile error that says what to write instead:
+      </P>
+      <Ex name="matrices/gone.fails" />
+      <Ex name="matrices/gone-type.fails" />
       <H2>@ for your own types</H2>
       <P>
         <C>@</C> comes from the interface <C>MatMul</C>, like the{" "}
@@ -99,25 +74,17 @@ export const matricesDoc: LessonDoc = {
         <C>-</C>, as <C>*</C> does, and <C>x @= y</C> is <C>x = x @ y</C>:
       </P>
       <Ex name="types/operators-matmul" />
-      <Note>
-        Not yet: products on the GPU, and views that share items with the matrix they came from instead of copies.
-        For more than two dimensions, broadcasting, reductions along an axis and masks, use a{" "}
-        <Link href="/docs/standard-library/tensors/">tensor</Link>.
-      </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 2.17 · matrices" />
-        <SrcRef file="docs/decisions/0111-matrices.md" label="decision 0111" />
-        <SrcRef file={`${TESTS}/matrices-multiply-and-work-item-by-item.kav`} label="tested" />
-        <SrcRef file={`${TESTS}/matrix-products-give-the-same-bits.kav`} label="same bits, tested" />
-        <SrcRef file={`${TESTS}/matrix-sizes-must-match.kav`} label="sizes, tested" />
-        <SrcRef file={`${TESTS}/matmul-calls-the-types-own-method.kav`} label="MatMul, tested" />
-        <SrcRef file="stdlib/matrix/matrix.kav" label="matrix.kav" />
-        <SrcRef file="runtime/matrix/src/product.rs" label="product.rs" />
+        <SrcRef file="docs/decisions/0136-tensor-the-one-array-type.md" label="decision 0136" />
+        <SrcRef file={`${TESTS}/the-matrix-type-is-gone.kav`} label="Matrix gone, tested" />
+        <SrcRef file={`${TESTS}/std-matrix-is-gone.kav`} label="std.matrix gone, tested" />
+        <SrcRef file={`${TESTS}/matmul-is-not-for-numbers.kav`} label="@ on numbers, tested" />
       </div>
     </>
   ),
   tryIt: {
-    task: <>Turn the points (1, 0), (0, 2) and (3, 1) a quarter turn to the left: put them in a matrix as columns, and multiply <C>matrix.of([[0, -1], [1, 0]])</C> by it. Print the result&apos;s rows.</>,
-    answer: <P><C>matrix.of([[0, -1], [1, 0]]) @ matrix.of([[1, 0, 3], [0, 2, 1]])</C> gives <C>[[0, -2, -1], [1, 0, 3]]</C>: the points (0, 1), (-2, 0) and (-1, 3).</P>,
+    task: <>Turn the points (1, 0), (0, 2) and (3, 1) a quarter turn to the left: put them in a tensor as columns, and multiply <C>tensor.of_rows([[0, -1], [1, 0]])</C> by it. Print the result&apos;s rows.</>,
+    answer: <P><C>tensor.of_rows([[0, -1], [1, 0]]) @ tensor.of_rows([[1, 0, 3], [0, 2, 1]])</C> gives <C>[[0, -2, -1], [1, 0, 3]]</C>: the points (0, 1), (-2, 0) and (-1, 3).</P>,
   },
 };

@@ -1,0 +1,2 @@
+2000
+panic: integer overflow: 3000 + 3000 doesn't fit in UInt<bits: 12>

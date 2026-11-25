@@ -41,7 +41,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 18
+              "value": null
             },
             {
               "id": "cpp",
@@ -180,7 +180,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 105
+              "value": null
             },
             {
               "id": "cpp",
@@ -240,7 +240,7 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 142
+              "value": null
             },
             {
               "id": "cpp",

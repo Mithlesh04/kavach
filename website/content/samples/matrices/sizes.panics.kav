@@ -1,7 +1,8 @@
-use std.matrix
+use std.tensor
 
-fn main() uses Console {
-    const a = matrix.of([[1, 2, 3]])
-    const b = matrix.of([[1, 2]])
-    print((a @ b).items)
+fn main() {
+    const a = tensor.of_rows([[1.0, 2.0]])
+    const b = tensor.of_rows([[1.0], [2.0], [3.0]])
+    print((a @ a.transpose()).to_rows())
+    print((a @ b).to_rows())
 }

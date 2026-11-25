@@ -1,0 +1,5 @@
+use std.matrix
+
+fn main() {
+    print(1)
+}

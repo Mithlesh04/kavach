@@ -63,8 +63,8 @@ export const gpuScreenDoc: LessonDoc = {
       <Explainer id="gpu-draw" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="compiler/backend/wgsl/src/render.rs" line={5} label="render.rs · the pipeline's WGSL" />
-        <SrcRef file="runtime/gpu/src/render.rs" line={117} symbol="ready_for" />
-        <SrcRef file="runtime/gpu/src/render.rs" line={287} symbol="draw_into" />
+        <SrcRef file="runtime/gpu/src/pipelines.rs" line={166} symbol="ready_for" />
+        <SrcRef file="runtime/gpu/src/render.rs" line={79} symbol="draw_into" />
         <SrcRef file="runtime/gpu/src/draw.rs" line={90} label="draw.rs:90 · Fifo, 2 frames" />
       </div>
       <div className="flex flex-wrap gap-2.5">

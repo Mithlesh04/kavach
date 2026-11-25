@@ -1,0 +1,1 @@
+error: `std.matrix` is gone: use `std.tensor`, where a matrix is a `Tensor<T, dims: 2>` (spec 2.17)

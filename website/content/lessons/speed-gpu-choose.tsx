@@ -118,8 +118,8 @@ export const gpuChooseDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 15.6 · choosing a GPU" />
         <SrcRef file="docs/decisions/0139-choosing-gpus.md" label="decision 0139" />
-        <SrcRef file="stdlib/gpu/gpu.kav" line={165} symbol="fn devices" />
-        <SrcRef file="stdlib/gpu/gpu.kav" line={155} symbol="type GpuDevice" />
+        <SrcRef file="stdlib/gpu/gpu.kav" line={284} symbol="fn devices" />
+        <SrcRef file="stdlib/gpu/gpu.kav" line={274} symbol="type GpuDevice" />
         <SrcRef file="compiler/checker/src/gpu_choice.rs" label="the checker's GPU choices" />
         <SrcRef file={`${TESTS}/gpu-on-gives-the-same-values.kav`} label="the same values, tested" />
         <SrcRef file={`${TESTS}/gpu-map-needs-no-capability.kav`} label="no choice, no capability, tested" />

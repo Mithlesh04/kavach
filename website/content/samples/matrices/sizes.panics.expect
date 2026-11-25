@@ -1,1 +1,2 @@
-panic: contract failed: require self.cols == other.rows
+[[5.0]]
+panic: `@` needs [1, 2]'s last size (2) to match [3, 1]'s next to last (3)

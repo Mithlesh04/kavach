@@ -1,14 +1,13 @@
-use std.matrix
+use std.tensor
 
-fn main() uses Console {
+fn main() {
     // One row per student, one column per test.
-    const marks = matrix.of([
+    const marks = tensor.of_rows([
         [80.0, 70.0, 90.0],
         [60.0, 90.0, 75.0],
     ])
     // How much each test counts.
-    const weights = matrix.of([[0.25], [0.25], [0.5]])
-    print((marks @ weights).items)
-    print(marks.sum_cols())
-    print(marks.scale(0.1).row(0))
+    const weights = tensor.of_rows([[0.25], [0.25], [0.5]])
+    print((marks @ weights).to_rows())
+    print(marks.sum(axis: 0).items)
 }

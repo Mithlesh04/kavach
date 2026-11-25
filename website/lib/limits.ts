@@ -19,7 +19,7 @@ export const limitAreas: LimitArea[] = [
       { what: "Int", value: "-9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 (64 bits); going past it panics", source: spec("02-types/01-built-in-types.md") },
       { what: "Int8, Int16, Int32", value: "-128 to 127; -32,768 to 32,767; -2,147,483,648 to 2,147,483,647", source: spec("02-types/01-built-in-types.md") },
       { what: "UInt8, UInt16, UInt32, UInt64", value: "0 to 255; 0 to 65,535; 0 to 4,294,967,295; 0 to 18,446,744,073,709,551,615", source: spec("02-types/01-built-in-types.md") },
-      { what: "Int<bits: n>, UInt<bits: n>", value: "n from 1 to 64 today (the spec allows up to 65,535); UInt<bits: 12> holds 0 to 4,095", source: spec("02-types/01-built-in-types.md") },
+      { what: "Int<bits: n>, UInt<bits: n>", value: "n from 1 to 65,535; over 64, each operation is slower; UInt<bits: 12> holds 0 to 4,095", source: spec("02-types/01-built-in-types.md") },
       { what: "Int<range: a..=b>", value: "a to b, both known while compiling; a..b leaves b out", source: spec("02-types/01-built-in-types.md") },
       { what: "Float", value: "64 bits: about 15 to 17 significant digits, up to about 1.8e308", source: spec("02-types/01-built-in-types.md") },
       { what: "Float32", value: "32 bits: about 7 significant digits, up to about 3.4e38", source: spec("02-types/01-built-in-types.md") },
