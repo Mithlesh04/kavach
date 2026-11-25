@@ -26,7 +26,7 @@ gpu fragment fn white(s: Spot) -> (Float32, Float32, Float32, Float32) {
 /// Two triangles over the whole picture.
 fn square() -> [Corner] {
     [Corner(x: -1.0, y: -1.0), Corner(x: 1.0, y: -1.0), Corner(x: 1.0, y: 1.0),
-     Corner(x: -1.0, y: -1.0), Corner(x: 1.0, y: 1.0), Corner(x: -1.0, y: 1.0)]
+        Corner(x: -1.0, y: -1.0), Corner(x: 1.0, y: 1.0), Corner(x: -1.0, y: 1.0)]
 }
 
 /// The pixel at `x`, `y` of a 4 × 4 canvas.
