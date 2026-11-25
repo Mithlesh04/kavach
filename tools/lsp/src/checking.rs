@@ -21,6 +21,8 @@ pub(crate) struct Job {
     pub(crate) text: String,
     pub(crate) open: Vec<(PathBuf, String)>,
     pub(crate) version: u64,
+    /// Checked file by file (`quick.rs`).
+    pub(crate) quick: bool,
 }
 
 /// A check done; `checked` is `None` when a newer job for the same
@@ -29,6 +31,7 @@ pub(crate) struct Done {
     pub(crate) uri: String,
     pub(crate) path: String,
     pub(crate) version: u64,
+    pub(crate) quick: bool,
     pub(crate) checked: Option<Checked>,
 }
 
@@ -41,6 +44,7 @@ pub(crate) fn start(events: Sender<Event>) -> Sender<Job> {
 }
 
 fn work(jobs: Receiver<Job>, events: Sender<Event>) {
+    let mut outlines = crate::quick::Outlines::default();
     while let Ok(job) = jobs.recv() {
         // Jobs that came while the last check ran: each document is
         // checked once, at its newest version.
@@ -54,11 +58,12 @@ fn work(jobs: Receiver<Job>, events: Sender<Event>) {
         let skip: Vec<bool> = batch.iter().map(newer).collect();
         for (job, skip) in batch.into_iter().zip(skip) {
             // One left out is still sent: the server counts it as done.
-            let checked = (!skip).then(|| check(&job));
+            let checked = (!skip).then(|| check(&job, &mut outlines));
             let done = Done {
                 uri: job.uri,
                 path: job.path,
                 version: job.version,
+                quick: job.quick,
                 checked,
             };
             if events.send(Event::Checked(Box::new(done))).is_err() {
@@ -68,14 +73,20 @@ fn work(jobs: Receiver<Job>, events: Sender<Event>) {
     }
 }
 
-fn check(job: &Job) -> Checked {
-    Arc::new(crate::diagnostics::check(&job.path, &job.text, |p| {
-        let full = std::fs::canonicalize(p).ok()?;
-        job.open
-            .iter()
-            .find(|(path, _)| *path == full)
-            .map(|(_, text)| text.clone())
-    }))
+fn check(job: &Job, outlines: &mut crate::quick::Outlines) -> Checked {
+    let quick = job.quick.then_some(outlines);
+    Arc::new(crate::diagnostics::check(
+        &job.path,
+        &job.text,
+        |p| {
+            let full = std::fs::canonicalize(p).ok()?;
+            job.open
+                .iter()
+                .find(|(path, _)| *path == full)
+                .map(|(_, text)| text.clone())
+        },
+        quick,
+    ))
 }
 
 #[cfg(test)]
@@ -136,6 +147,7 @@ mod tests {
             uri: URI.to_string(),
             path: "/tmp/kavach-lsp-thread.kav".to_string(),
             version: server.version - 1,
+            quick: false,
             checked: Some(checked),
         };
         assert!(server.done(done).is_empty());

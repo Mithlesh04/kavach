@@ -112,7 +112,7 @@ pub fn json_line(path: &str) -> String {
     let line = match std::fs::read_to_string(path) {
         Err(e) => json!({"file": file, "error": format!("can't read it: {e}")}),
         Ok(text) => {
-            let (c, _) = crate::diagnostics::check(path, &text, |_| None);
+            let (c, _) = crate::diagnostics::check(path, &text, |_| None, None);
             let first = c
                 .messages
                 .iter()

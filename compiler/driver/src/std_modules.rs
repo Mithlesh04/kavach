@@ -11,8 +11,8 @@
 use crate::Source;
 use kavach_ast::{ItemKind, TypeBody};
 use kavach_lexer::TokenKind;
-use std::collections::HashSet;
-use std::sync::OnceLock;
+use std::collections::{HashMap, HashSet};
+use std::sync::{Arc, Mutex, OnceLock};
 
 pub(crate) use crate::std_table::BUILTIN;
 
@@ -58,6 +58,31 @@ fn names() -> &'static Vec<HashSet<String>> {
             })
             .collect()
     })
+}
+
+/// What `find` gives for `text`, found once for each text: an editor
+/// checks the same files again and again, changing one at a time (spec
+/// 13.12). What is kept is cleared when the texts it is for pass 64 MB.
+fn once(find: fn(&str, &mut HashSet<String>), text: &str, into: &mut HashSet<String>) {
+    type Found = HashMap<(usize, String), Arc<HashSet<String>>>;
+    static FOUND: OnceLock<Mutex<(Found, usize)>> = OnceLock::new();
+    let found = FOUND.get_or_init(Mutex::default);
+    let key = (find as usize, text.to_string());
+    let hit = found.lock().ok().and_then(|f| f.0.get(&key).cloned());
+    let words = hit.unwrap_or_else(|| {
+        let mut words = HashSet::new();
+        find(text, &mut words);
+        let words = Arc::new(words);
+        if let Ok(mut f) = found.lock() {
+            if f.1 > 64 << 20 {
+                *f = Default::default();
+            }
+            f.1 += text.len();
+            f.0.insert(key, words.clone());
+        }
+        words
+    });
+    into.extend(words.iter().cloned());
 }
 
 /// The names a program's `text` uses as code: identifiers and dotted
@@ -160,7 +185,7 @@ fn table_methods(text: &str, into: &mut HashSet<String>) {
 pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
     let mut seen = HashSet::new();
     for s in sources {
-        code_words(&s.text, &mut seen);
+        once(code_words, &s.text, &mut seen);
     }
     // Built-ins whose values are the modules' types: `ask` fails with
     // `AiError`; `5.seconds` and `.timeout(d)` are `Duration`s.
@@ -184,7 +209,7 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
     }
     // Grouping and statistics are list methods written in Kavach (14.2).
     for s in sources {
-        table_methods(&s.text, &mut seen);
+        once(table_methods, &s.text, &mut seen);
     }
     let mut taken = vec![false; BUILTIN.len()];
     for (i, (_, module, _)) in BUILTIN.iter().enumerate() {
@@ -203,7 +228,7 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
         // A module brings in only the modules it names (`use std.net`):
         // its own words would match common variant names (`Denied`).
         let mut own = HashSet::new();
-        code_words(text, &mut own);
+        once(code_words, text, &mut own);
         // Its durations are `std.time`'s, as a program's are.
         let mut units = kavach_checker::DURATION_UNITS.iter().map(|(u, _)| *u);
         if units.any(|u| own.contains(u)) || own.contains("timeout") {

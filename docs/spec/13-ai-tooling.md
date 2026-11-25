@@ -165,9 +165,17 @@ For each task the benchmark records input and output tokens, and whether the res
 | 2 | `kavach context`, `kavach mcp`, `llms.txt`, the index (**done**), fixes in messages, refreshing the index as files change |
 | 3 | `kavach edit` and `rename`, the published token benchmark |
 
+## 13.12 Mistakes shown while you type: the language server
+
+`kavach lsp` (10.5) shows the errors and warnings of `kavach check` as the code is typed, before it is saved. The words and places are the same.
+
+- **Checked file by file.** Opening a file checks the whole program. After that, an edit that changes only what is inside the bodies of functions, methods and tests checks that file alone: the other files are read for their declarations, and for the bodies the file can reach through its calls or that name what it declares. So in a big project, a change inside a function doesn't check every other function again. The other files keep the messages they had.
+- An edit that changes a declaration (a signature, a type, a `use`, a constant, or the lines between items), a file opened, or a file saved checks the whole program again, and every file's messages are shown anew. Until then, a file that only another file's body change affects (a `pub` function no longer used anywhere) shows its old messages.
+
 ## Open questions
 
 - Output format of `query`, `outline` and `context`: plain text (fewest tokens) or JSON (easiest to parse)? Possibly both, with text as the default.
 - Which tokenizer to count with in the benchmark, since each AI model counts tokens differently.
 - Should `context` also include the generated test cases of a function, so an assistant sees its behaviour without reading the body?
 - Refreshing the index (13.9) as files change, from the language server or `kavach check --watch`, and only for the files that changed. Today one changed file means checking the whole program again on the next call.
+- Checking file by file (13.12) is for a maintainer's review: a saved file, or a declaration changed, checks the whole program; a body changed checks its file against the others' declarations and the bodies it reaches. A finer rule, by function, would need the checker to keep its work between checks.

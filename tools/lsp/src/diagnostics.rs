@@ -7,6 +7,7 @@
 //! `kavach check`.
 
 use crate::position::position;
+use crate::quick::{self, Outline, Outlines};
 use kavach_driver::{Compiled, Options, Severity, Source};
 use serde_json::{Value, json};
 use std::path::{Path, PathBuf};
@@ -15,11 +16,14 @@ use std::path::{Path, PathBuf};
 /// whole program is checked: `src/main.kav` first, then every other file
 /// of `src/` (spec 10.1–10.3). `open` gives the editor's text of files
 /// that are open, which may not be saved. Also returns the error in
-/// `kavach.toml`, if there is one.
+/// `kavach.toml`, if there is one. With `quick`, the other files'
+/// bodies that can't change this file's messages are left out
+/// (`quick.rs`, spec 13.12): only this file's messages are whole.
 pub fn check(
     path: &str,
     text: &str,
     open: impl Fn(&str) -> Option<String>,
+    quick: Option<&mut Outlines>,
 ) -> (Compiled, Option<String>) {
     let file = Path::new(path);
     let entry = project_main(file).unwrap_or_else(|| file.to_path_buf());
@@ -29,13 +33,16 @@ pub fn check(
     };
     let compiled = match kavach_driver::project_sources(&entry) {
         Some(sources) => {
-            let sources: Vec<Source> = sources
+            let mut sources: Vec<Source> = sources
                 .into_iter()
                 .map(|s| Source {
                     text: open(&s.path).unwrap_or(s.text),
                     ..s
                 })
                 .collect();
+            if let Some(outlines) = quick {
+                lighten(&mut sources, path, outlines);
+            }
             kavach_driver::compile_sources(sources, options)
         }
         None => kavach_driver::compile(text, path, options),
@@ -43,8 +50,33 @@ pub fn check(
     (compiled, config_error)
 }
 
+/// The project's files other than the one at `path` (and its module's
+/// test file) with the bodies left out that can't change its messages.
+pub(crate) fn lighten(sources: &mut [Source], path: &str, outlines: &mut Outlines) {
+    let same = |s: &Source| s.path.replace('\\', "/") == path.replace('\\', "/");
+    let Some(own) = sources.iter().position(same) else {
+        return;
+    };
+    let module = sources[own].module.clone();
+    let others: Vec<usize> = (0..sources.len())
+        .filter(|&i| sources[i].package.is_empty() && sources[i].module != module)
+        .collect();
+    for s in std::iter::once(own).chain(others.iter().copied()) {
+        outlines.of(&sources[s].path, &sources[s].text);
+    }
+    let get = |i: usize| outlines.get(&sources[i].path).expect("found above");
+    let list: Vec<(&str, &Outline)> = (others.iter())
+        .map(|&i| (sources[i].text.as_str(), get(i)))
+        .collect();
+    let last = module.rsplit('.').next().unwrap_or(&module);
+    let texts = quick::left_out(get(own), last, &list);
+    for (i, text) in others.into_iter().zip(texts) {
+        sources[i].text = text;
+    }
+}
+
 /// The `src/main.kav` of the project whose `src/` holds `file`.
-fn project_main(file: &Path) -> Option<PathBuf> {
+pub(crate) fn project_main(file: &Path) -> Option<PathBuf> {
     let root = file.ancestors().find(|d| d.join("kavach.toml").is_file())?;
     let src = root.join("src");
     let main = src.join("main.kav");

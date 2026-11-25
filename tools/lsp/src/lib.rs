@@ -15,6 +15,7 @@ mod diagnostics;
 mod fixes;
 mod navigate;
 mod position;
+mod quick;
 mod rpc;
 mod suggest;
 mod tokens;
@@ -55,6 +56,12 @@ struct Server {
     /// many of the checks sent to it haven't come back.
     checks: Option<Sender<checking::Job>>,
     pending: usize,
+    /// The declarations of the open files at the last whole check of a
+    /// project, and the outlines found since (`quick.rs`).
+    whole: Option<quick::Whole>,
+    outlines: RefCell<quick::Outlines>,
+    /// A file was saved: the next checks are whole.
+    saved: bool,
 }
 
 /// A compile, and the `kavach.toml` error found with it.
@@ -148,7 +155,7 @@ impl Server {
                 Ok(json!({
                     "capabilities": {
                         // Open, close and changes as edits (2: incremental).
-                        "textDocumentSync": {"openClose": true, "change": 2},
+                        "textDocumentSync": {"openClose": true, "change": 2, "save": true},
                         "hoverProvider": true,
                         "definitionProvider": true,
                         "completionProvider": {"triggerCharacters": ["."]},
@@ -208,6 +215,15 @@ impl Server {
                 }
                 self.changed(&uri)
             }
+            "textDocument/didSave" if self.docs.contains_key(&uri) => {
+                // A new version: the last compile may be a quick one.
+                self.version += 1;
+                self.saved = true;
+                if !self.dirty.contains(&uri) {
+                    self.dirty.push(uri);
+                }
+                Vec::new()
+            }
             "textDocument/didClose" => {
                 self.docs.remove(&uri);
                 self.version += 1;
@@ -232,10 +248,14 @@ impl Server {
     /// checked here, or sent to the checking thread.
     fn flush(&mut self) -> Vec<Value> {
         let dirty = std::mem::take(&mut self.dirty);
+        let whole = std::mem::take(&mut self.saved);
+        let quick: Vec<bool> = dirty.iter().map(|u| !whole && self.quick(u)).collect();
         let Some(checks) = self.checks.clone() else {
-            return dirty.iter().flat_map(|uri| self.publish(uri)).collect();
+            return (dirty.iter().zip(quick))
+                .flat_map(|(uri, quick)| self.publish(uri, quick))
+                .collect();
         };
-        for uri in dirty {
+        for (uri, quick) in dirty.into_iter().zip(quick) {
             let Some(path) = self.docs.get(&uri).and_then(|d| d.path.clone()) else {
                 continue; // not saved yet: no project, no kavach.toml
             };
@@ -249,6 +269,7 @@ impl Server {
                 uri,
                 path,
                 version: self.version,
+                quick,
             };
             if checks.send(job).is_ok() {
                 self.pending += 1;
@@ -275,7 +296,10 @@ impl Server {
             return Vec::new();
         }
         *self.last.borrow_mut() = Some((done.path.clone(), done.version, checked.clone()));
-        self.published(&done.uri, &done.path, &checked)
+        if !done.quick {
+            self.whole = quick::Whole::of(self, &done.path);
+        }
+        self.published(&done.uri, &done.path, &checked, done.quick)
     }
 
     /// The compile of the open document at `path`, as its text is now:
@@ -287,29 +311,47 @@ impl Server {
         {
             return c.clone();
         }
-        let c = Arc::new(diagnostics::check(path, text, |p| {
-            self.open(p).map(|(_, d)| d.text.clone())
-        }));
+        let c = Arc::new(diagnostics::check(
+            path,
+            text,
+            |p| self.open(p).map(|(_, d)| d.text.clone()),
+            None,
+        ));
         *self.last.borrow_mut() = Some((path.to_string(), self.version, c.clone()));
         c
     }
 
     /// Checks a document and publishes the diagnostics of every file
-    /// checked with it.
-    fn publish(&self, uri: &str) -> Vec<Value> {
+    /// checked with it, or with `quick` of it alone (`quick.rs`).
+    fn publish(&mut self, uri: &str, quick: bool) -> Vec<Value> {
         let Some(doc) = self.docs.get(uri) else {
             return Vec::new();
         };
-        let Some(path) = &doc.path else {
+        let Some(path) = doc.path.clone() else {
             return Vec::new(); // not saved yet: no project, no kavach.toml
         };
-        let checked = self.checked(path, &doc.text);
-        self.published(uri, path, &checked)
+        let checked = if quick {
+            let outlines = &mut *self.outlines.borrow_mut();
+            let c = diagnostics::check(
+                &path,
+                &doc.text,
+                |p| self.open(p).map(|(_, d)| d.text.clone()),
+                Some(outlines),
+            );
+            let c = Arc::new(c);
+            *self.last.borrow_mut() = Some((path.clone(), self.version, c.clone()));
+            c
+        } else {
+            let c = self.checked(&path, &doc.text);
+            self.whole = quick::Whole::of(self, &path);
+            c
+        };
+        self.published(uri, &path, &checked, quick)
     }
 
     /// The diagnostics of every file a check of document `uri` (at
-    /// `path`) went through.
-    fn published(&self, uri: &str, path: &str, checked: &Checked) -> Vec<Value> {
+    /// `path`) went through; of `uri` alone after a quick check.
+    fn published(&self, uri: &str, path: &str, checked: &Checked, quick: bool) -> Vec<Value> {
         let (compiled, config_error) = &**checked;
         let mut out = Vec::new();
         for (file, mut list) in diagnostics::diagnostics(compiled) {
@@ -320,6 +362,8 @@ impl Server {
             };
             if file_uri == uri {
                 list.extend(config_error.as_deref().map(diagnostics::config_diagnostic));
+            } else if quick {
+                continue;
             }
             out.push(publish(&file_uri, list));
         }
@@ -365,7 +409,13 @@ impl Server {
             return Value::Null;
         };
         let check = |text: &str| {
-            diagnostics::check(path, text, |p| self.open(p).map(|(_, d)| d.text.clone())).0
+            diagnostics::check(
+                path,
+                text,
+                |p| self.open(p).map(|(_, d)| d.text.clone()),
+                None,
+            )
+            .0
         };
         complete::complete(path, &doc.text, &params["position"], check)
     }

@@ -211,9 +211,12 @@ pub fn fix_file(path: &str) -> std::io::Result<Vec<String>> {
     // In a project the other files are read from disk; this one is the
     // text fixed so far.
     let compile = |text: &str| {
-        crate::diagnostics::check(path, text, |p| {
-            crate::navigate::same_file(p, path).then(|| text.to_string())
-        })
+        crate::diagnostics::check(
+            path,
+            text,
+            |p| crate::navigate::same_file(p, path).then(|| text.to_string()),
+            None,
+        )
         .0
     };
     let errors = |c: &Compiled| {
