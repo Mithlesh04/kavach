@@ -99,6 +99,17 @@ fn cli() -> ExitCode {
         ["approve", id, rest @ ..] => approvals::answer(true, id, rest),
         ["deny", id, rest @ ..] => approvals::answer(false, id, rest),
         ["proto", path] => proto::proto(path),
+        // Typed register blocks from a chip's SVD file (spec 6.5).
+        ["svd", path] => match std::fs::read_to_string(path) {
+            Ok(text) => match kavach_svd::generate(&text, path) {
+                Ok(module) => {
+                    print!("{module}");
+                    ExitCode::SUCCESS
+                }
+                Err(e) => fail(&format!("{path}: {e}")),
+            },
+            Err(e) => fail(&format!("{path}: {e}")),
+        },
         ["fmt", rest @ ..] => fmt::fmt(rest),
         // As without `--native`: a `--` before the program's arguments is Kavach's.
         ["run", "--native", path, rest @ ..] => {

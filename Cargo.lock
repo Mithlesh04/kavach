@@ -1643,6 +1643,7 @@ dependencies = [
  "kavach-runtime-net",
  "kavach-runtime-tracy",
  "kavach-runtime-unpack",
+ "kavach-svd",
 ]
 
 [[package]]
@@ -1901,6 +1902,13 @@ dependencies = [
 [[package]]
 name = "kavach-speedkit"
 version = "0.1.0"
+
+[[package]]
+name = "kavach-svd"
+version = "0.1.0"
+dependencies = [
+ "kavach-driver",
+]
 
 [[package]]
 name = "khronos-egl"

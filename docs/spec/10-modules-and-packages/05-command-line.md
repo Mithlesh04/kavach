@@ -22,6 +22,7 @@
 | `kavach approvals` | List the requests a project's agents wait on: number, call, role, when asked, until when (8.3) |
 | `kavach approve <id> --as <name>` / `kavach deny <id> --as <name> [--reason <text>]` | Answer one; the program waiting sees it within a second, or the next start finds it (8.3) |
 | `kavach proto` | Write the `.proto` file for a program's types, so other languages' gRPC tools can talk to it (14.14) |
+| `kavach svd <file.svd>` | Print a Kavach module of typed register blocks for the chip a CMSIS-SVD file describes (6.5) |
 | `kavach fix` | Apply safe fixes: compiler suggestions, deprecations (12.6), edition upgrades (10.8) |
 | `kavach api check` | Find breaking changes in `pub` signatures before a release (12.5) |
 | `kavach repl` / `kavach eval` | Try code interactively or evaluate one expression (10.9) |

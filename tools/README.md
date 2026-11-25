@@ -6,6 +6,7 @@ Everything a developer touches besides the language itself. Good tools matter as
 |---|---|---|
 | `cli/` | `kavach` (alias `kv`) | `new`, `run`, `build`, `test`, `fmt`, `add`, `audit` |
 | [fmt/](fmt/README.md) | formatter (`kavach-fmt`) | One official code style, no options to argue about (spec 12.7) |
+| [svd/](svd/README.md) | register blocks (`kavach svd`) | Typed register blocks for a chip from its CMSIS-SVD file (spec 6.5) |
 | [lsp/](lsp/README.md) | language server (`kavach-lsp`) | Errors as you type in any editor now; hover and go-to-definition next |
 | `pkg/` | package manager | Dependencies, `kavach.lock`, registry client |
 | [ai/](ai/README.md) | AI tooling | Token-saving tools (spec 13): `outline`, `query`, JSON messages now; MCP server and `llms.txt` next |

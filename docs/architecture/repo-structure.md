@@ -65,7 +65,7 @@ kavach/
 │   └── io/  net/  json/  ai/  test/
 │
 ├── tools/                  developer tools
-│   ├── cli/  fmt/  lsp/  pkg/  ai/  playground/
+│   ├── cli/  fmt/  lsp/  pkg/  ai/  playground/  svd/
 │
 ├── interop/                C, Python, JavaScript
 ├── editors/                VS Code (syntax highlighting now) and future editors

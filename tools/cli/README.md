@@ -15,6 +15,7 @@ kavach query callers|uses|fails|type|find <name> [file.kav]
 kavach context <name> [file.kav] [--budget N]
 kavach mcp
 kavach lsp                            language server for editors (tools/lsp)
+kavach svd <chip.svd>                 typed register blocks for a chip (tools/svd)
 kavach --version
 ```
 
@@ -36,6 +37,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `src/library.rs` | `kavach build --lib`: a shared library and its C header (spec 10.10) |
 | `src/fmt.rs` | `kavach fmt`: names first, then the layout of each file |
 | `src/keep.rs` | `kavach test --keep`: passing found cases become `example` clauses (spec 11.4) |
+| `tests/registers.rs` | Volatile reads and writes through `Ptr` give the right values in native code and stay in LLVM's optimized code; a module from `kavach svd` sets and reads fields on memory of its own (spec 6.5) |
 | `tests/conformance.rs` | The conformance runner: every test in `tests/conformance/`, plus examples 01–04 |
 | `tests/native.rs` | Native code must match the interpreter on every program it supports |
 | `tests/project.rs` | `kavach new` and commands without a file inside a project |

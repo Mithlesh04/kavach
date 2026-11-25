@@ -19,6 +19,7 @@ kavach-fmt = { path = "../fmt" }
 kavach-interp = { path = "../../compiler/interp" }
 kavach-kir = { path = "../../compiler/kir" }
 kavach-lsp = { path = "../lsp" }
+kavach-svd = { path = "../svd" }
 kavach-backend-cranelift = { path = "../../compiler/backend/cranelift" }
 kavach-backend-llvm = { path = "../../compiler/backend/llvm" }
 kavach-backend-wgsl = { path = "../../compiler/backend/wgsl" }

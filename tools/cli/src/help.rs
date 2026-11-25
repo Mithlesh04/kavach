@@ -34,6 +34,7 @@ usage:
   kavach approvals                          the requests the project's agents wait on (spec 8.3)
   kavach approve <id> --as <name>           approve one; `kavach deny <id> --as <name> [--reason <text>]` refuses it
   kavach proto file.kav                     print the .proto file for the program's types (spec 14.14)
+  kavach svd chip.svd                       print typed register blocks for the chip it describes (spec 6.5)
   kavach check --format json <file.kav>   one compact JSON line per message
   kavach fix <files or folders>   apply the fixes that have one right answer and add no error (spec 12.7)
 

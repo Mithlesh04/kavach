@@ -1,0 +1,14 @@
+[package]
+name = "kavach-svd"
+description = "Typed register blocks for Kavach from CMSIS-SVD files"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dev-dependencies]
+kavach-driver = { path = "../../compiler/driver" }
+
+[lints]
+workspace = true
