@@ -6,6 +6,7 @@ The same programs at four sizes, from data that fits in the fastest cache to dat
 |---|---|
 | [kavach/index.kav](kavach/index.kav), [cpp/index.cpp](cpp/index.cpp), [python/index.py](python/index.py) | 50 million reads at indexes a Lehmer generator picks, from a list of `--items` integers. The work is the same at every size; only where the list lives changes |
 | [kavach/sort.kav](kavach/sort.kav), [cpp/sort.cpp](cpp/sort.cpp), [python/sort.py](python/sort.py) | Sorting `--items` integers a Lehmer generator makes: more work as it grows |
+| [cpp/sort_cores.cpp](cpp/sort_cores.cpp) | The C++ sort on all cores (`g++ -O2 -fopenmp`): 256 buckets by the top digit, each sorted with `std::sort`, as Kavach's sort splits a big list |
 | [sizes](sizes) | The sizes: one line each, a label and the arguments every program gets |
 
 Each program reads its size from `--items N`, so the index reads take `% n` by a value known only at run time. The [lookups](../lookups/README.md) benchmark divides by a constant instead, which is why its 10-million row is faster than the one here.
@@ -22,6 +23,8 @@ sh scripts/run-benchmarks.sh "" benchmarks/sizes
 
 Measured 2026-11-09 at commit 38fb662d (`kavach --version`; WSL Ubuntu, g++ 13, Python 3.12, i7-13700HX, [the machine](../README.md#the-machine)), in three rounds of best of 9 (Python: best of 3) one after another; each row is the best of the three rounds. Ratio is Kavach ÷ C++, so below 1 is faster than C++.
 
+**One core or all cores.** `index` runs on one core in every language. Kavach's `sort` sorts a list of 1,048,576 items or more in 256 buckets on up to 8 cores (`runtime/native/src/radix.rs`), so from tens of millions up it has two rows: **1 core**, Kavach run with `KAVACH_CORES=1` against `std::sort`, and **all cores**, Kavach as built against `cpp/sort_cores.cpp`. Python's `sorted` has one core only, so it is in the 1-core rows. The thousands and millions lists are under that size, so Kavach sorts them on one core. Until 2026-11-25 the tens- and hundreds-of-millions rows compared Kavach on all cores with C++ on one; a cell that says *to measure* waits for a new run.
+
 | Benchmark | Kavach ms | C++ ms | Ratio | Python ms |
 |---|---|---|---|---|
 | `index` · thousands | 170 | 171 | 0.99 | 5825 |
@@ -30,9 +33,11 @@ Measured 2026-11-09 at commit 38fb662d (`kavach --version`; WSL Ubuntu, g++ 13, 
 | `index` · hundreds-of-millions | 655 | 896 | **0.73** | 29496 |
 | `sort` · thousands | 1 | 1 | 1.00 | 31 |
 | `sort` · millions | 14 | 62 | **0.23** | 426 |
-| `sort` · tens-of-millions | 80 | 716 | **0.11** | 5420 |
-| `sort` · hundreds-of-millions | 988 | 8497 | **0.12** | 76783 |
+| `sort` · tens-of-millions · 1 core | to measure | 716 | to measure | 5420 |
+| `sort` · tens-of-millions · all cores | 80 | to measure | to measure | |
+| `sort` · hundreds-of-millions · 1 core | to measure | 8497 | to measure | 76783 |
+| `sort` · hundreds-of-millions · all cores | 988 | to measure | to measure | |
 
-The ratio in each round, in order: `index` · thousands 1.01, 1.00, 0.99; · millions 1.11, 1.03, 1.02; · tens-of-millions 0.97, 0.94, 0.97; · hundreds-of-millions 0.71, 0.75, 0.73; `sort` · millions 0.22, 0.22, 0.23; · tens-of-millions 0.11, 0.11, 0.11; · hundreds-of-millions 0.12, 0.12, 0.12.
+The ratio in each round, in order: `index` · thousands 1.01, 1.00, 0.99; · millions 1.11, 1.03, 1.02; · tens-of-millions 0.97, 0.94, 0.97; · hundreds-of-millions 0.71, 0.75, 0.73; `sort` · millions 0.22, 0.22, 0.23.
 
-**What the numbers say:** with a thousand items, both compiled languages read from the first-level cache and tie. At a million (8 MB, inside the second- and third-level caches) Kavach is up to 1.1× slower than C++ (1.16× on 2026-11-02): Kavach checks every index and C++'s `operator[]` doesn't, and at cache speed the extra work shows. Past the caches, every read waits for main memory, that wait dwarfs the check, and Kavach comes out ahead (these rows include building the list, 800 MB at the largest size). Sorting a thousand items takes under a millisecond in both, so that row is mostly starting the program; from a million up the radix sort, with its buckets on all cores, is 4–9× faster than `std::sort`. Python stays 30–80× slower throughout.
+**What the numbers say:** with a thousand items, both compiled languages read from the first-level cache and tie. At a million (8 MB, inside the second- and third-level caches) Kavach is up to 1.1× slower than C++ (1.16× on 2026-11-02): Kavach checks every index and C++'s `operator[]` doesn't, and at cache speed the extra work shows. Past the caches, every read waits for main memory, that wait dwarfs the check, and Kavach comes out ahead (these rows include building the list, 800 MB at the largest size). Sorting a thousand items takes under a millisecond in both, so that row is mostly starting the program. At a million items, both on one core, the radix sort is 4.4× faster than `std::sort`. Python stays 30–80× slower throughout.
