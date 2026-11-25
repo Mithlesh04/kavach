@@ -107,12 +107,35 @@ const requirements: [string, React.ReactNode][] = [
 ];
 
 export const installDoc: LessonDoc = {
-  lead: "One clone, one build. A single-command installer comes with the first public release.",
-  simple: <>Installing puts Kavach on your computer so you can use it. For now you download its source code and build it yourself, a bit like putting together a flat-pack table. It takes a few minutes, and you do it once.</>,
+  lead: "Download a ready-made Kavach from its latest release, or build it from source in a few minutes.",
+  simple: <>Installing puts Kavach on your computer so you can use it. The quickest way is to download a ready-made copy and unpack it. If there isn&apos;t one for your computer yet, you build it from its source code instead, a bit like putting together a flat-pack table. You do it once.</>,
   minutes: 5,
   before: ["start/the-terminal"],
   body: (
     <>
+      <H2>Download</H2>
+      <P>
+        Each release on GitHub has a ready-made Kavach for the systems it supports, in a <C>.zip</C>, with a{" "}
+        <C>.sha256</C> file to check the download against:
+      </P>
+      <p className="m-0">
+        <a
+          href={`${versions.repo}/releases/latest`}
+          className="inline-block rounded-[10px] bg-accent px-6 py-[13px] text-[15.5px] font-bold text-bg no-underline"
+        >
+          Download the latest release
+        </a>
+      </p>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Pick the file for your system, unpack it anywhere, and add the folder that holds <C>kavach</C> to your PATH.</li>
+        <li>To check the file, compare its hash with the <C>.sha256</C> file: <C>Get-FileHash</C> in PowerShell, <C>sha256sum</C> on Linux.</li>
+        <li>No file for your system? Build Kavach from source, <Link href="#build-it">below</Link>. On macOS that is the way today.</li>
+      </ul>
+      <Terminal commands session={"kavach --version   # says which Kavach you have"} />
+      <Note>
+        These docs follow Kavach&apos;s newest source. A release can be older than a page, so if an example here
+        doesn&apos;t work in your download, build from source, or wait for the next release.
+      </Note>
       <H2>System requirements</H2>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[15px]">

@@ -47,6 +47,12 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             </a>
           </nav>
           <div className="flex-1" />
+          <Link
+            href="/docs/start/install/#download"
+            className="shrink-0 rounded-lg bg-accent px-3.5 py-1.5 text-sm font-bold text-bg no-underline max-[419px]:hidden"
+          >
+            Download
+          </Link>
           <SearchButton />
           <ThemeToggle />
         </div>
@@ -59,6 +65,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             { title: "Learn", href: "/docs/start/kavach-home/" },
             { title: "Benchmarks", href: "/docs/benchmarks/" },
             { title: "FAQ", href: "/docs/start/faq/" },
+            { title: "Download", href: "/docs/start/install/#download" },
             { title: "GitHub", href: versions.repo },
           ]}
         />

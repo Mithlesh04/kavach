@@ -62,6 +62,12 @@ export default async function Home() {
             <a href={versions.repo} className="text-muted no-underline max-sm:hidden">GitHub</a>
           </nav>
           <div className="flex-1" />
+          <Link
+            href="/docs/start/install/#download"
+            className="shrink-0 rounded-lg bg-accent px-3.5 py-1.5 text-sm font-bold text-bg no-underline max-[359px]:hidden"
+          >
+            Download
+          </Link>
           <ThemeToggle />
         </div>
       </header>
