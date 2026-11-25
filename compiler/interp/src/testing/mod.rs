@@ -10,6 +10,7 @@
 mod fixes;
 mod found;
 mod keep;
+mod rng;
 
 pub use keep::Kept;
 mod shrink;

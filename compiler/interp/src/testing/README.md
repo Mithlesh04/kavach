@@ -7,6 +7,7 @@ Generated tests for `kavach test` (spec [chapter 11](../../../../docs/spec/11-te
 | `mod.rs` | The run: found cases first, generated cases, the report |
 | `targets.rs` | Which functions are called and how their arguments are made; the others listed as not generated, with why (11.2) |
 | `values.rs` | Generators: edge cases first, then seeded random values (11.3) |
+| `rng.rs` | The seeded random number generator: the same seed gives the same values (11.9) |
 | `shrink.rs` | Smaller values, to find the smallest failing input (11.4) |
 | `found.rs` | The `tests/found/*.kavf` format: writing and reading calls (11.4) |
 | `fixes.rs` | Fix suggestions for each kind of crash (11.10) |
