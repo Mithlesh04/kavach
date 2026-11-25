@@ -308,9 +308,7 @@ impl FnEmit<'_> {
             }
             ExprKind::Rt(kavach_kir::RtOp::CallAddress, args) => self.call_address(e.ty, args),
             ExprKind::Rt(kavach_kir::RtOp::CallC, args) => self.call_c(e.ty, args),
-            ExprKind::Rt(kavach_kir::RtOp::PtrRead | kavach_kir::RtOp::PtrWrite, args) => {
-                self.ptr_access(e.ty, args)
-            }
+            ExprKind::Rt(op, args) if op.is_ptr_access() => self.ptr_access(*op, e.ty, args),
             ExprKind::Rt(
                 op @ (kavach_kir::RtOp::ParFor
                 | kavach_kir::RtOp::ParForRed

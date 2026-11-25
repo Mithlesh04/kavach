@@ -462,13 +462,20 @@ impl Checker<'_> {
             DefKind::Builtin if type_name == "Float" && name.name == "from_bits" => {
                 Some(self.float_from_bits(args, span))
             }
-            // A raw address, such as C's `(void *) -1` (spec 6.4).
-            DefKind::Builtin if type_name == "Ptr" && name.name == "from_int" => {
+            // A raw address, such as C's `(void *) -1` (spec 6.4), or a
+            // register's, `Ptr.at(address)` (6.5).
+            DefKind::Builtin if type_name == "Ptr" && matches!(&*name.name, "from_int" | "at") => {
+                let what = format!("`Ptr.{}`", name.name);
                 if self.in_unsafe == 0 {
-                    self.error(span, "`Ptr.from_int` makes a raw address: use it inside `unsafe { … }` (spec 6.4)");
+                    self.error(
+                        span,
+                        format!(
+                            "{what} makes a raw address: use it inside `unsafe {{ … }}` (spec 6.4)"
+                        ),
+                    );
                 }
                 let params = [("n".to_string(), Ty::Prim(Prim::Int), false)];
-                self.args(args, &params, span, "`from_int`", "argument");
+                self.args(args, &params, span, &what, "argument");
                 Some(Ty::Builtin("Ptr", vec![self.fresh()]))
             }
             DefKind::Builtin => {

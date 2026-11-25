@@ -1,0 +1,10 @@
+// Rule: `p.write_volatile(v)` writes a register or other raw memory, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.5
+// expect compile error
+
+fn send(p: Ptr<UInt32>) {
+    p.write_volatile(65)            // error: raw memory outside unsafe
+}
+
+fn main() {
+}

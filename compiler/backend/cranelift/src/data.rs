@@ -280,8 +280,8 @@ impl FnGen<'_, '_> {
                 let (list, item) = (self.slot_of(&args[0]), self.slot_of(&args[1]));
                 self.list_push(list, item, e.ty, e.line)
             }
-            ExprKind::Rt(RtOp::PtrRead | RtOp::PtrWrite, args) => {
-                return self.ptr_access(e.ty, args);
+            ExprKind::Rt(op, args) if op.is_ptr_access() => {
+                return self.ptr_access(*op, e.ty, args);
             }
             ExprKind::Rt(RtOp::CallAddress, args) => return self.call_address(e.ty, args),
             ExprKind::Rt(RtOp::CallC, args) => return self.call_c(e.ty, args),

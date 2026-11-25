@@ -279,7 +279,11 @@ impl Checker<'_> {
                 let t = args.first().cloned().unwrap_or(Ty::Error);
                 match name {
                     "read" => sig(vec![int], t),
-                    "write" => sig(vec![int, t], Ty::Unit),
+                    "write" => sig(vec![int, t.clone()], Ty::Unit),
+                    // Registers (spec 6.5): never merged, dropped or moved.
+                    "read_volatile" => sig(vec![], t),
+                    "write_volatile" => sig(vec![t], Ty::Unit),
+                    "address" => sig(vec![], int),
                     "text" if t == Ty::Prim(Prim::UInt8) => sig(vec![], opt(string)),
                     // `n` bytes copied out (spec 6.4).
                     "bytes" if t == Ty::Prim(Prim::UInt8) => sig(vec![int], Ty::Prim(Prim::Bytes)),

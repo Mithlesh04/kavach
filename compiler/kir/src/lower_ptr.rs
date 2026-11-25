@@ -6,7 +6,8 @@
 //! code. A `Ptr<T>` is an address (`I64`). `alloc` and `free` are C's
 //! `calloc` and `free` (`runtime/native/src/rt_ptr.rs`); `p.read(i)` and
 //! `p.write(i, v)` work out the address `p + i * size` here, and the
-//! backends load or store there in one instruction.
+//! backends load or store there in one instruction; `p.read_volatile()`
+//! and `p.write_volatile(v)` (6.5) at `p`, with volatile ones.
 
 use crate::ir::{self, Block, ExprKind as K, FastOp, FuncId, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
@@ -137,6 +138,35 @@ impl<'a> Lowerer<'a> {
                 line,
             ));
         }
+        // `p.address()`, and the volatile reads and writes at `p` itself
+        // (spec 6.5).
+        match (name, args) {
+            ("address", []) => {
+                return Ok(ir::Expr {
+                    ty: Type::I64,
+                    ..self.expr(base)?
+                });
+            }
+            ("read_volatile", []) | ("write_volatile", [_]) => {
+                let addr = self.expr(base)?;
+                let write = match args {
+                    [v] => Some(self.expr(&v.value)?),
+                    _ => None,
+                };
+                if let Some(fields) = fields {
+                    return self.record_access_with(t, &fields, addr, write, line, true);
+                }
+                return Ok(match write {
+                    None => at(K::Rt(RtOp::PtrReadVolatile, vec![addr]), t, line),
+                    Some(v) => at(
+                        K::Rt(RtOp::PtrWriteVolatile, vec![addr, v]),
+                        Type::Unit,
+                        line,
+                    ),
+                });
+            }
+            _ => {}
+        }
         let (p, i) = match args.first() {
             Some(i) => (self.expr(base)?, self.expr(&i.value)?),
             None => return Err(self.unsupported(format!("`.{name}()`"), span)),
@@ -186,6 +216,25 @@ impl<'a> Lowerer<'a> {
         write: Option<ir::Expr>,
         line: u32,
     ) -> Lowered<ir::Expr> {
+        self.record_access_with(t, fields, addr, write, line, false)
+    }
+
+    /// `record_access`, each field with a volatile load or store when
+    /// `volatile` (spec 6.5).
+    fn record_access_with(
+        &mut self,
+        t: Type,
+        fields: &[(Type, i128)],
+        addr: ir::Expr,
+        write: Option<ir::Expr>,
+        line: u32,
+        volatile: bool,
+    ) -> Lowered<ir::Expr> {
+        let (read, store) = if volatile {
+            (RtOp::PtrReadVolatile, RtOp::PtrWriteVolatile)
+        } else {
+            (RtOp::PtrRead, RtOp::PtrWrite)
+        };
         let a = self.new_local(Type::I64);
         let mut stmts = vec![Stmt::Let(a, addr)];
         let field_at = |l: &Self, offset: i128| {
@@ -197,13 +246,7 @@ impl<'a> Lowerer<'a> {
             None => {
                 let values = fields
                     .iter()
-                    .map(|(ft, offset)| {
-                        at(
-                            K::Rt(RtOp::PtrRead, vec![field_at(self, *offset)]),
-                            *ft,
-                            line,
-                        )
-                    })
+                    .map(|(ft, offset)| at(K::Rt(read, vec![field_at(self, *offset)]), *ft, line))
                     .collect();
                 let record = at(
                     K::Record {
@@ -222,7 +265,7 @@ impl<'a> Lowerer<'a> {
                 for (k, (ft, offset)) in fields.iter().enumerate() {
                     let base = Box::new(self.local_expr(r, line));
                     let field = at(K::GetField(base, k as u32), *ft, line);
-                    let store = K::Rt(RtOp::PtrWrite, vec![field_at(self, *offset), field]);
+                    let store = K::Rt(store, vec![field_at(self, *offset), field]);
                     stmts.push(Stmt::Expr(at(store, Type::Unit, line)));
                 }
                 Ok(at(K::Block(Block { stmts, value: None }), Type::Unit, line))

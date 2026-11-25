@@ -1,0 +1,8 @@
+// Rule: `Ptr.at(address)` makes a raw address, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.5
+// expect compile error
+
+fn main() {
+    const p: Ptr<UInt32> = Ptr.at(0x4000_4400)      // error: raw address outside unsafe
+    print(p == p)
+}

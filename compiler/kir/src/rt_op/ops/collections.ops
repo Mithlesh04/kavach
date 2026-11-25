@@ -63,6 +63,10 @@ PtrAlloc,
 PtrFree,
 PtrRead,
 PtrWrite,
+/// A volatile load and store (spec 6.5): never merged, dropped or
+/// moved past each other.
+PtrReadVolatile,
+PtrWriteVolatile,
 PtrText,
 PtrReadText,
 /// A chunked loop on all cores (decision 0031): the backends call

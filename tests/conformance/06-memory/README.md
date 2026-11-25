@@ -99,4 +99,8 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | 6.4 | [pointer-text-needs-unsafe.kav](pointer-text-needs-unsafe.kav) | `p.text()` copies text out of raw memory, so it is allowed only inside `unsafe { … }`. | compile error |
 | 6.4 | [pointer-write-needs-unsafe.kav](pointer-write-needs-unsafe.kav) | `p.write(i, v)` writes raw memory, so it is allowed only inside `unsafe { … }`. | compile error |
 | 6.4 | [ptr-from-int-needs-unsafe.kav](ptr-from-int-needs-unsafe.kav) | `Ptr.from_int(n)` makes a raw address, so it is allowed only inside `unsafe { … }`. | compile error |
+| 6.5 | [read-volatile-needs-unsafe.kav](read-volatile-needs-unsafe.kav) | `p.read_volatile()` reads a register or other raw memory, so it is allowed only inside `unsafe { … }`. | compile error |
+| 6.5 | [write-volatile-needs-unsafe.kav](write-volatile-needs-unsafe.kav) | `p.write_volatile(v)` writes a register or other raw memory, so it is allowed only inside `unsafe { … }`. | compile error |
+| 6.5 | [ptr-at-needs-unsafe.kav](ptr-at-needs-unsafe.kav) | `Ptr.at(address)` makes a raw address, so it is allowed only inside `unsafe { … }`. | compile error |
+| 6.5 | [pointer-address-needs-unsafe.kav](pointer-address-needs-unsafe.kav) | `p.address()` reads a raw pointer, so it is allowed only inside `unsafe { … }`. | compile error |
 | 6.3 | [arena-copied-parts-may-leave.kav](arena-copied-parts-may-leave.kav) | A number, `Bool` or `Char` worked out from an arena's values is copied, so text built from one may leave the arena. | runs |

@@ -23,6 +23,15 @@ impl RtOp {
         )
     }
 
+    /// A load or a store through a `Ptr` (spec 6.4), which the backends
+    /// inline: `PtrRead(address)` or `PtrWrite(address, value)`.
+    pub fn is_ptr_access(self) -> bool {
+        matches!(
+            self,
+            RtOp::PtrRead | RtOp::PtrWrite | RtOp::PtrReadVolatile | RtOp::PtrWriteVolatile
+        )
+    }
+
     /// Ops that can fail (spec 14.3): only inside `LetResult`.
     pub fn can_fail(self) -> bool {
         matches!(

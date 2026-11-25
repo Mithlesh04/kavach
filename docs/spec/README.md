@@ -13,7 +13,7 @@ This specification is the source of truth for the language. If the compiler and 
 | 3 | [Functions](03-functions.md) | Functions, named arguments, lambdas, signatures |
 | 4 | [Control flow](04-control-flow.md) | `if`, `match`, loops |
 | 5 | [Errors](05-errors.md) | Errors as values, `try`, `catch`, `fail`, panics |
-| 6 | [Memory](06-memory.md) | Automatic memory, shared state, arenas, `unsafe` |
+| 6 | [Memory](06-memory.md) | Automatic memory, shared state, arenas, `unsafe`, hardware registers |
 | 7 | [Contracts](07-contracts.md) | `require`, `ensure`, `invariant` |
 | 8 | [Capabilities and agents](08-capabilities-and-agents/README.md) | `uses`, `capability`, `agent`, limits, approvals, `ask<T>`, secrets |
 | 9 | [Concurrency](09-concurrency.md) | Tasks, channels, shared state |

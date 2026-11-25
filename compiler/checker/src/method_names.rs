@@ -99,6 +99,7 @@ pub(crate) const NAMES: &[&str] = &[
     "put",
     "read",
     "read_stream",
+    "read_volatile",
     "receive",
     "rem",
     "remove",
@@ -143,6 +144,7 @@ pub(crate) const NAMES: &[&str] = &[
     "wrapping_sub",
     "write",
     "write_stream",
+    "write_volatile",
     "xxhash64",
 ];
 

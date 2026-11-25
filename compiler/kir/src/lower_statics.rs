@@ -3,8 +3,9 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! Calls through a built-in type's name: `Set.of(…)`, `List.capacity(n)`,
-//! `Map.capacity(n)`, `Set.capacity(n)` (spec 2.2), `Ptr.from_int(n)`,
-//! `Bytes.of<T>(…)` (spec 2.13) and `Float.from_bits(n)`.
+//! `Map.capacity(n)`, `Set.capacity(n)` (spec 2.2), `Ptr.from_int(n)` and
+//! `Ptr.at(n)` (6.4, 6.5), `Bytes.of<T>(…)` (spec 2.13) and
+//! `Float.from_bits(n)`.
 
 use crate::ir::{self, ExprKind as K, Type};
 use crate::lower::{Lowered, Lowerer};
@@ -33,7 +34,8 @@ impl<'a> Lowerer<'a> {
             ("Dict" | "Set" | "List" | "Ring", "capacity") if builtin => {
                 self.capacity(owner, args, ty, line, span)
             }
-            ("Ptr", "from_int") => self
+            // `Ptr.at(address)` is `Ptr.from_int` (spec 6.5).
+            ("Ptr", "from_int" | "at") => self
                 .first_arg(args, "`Ptr.from_int()`", span)
                 .map(|n| ir::Expr { ty, ..n }),
             ("Bytes", "of") => self.bytes_of(args, ty, line),

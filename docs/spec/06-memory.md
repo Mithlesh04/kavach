@@ -286,6 +286,57 @@ Unsafe code is **opt-in per package** and always visible:
 - `kavach audit` lists every package in your dependency tree that uses unsafe code.
 - Wrap unsafe code in a small safe function and keep it in one place.
 
+## 6.5 Hardware registers: volatile memory
+
+A device's registers are memory with side effects: reading a status register can clear it, and writing a data register sends a byte. The compiler may merge, drop or reorder ordinary `Ptr` reads and writes (6.4), so registers are read and written with **volatile** operations instead ([decision 0145](../decisions/0145-volatile-pointer-access.md)):
+
+```kavach
+unsafe {
+    const status: Ptr<UInt32> = Ptr.at(0x4000_4400)
+    const data: Ptr<UInt32> = Ptr.at(0x4000_4404)
+    while status.read_volatile() & 0x80 == 0 {}     // read again each round
+    data.write_volatile(65)                          // sends "A"
+}
+```
+
+| Operation | Does |
+|---|---|
+| `p.read_volatile()` | The value at `p`, read from memory each time it runs |
+| `p.write_volatile(v)` | Stores `v` at `p`, each time it runs |
+| `Ptr.at(address)` | The pointer to `address`, such as a register's address from the chip's manual; the same as `Ptr.from_int` |
+| `p.address()` | The address `p` holds, as an `Int`: `Ptr.at(p.address() + 4)` is the register 4 bytes on, whatever its size |
+
+- Each volatile read or write happens **once each time the program reaches it**, in program order with the other volatile reads and writes. The compiler never merges two of them, drops one whose value isn't used, or moves one past another.
+- Ordinary memory reads and writes may still move around them, as in C. Volatile is not atomic, and not a way to share memory between threads: use `Shared` (6.2).
+- A number, `Bool` or `Ptr` is one access of its size. A record is read or written field by field, in field order, each field one volatile access.
+- The address must be a multiple of the value's size, as a register's is. Anything else is undefined behavior.
+- Like every `Ptr` operation, they are allowed only inside `unsafe { … }`, and run in native code.
+
+### Typed register blocks: `kavach svd`
+
+A chip vendor describes its registers in a CMSIS-SVD file: each peripheral's address, each register's offset, size and access, and each field's bits. `kavach svd chip.svd` prints a Kavach module with a type for each peripheral and a method for each register and field, so code names `gpio.set_moder_moder5(1)` instead of masks and shifts. Save it in the project (`kavach svd chip.svd > src/chip.kav`); the package needs `unsafe = true`.
+
+```kavach
+use chip.{Gpioa, gpioa_address}
+
+fn main() {
+    const gpio = unsafe { Gpioa.at(Ptr.at(gpioa_address)) }
+    gpio.set_moder_moder5(1)              // bits 10–11 of MODER; the others stay
+    print(gpio.idr_idr5())                // a one-bit field is a Bool
+}
+```
+
+- **Only making a block is `unsafe`**: `Gpioa.at(p)` takes a `Ptr<UInt8>`, which only `unsafe` code can make. The methods read and write through it with volatile operations, and are safe to call. A test gives memory of its own (`alloc(n)`) instead of the chip's.
+- Each peripheral `NAME` gives a type in `PascalCase` and a constant `name_address`, its base address. A peripheral `derivedFrom` another uses that one's type.
+- Each register `REG` gives `reg()`, its whole value, and `set_reg(v)`, as a whole number of its size (`UInt8` to `UInt64`). Each field `F` gives `reg_f()` and `set_reg_f(v)`. Setting a field reads the register, changes only the field's bits and writes it back. A field's value must fit its bits: `set_reg_f` has a `require` (7.1).
+- A read-only register or field has no setter, and a write-only one has no getter. Setting a field of a write-only register writes the register's reset value with that field changed.
+- A one-bit field is a `Bool`.
+- A register with `dim` gives one register for each index (`CH%s` with `dim` 2 gives `CH0` and `CH1`).
+- Names that are keywords get `_` at the end (`in_`). Not read yet: clusters and enumerated values; each skipped part is named in a comment in the module.
+
 ## Open questions
 
-None right now. Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).
+- Mapping a device's registers into a program on Linux, through UIO or VFIO (`devices.map_registers(path, offset, size)`, behind a device capability, as serial ports are, 14.18), waits for a device to test it on.
+- Clusters and enumerated values in `kavach svd`.
+
+Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).

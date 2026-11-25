@@ -1,0 +1,10 @@
+// Rule: `p.address()` reads a raw pointer, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.5
+// expect compile error
+
+fn where_it_is(p: Ptr<UInt8>) -> Int {
+    p.address()                     // error: raw pointer outside unsafe
+}
+
+fn main() {
+}
