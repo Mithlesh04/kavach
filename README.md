@@ -55,7 +55,7 @@ The agent cannot call anything outside `can`. Refunds above 10,000 are blocked, 
 Kavach is pre-alpha. Ready-built releases are on the [releases page](https://github.com/Mithlesh04/kavach/releases), for Windows and Linux on x86-64. Each archive has a `.sha256` file to check it against.
 
 - **Windows:** download and run [`scripts/install-kavach.ps1`](scripts/install-kavach.ps1). It installs the newest release.
-- **Linux:** download and run [`scripts/install-kavach.sh`](scripts/install-kavach.sh). It installs the newest release into `~/.kavach`, links `kavach` into `~/.local/bin`, and checks for a C compiler, which linking needs.
+- **Linux:** download and run [`scripts/install-kavach.sh`](scripts/install-kavach.sh). It installs the newest release into `~/.kavach`, links `kavach` into `~/.local/bin`, and checks for a C compiler, which linking needs. `kavach` needs ALSA's sound library, which desktop Linux has; on a server, install `libasound2t64` (Ubuntu 24.04, Debian 13), `libasound2` (older Ubuntu and Debian) or `alsa-lib` (Fedora).
 - **Try it without installing:** the [playground](https://kavachlang.com/playground/) checks Kavach code in the browser.
 
 ### macOS
