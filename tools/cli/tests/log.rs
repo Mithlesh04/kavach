@@ -137,7 +137,10 @@ fn fake_collector() -> (String, std::thread::JoinHandle<Vec<String>>) {
     listener.set_nonblocking(true).unwrap();
     let handle = std::thread::spawn(move || {
         let mut bodies = Vec::new();
-        let mut quiet_until = std::time::Instant::now() + std::time::Duration::from_secs(20);
+        // Long enough for `run --native` to build and run on a loaded
+        // machine (a 2-core container needed more than 20 s); after the
+        // first body, 3 quiet seconds end the wait.
+        let mut quiet_until = std::time::Instant::now() + std::time::Duration::from_secs(120);
         while std::time::Instant::now() < quiet_until {
             let Ok((mut s, _)) = listener.accept() else {
                 std::thread::sleep(std::time::Duration::from_millis(5));
