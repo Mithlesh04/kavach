@@ -154,6 +154,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0146](0146-interpreter-task-hand-off.md) | One `unsafe` hand-off between the interpreter's task threads, bounded to four kinds in `compiler/interp/src/baton.rs`, every task value let go of before its turn passes | Accepted |
 | [0147](0147-interfaces-declare-uses.md) | Interface methods declare their `uses`; an implementation may use only that, and calls through the interface or a generic bound need it | Accepted |
 | [0148](0148-default-capabilities.md) | `[capabilities] default` in kavach.toml: what every function may use without writing `uses`, `["Console"]` when left out, removable; agents get none | Accepted |
+| [0149](0149-is-checks-a-type.md) | `x is T` checks a value's type and narrows it inside the `if`; replaces 0029's "no cast back" for interface values | Accepted |
 
 ## Open decisions
 

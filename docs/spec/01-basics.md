@@ -128,6 +128,7 @@ while       with
 | `when`, `by` | Inside an `approve` rule (8.3) |
 | `per` | Inside a `limit` rule: the time window (8.3) |
 | `inout` | Before a parameter's name: the function changes the caller's variable (3.9) |
+| `is` | Between a value and a type: `x is Circle`, a type check that narrows `x` (2.15; *not built yet*) |
 | `test` | At the start of a line at a file's top level, followed by text in quotes: a test block, `test "adds two numbers" { … }` (11.8). Everywhere else it is an ordinary name: `fn test()`, `const test = …` (a maintainer, 2026-11-27; *not built yet*: today `test` is reserved everywhere) |
 
 ## 1.7 Literals
