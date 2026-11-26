@@ -34,8 +34,20 @@ fn main() {
 | `T.members() -> [Member]` | Every field and method of type `T`: built in, declared in its body, or added by an `extend`, sorted by name. `T` is a type's name: `String`, `Int`, `Order`, and `List`, `Dict`, `Set` and `Ring` for collections |
 | `m.members() -> [Member]` | What module `m` offers to the code that uses it: its `pub` functions, types and constants, sorted by name |
 | `x.has_member(name) -> Bool` | Whether `x`'s type has a field or method `name`; `name` is a text literal. For an interface value (2.15), whether the interface has it |
-| `reflect.type_of(x) -> String` | `x`'s whole type as code writes it, where `kind_of` gives only its kind: `[Int]`, `{String: Float}`, `String?`, `Order` (*not built yet*; a maintainer asked 2026-11-27, the name for a maintainer's review). Known while compiling, except for a value whose type is only known when the program runs: an interface value (2.15) or an inline union (2.6) gives its own type then, `type_of(shape)` giving `Circle` |
-| `reflect.kind_of(x) -> Kind` | What kind of data `x` is, as a value of the enum `reflect.Kind`, for checks and `match` (*not built yet*; a maintainer asked 2026-11-27): one variant per built-in type, `String`, `Char`, `Bool`, `Int`, `Int8` to `Int64`, `UInt8` to `UInt64`, `Float`, `Float32`, `Decimal`, `BigInt`, `Bytes`, `Json`; one per collection, `List`, `Dict`, `Set`, `Ring`, `Tuple`, `Tensor`; and `Record`, `Union`, `Enum`, `Optional`, `Function`, `Interface`, `Shared`, `Task`, `Channel` for the rest. A wider whole number (`Int<bits: 128>`) is `Int`, and a range number its base type. It prints as its name: `print(reflect.kind_of([1]))` prints `List`. An interface value or an inline union gives the kind of what it holds |
+| `reflect.type_of(x) -> Type` | `x`'s type, as Go's `reflect.TypeOf` gives it (*not built yet*; a maintainer chose this shape 2026-11-27): `t.kind` is what kind of data it is, a value of the enum `reflect.Kind` for checks and `match`, and `t.name` the whole type as code writes it, `[Int]`, `{String: Float}`, `String?`, `Order`. A `Type` prints as its name. Known while compiling, except for a value whose type is only known when the program runs: an interface value (2.15) or an inline union (2.6) gives the type of what it holds, `type_of(shape).name` giving `Circle` |
+
+`reflect.Kind` has one variant per built-in type, `String`, `Char`, `Bool`, `Int`, `Int8` to `Int64`, `UInt8` to `UInt64`, `Float`, `Float32`, `Decimal`, `BigInt`, `Bytes`, `Json`; one per collection, `List`, `Dict`, `Set`, `Ring`, `Tuple`, `Tensor`; and `Record`, `Union`, `Enum`, `Optional`, `Function`, `Interface`, `Shared`, `Task`, `Channel` for the rest. A wider whole number (`Int<bits: 128>`) is `Int`, and a range number its base type. JavaScript's `typeof` gives loose text (`[]` and `null` are both `"object"`); a `Kind` is checked by the compiler, and `t.name` keeps the item types Python and Java lose:
+
+```kavach
+const t = reflect.type_of([2, 3, 4])
+print(t)                 // [Int]
+print(t.kind)            // List
+match reflect.type_of(x).kind {
+    Kind.String => print("text"),
+    Kind.BigInt => print("a big number"),
+    _ => print("something else"),
+}
+```
 
 The program needs no `use std.reflect` for these calls; it does to name the types below, as `MemberOrigin` above.
 
