@@ -214,6 +214,7 @@ Choices made while building, or still open, that wait for a maintainer. Each lin
 
 ## Noted for later
 
+- **Two pages the docs canvas names that aren't built** (2026-11-26, from the learning paths): a "Kavach in 15 minutes" page (paths start at Kavach Home today), and a five-question check at the start of each part that lets a reader skip it. Waits for: the docs session's queue after the new look.
 Work that was left out or put off on purpose, so that anyone can pick it up. Each entry says where its details are and what it waits for. When one is taken up, it moves into the queue above (or is done and removed).
 
 - **Hardware registers, the rest** ([decision 0145](../decisions/0145-volatile-pointer-access.md), spec 6.5; was item 15): mapping registers on Linux through UIO or VFIO (`devices.map_registers`), which needs a real device; clusters and enumerated values in `kavach svd`; one write for several fields (as `svd2rust`'s `modify`); trying it on a real vendor SVD file. Waits for: real hardware, or a program that needs them.
