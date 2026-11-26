@@ -34,7 +34,10 @@ use std::process::Command;
 /// shape reading is in every program. Packed lists kept at their exact
 /// capacity, with a debug check on every push in this development build
 /// (the `unsafe` audit's first finding): 786 KB on Linux (2026-11-26).
-const BUDGET: u64 = 788 * 1024;
+/// A panic, `cli.exit` or a stop that flushes C's output too and ends the
+/// process without running destructors (`rt_end::end_now`): 790 KB on
+/// Linux (2026-11-27).
+const BUDGET: u64 = 792 * 1024;
 
 #[test]
 fn hello_world_stays_small() {
