@@ -1,0 +1,20 @@
+// Rule: A record holding a function is copied like any record: giving the copy another function leaves the original calling its own, even where native code calls the stored function directly.
+// Spec: 6.1, 3.4
+// expect output: 3 20
+// expect output: 3
+
+type Handler {
+    on: fn(Int) -> Int
+}
+
+fn run(h: Handler, x: Int) -> Int {
+    h.on(x)
+}
+
+fn main() {
+    const h = Handler(on: x => x + 1)
+    let g = h
+    g.on = x => x * 10
+    print(`{run(h, 2)} {run(g, 2)}`)
+    print(h.on(2))
+}

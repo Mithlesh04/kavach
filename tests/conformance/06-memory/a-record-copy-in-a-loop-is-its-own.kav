@@ -1,0 +1,25 @@
+// Rule: A record copied inside a hot loop, which native code may keep in registers instead of memory, is still its own copy: changing it leaves the record it came from as it was.
+// Spec: 6.1
+// expect output: 0 0 [0, 0]
+// expect output: 999999 1999998 [999999, 1]
+
+type Point {
+    x: Int
+    y: Int
+    tags: [Int]
+}
+
+fn main() {
+    const start = Point(x: 0, y: 0, tags: [0, 0])
+    let last = start
+    for i in 0..1_000_000 {
+        let p = start
+        p.x = i
+        p.y = i * 2
+        p.tags[0] = i
+        p.tags[1] = 1
+        last = p
+    }
+    print(`{start.x} {start.y} {start.tags}`)
+    print(`{last.x} {last.y} {last.tags}`)
+}

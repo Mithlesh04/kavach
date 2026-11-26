@@ -1,0 +1,15 @@
+// Rule: A slice is a new value: changing the list afterwards leaves the slice as it was, and changing the slice leaves the list.
+// Spec: 6.1, 2.19
+// expect output: [20, 30, 40]
+// expect output: [10, 99, 30, 40, 50]
+// expect output: [20, 30, 7]
+
+fn main() {
+    let xs = [10, 20, 30, 40, 50]
+    let part = xs[1:4]
+    xs[1] = 99
+    print(part)
+    print(xs)
+    part[2] = 7
+    print(part)
+}

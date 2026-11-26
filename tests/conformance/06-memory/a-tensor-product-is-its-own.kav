@@ -1,0 +1,20 @@
+// Rule: A tensor product is a new tensor: changing the tensors it came from afterwards leaves it as it was.
+// Spec: 6.1, 14.33
+// expect output: [[1, 2], [3, 4]]
+// expect output: [[1, 2], [3, 4]]
+// expect output: [[100, 2], [3, 4]]
+
+use std.tensor
+
+fn main() {
+    let a = tensor.arange(1, 5).reshape([2, 2])
+    let id = tensor.zeros([2, 2])
+    id[0, 0] = 1
+    id[1, 1] = 1
+    const p = a @ id
+    print(p.to_rows())
+    a[0, 0] = 100
+    id[1, 1] = 5
+    print(p.to_rows())
+    print(a.to_rows())
+}
