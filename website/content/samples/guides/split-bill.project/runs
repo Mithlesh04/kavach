@@ -1,0 +1,4 @@
+check
+run src/main.kav
+test --seed 7
+test src/main.kav --keep

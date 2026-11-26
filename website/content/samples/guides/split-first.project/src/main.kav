@@ -1,0 +1,26 @@
+/// A bill to split between people, in cents.
+type Bill {
+    total: Int
+    people: Int
+
+    invariant total >= 0 and total <= 100_000_000
+    invariant people >= 1 and people <= 1_000
+}
+
+/// Each person's share, in cents: no cent is lost, and nobody pays more
+/// than one cent more than anyone else.
+fn shares(b: Bill) -> [Int]
+    ensure result.len() == b.people
+    ensure result.sum(s => s) == b.total
+    ensure (result.max() ?? 0) - (result.min() ?? 0) <= 1
+    example shares(Bill(total: 900, people: 3)) == [300, 300, 300]
+{
+    const each = b.total / b.people
+    (0..b.people).map(_ => each)
+}
+
+fn main() {
+    for b in [Bill(total: 1_000, people: 3), Bill(total: 10, people: 4), Bill(total: 0, people: 2)] {
+        print(`{b.total} cents for {b.people}: {shares(b)}`)
+    }
+}

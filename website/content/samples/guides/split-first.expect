@@ -1,0 +1,13 @@
+$ kavach test --seed 7
+✓ shares: example shares(Bill(total: 900, people: 3)) == [300, 300, 300]
+1 passed, 0 failed
+seed 7
+✗ shares: panicked (contract failed: ensure result.sum(s => s) == b.total)
+    src/main.kav:14   result.sum(s => s) == b.total
+  smallest failing input: b = Bill(total: 1, people: 2)
+  How to fix (pick one):
+    1. Fix the function body for this input, or make the contract say what is really meant.
+    2. Forbid it. Add: require …  (a condition that rules this input out)
+       Choose this if such a value here is always a bug in the calling code.
+  saved to tests/found/main.kavf  (replayed on every run)
+1 functions   0 ✓   1 ✗   0 weakly tested

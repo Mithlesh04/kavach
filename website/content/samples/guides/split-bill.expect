@@ -1,0 +1,14 @@
+$ kavach check
+src/main.kav: no errors
+$ kavach run src/main.kav
+1000 cents for 3: [334, 333, 333]
+10 cents for 4: [3, 3, 2, 2]
+0 cents for 2: [0, 0]
+$ kavach test --seed 7
+✓ shares: example shares(Bill(total: 1_000, people: 3)) == [334, 333, 333]
+1 passed, 0 failed
+seed 7
+✓ shares  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested
+$ kavach test src/main.kav --keep
+kept: example shares(Bill(total: 1, people: 2)) == [1, 0]
