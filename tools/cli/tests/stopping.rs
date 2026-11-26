@@ -129,3 +129,28 @@ fn a_server_answers_the_request_under_way_before_it_stops() {
     }
     let _ = fs::remove_dir_all(&dir);
 }
+
+/// A stop while every core prints a `Display` value ends cleanly: the
+/// stop's hooks finish, but free nothing other threads may still use
+/// (the `unsafe` audit's (a) 3). Ten stops each way, to catch a race.
+#[test]
+fn a_stop_while_displaying_on_every_core_ends_cleanly() {
+    let dir = folder("display");
+    let ready = dir.join("ready");
+    let src = format!(
+        "use std.fs\n\ntype P: Display {{\n    x: Int\n\n    fn display(self) -> String {{\n        `<{{self.x}}>`\n    }}\n}}\n\nfn show(n: Int) -> Int {{\n    let i = 0\n    while i >= 0 {{\n        print(P(x: n + i))\n        i = i + 1\n    }}\n    i\n}}\n\nfn main() ! Error {{\n    let ts: [Task<Int>] = []\n    for n in 0..4 {{\n        ts.push(spawn cores show(n))\n    }}\n    try fs.write_text(\"{}\", \"yes\")\n    const _ = show(9)\n}}\n",
+        ready.display()
+    );
+    let file = dir.join("main.kav");
+    fs::write(&file, src).unwrap();
+    for (name, mut cmd) in ways(&file, &dir) {
+        for _ in 0..10 {
+            let (child, _) = start(&mut cmd, &ready);
+            term(&child);
+            let out = child.wait_with_output().unwrap();
+            let err = String::from_utf8_lossy(&out.stderr);
+            assert_eq!(out.status.code(), Some(143), "{name}: {err}");
+        }
+    }
+    let _ = fs::remove_dir_all(&dir);
+}
