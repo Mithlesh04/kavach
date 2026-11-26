@@ -26,7 +26,8 @@
 | 20 | [architecture/compiler-review.md](architecture/compiler-review.md) | The compiler's stages reviewed: boundaries, what the interpreter and native code do twice, error recovery, caching, the passes, and the rewrites worth a decision record |
 | 21 | [architecture/checker-review.md](architecture/checker-review.md) | The type checker's soundness reviewed: programs it accepts but should refuse, their three root causes, the fix order, and a fuzzer |
 | 22 | [architecture/tooling-review.md](architecture/tooling-review.md) | Kavach's tools reviewed: the command line, the language server and editor, formatter, test runner, packages, audit, AI tools, and the missing debugger and profiler |
-| 23 | [decisions/](decisions/README.md) | Why big decisions were made |
+| 23 | [architecture/optimizer-review.md](architecture/optimizer-review.md) | What native code still does that it could prove unneeded: inlining, reference counts, checks, vectorization, size and CPU targets, ranked |
+| 24 | [decisions/](decisions/README.md) | Why big decisions were made |
 
 ## Folders
 
