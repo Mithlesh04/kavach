@@ -1,0 +1,17 @@
+// Rule: An `example` whose call reaches C isn't run by `kavach test`: it is listed as not run, and it doesn't fail the tests.
+// Spec: 11.2
+// expect test pass
+
+extern c "m" {
+    fn erf(x: Float) -> Float
+}
+
+fn error_function(x: Float) -> Float
+    example error_function(0.0) == 0.0
+{
+    unsafe { erf(x) }
+}
+
+fn main() {
+    print(error_function(0.0))
+}

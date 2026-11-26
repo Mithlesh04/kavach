@@ -172,3 +172,32 @@ fn main() {
         assert_eq!(unread.filter(|l| l.contains("request")).count(), 200);
     }
 }
+
+/// An `example` whose call reaches C isn't run: the report lists it as
+/// not run, with why, and it fails nothing (spec 11.2).
+#[test]
+fn examples_that_reach_c_are_not_run() {
+    let src = "extern c \"m\" {
+    fn erf(x: Float) -> Float
+}
+
+fn error_function(x: Float) -> Float
+    example error_function(0.0) == 0.0
+{
+    unsafe { erf(x) }
+}
+";
+    let options = kavach_driver::Options {
+        allow_unsafe: true,
+        ..Default::default()
+    };
+    let compiled = kavach_driver::compile(src, "erf.kav", options);
+    assert!(!compiled.has_errors(), "{}", compiled.render());
+    let output = super::test(&compiled, &Default::default());
+    let out = &output.stdout;
+    let why = "reaches C or raw memory, which run only in native code (10.7, 6.4)";
+    let line = format!("  not run: error_function: example error_function(0.0) == 0.0: {why}");
+    assert!(out.lines().any(|l| l == line), "{out}");
+    assert!(out.contains("0 passed, 0 failed, 1 not run"), "{out}");
+    assert_eq!(output.exit_code, 0, "{out}");
+}

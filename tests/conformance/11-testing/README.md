@@ -15,6 +15,7 @@ Conformance tests for spec chapter [11. Testing](../../../docs/spec/11-testing.m
 | 11.5 | [clock-fake-moves-with-every.kav](clock-fake-moves-with-every.kav) | In a generated test, each round of `time.every` moves the clock forward at once, as `sleep` does. | tests pass |
 | 11.2 | [require-filters-inputs.kav](require-filters-inputs.kav) | Generated arguments that break a `require` are not used. | tests pass |
 | 11.2 | [errors-are-not-failures.kav](errors-are-not-failures.kav) | Returning a declared error is not a failure. | tests pass |
+| 11.2, 10.7 | [examples-reaching-c-are-not-run/](examples-reaching-c-are-not-run/src/main.kav) | An `example` whose call reaches C isn't run by `kavach test`: it is listed as not run, and it doesn't fail the tests. | tests pass |
 | 11.2 | [ensure-is-checked.kav](ensure-is-checked.kav) | Every result of a generated call must meet `ensure`. | tests fail |
 | 11.3 | [invariants-guide-generation.kav](invariants-guide-generation.kav) | Generated records never break their invariants. | tests pass |
 | 11.3 | [sample-makes-values.kav](sample-makes-values.kav) | A type that implements `Sample` gets its generated values from its own `sample`. | tests pass |

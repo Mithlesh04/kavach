@@ -76,6 +76,7 @@ impl<'a> Interp<'a> {
     pub(crate) fn run_tests(&mut self, seed: u64) -> usize {
         let mut failed = 0;
         let mut passed = 0;
+        let mut not_run = 0;
         for item in self.c.own_items() {
             // A function's examples, and its methods' (spec 7.6): in a
             // type's body and in `extend` blocks.
@@ -145,8 +146,17 @@ impl<'a> Interp<'a> {
                 self.frozen = (!label.starts_with("test "))
                     .then(|| std::rc::Rc::new(std::cell::Cell::new((crate::fakes::START_MS, 0))));
                 running(Some(label.clone()));
+                self.reached_c = false;
                 let outcome = run(self);
                 running(None);
+                // An example that reaches C or raw memory runs only in
+                // native code: listed, not failed (spec 11.2).
+                if !label.starts_with("test ") && self.reached_native(&outcome) {
+                    not_run += 1;
+                    let why = crate::testing::NATIVE_ONLY;
+                    self.out.push_str(&format!("  not run: {label}: {why}\n"));
+                    continue;
+                }
                 match outcome {
                     Ok(true) => {
                         passed += 1;
@@ -168,8 +178,12 @@ impl<'a> Interp<'a> {
                 }
             }
         }
+        let not_run = match not_run {
+            0 => String::new(),
+            n => format!(", {n} not run"),
+        };
         self.out
-            .push_str(&format!("{passed} passed, {failed} failed\n"));
+            .push_str(&format!("{passed} passed, {failed} failed{not_run}\n"));
         failed
     }
 

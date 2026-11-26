@@ -1,0 +1,3 @@
+[package]
+name = "examples-reaching-c-are-not-run"
+unsafe = true

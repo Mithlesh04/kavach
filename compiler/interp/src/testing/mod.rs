@@ -60,16 +60,25 @@ enum Outcome {
     Native,
 }
 
+/// Why a function or `example` that reaches C or raw memory isn't
+/// checked (spec 11.2).
+pub(crate) const NATIVE_ONLY: &str =
+    "reaches C or raw memory, which run only in native code (10.7, 6.4)";
+
 impl<'a> Interp<'a> {
+    /// Whether what was just `called` reached C, or raw memory in
+    /// `unsafe` code (`alloc`, `*p`), which run only in native code.
+    /// Clear `reached_c` before the call.
+    pub(crate) fn reached_native<T>(&mut self, called: &Result<T, Flow<'a>>) -> bool {
+        let native = |m: &str| m.contains("native code") || m.contains("native compiler");
+        std::mem::take(&mut self.reached_c) || matches!(called, Err(Flow::Panic(m, _)) if native(m))
+    }
+
     /// Calls `t` with `args`, its output hidden and its time limited.
     fn run_case(&mut self, t: &Target<'a>, args: &[Value<'a>], budget: u64) -> Outcome {
         self.reached_c = false;
         let called = self.call_case(t, args, budget);
-        // C, or raw memory in `unsafe` code (`alloc`, `*p`): native only.
-        let native = |m: &str| m.contains("native code") || m.contains("native compiler");
-        if std::mem::take(&mut self.reached_c)
-            || matches!(&called, Err(Flow::Panic(m, _)) if native(m))
-        {
+        if self.reached_native(&called) {
             return Outcome::Native;
         }
         match called {
@@ -251,8 +260,7 @@ impl<'a> Interp<'a> {
                 }
             }
             if reaches_c {
-                let why = "reaches C or raw memory, which run only in native code (10.7, 6.4)";
-                skipped.push(format!("{}: {why}", t.name));
+                skipped.push(format!("{}: {NATIVE_ONLY}", t.name));
                 native += 1;
                 continue;
             }
