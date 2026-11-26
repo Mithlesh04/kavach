@@ -130,6 +130,9 @@ type Count { n: Int  invariant positive(n) } // accepted, prints on each Count
 
 ### 5. An interface bound is skipped when the argument is a type parameter
 
+**Fixed 2026-11-27** (with a conformance test that failed before).
+
+
 ```kavach
 fn show<T: Describe>(x: T) -> String { x.describe() }
 fn outer<U>(x: U) -> String { show(x) }      // U has no bound
@@ -141,6 +144,9 @@ print(outer(5))                              // panic: expected an integer
 - **Where:** `calls.rs:187`: `Ty::Var(_) | Ty::Param(_) | Ty::Error | Ty::Never => continue`. For a `Ty::Param`, the comment says "bounded where it was declared", but nothing checks that its declared bounds include the needed one. `Number` and operator bounds through a parameter **are** checked (`numbers.rs`, `op_bounds.rs`; `param-bound2.kav` is refused), so only interface bounds have the hole.
 
 ### 6. An interface bound is skipped when the type is not known yet
+
+**Fixed 2026-11-27** (with a conformance test that failed before).
+
 
 ```kavach
 const f = x => show(x)
@@ -165,6 +171,9 @@ print(quiet_only(ws))                    // accepted; loud runs
 
 ### 8. Names that are not values type as `Ty::Error`, with no message
 
+**Fixed 2026-11-27** (with a conformance test that failed before).
+
+
 ```kavach
 use std.json
 fn f<T>(x: T) -> Int { T }               // a type parameter as a value
@@ -179,6 +188,9 @@ print(n + f(1))                          // panic: can't use `+` on () and ()
 
 ### 9. A generic type written without arguments fits every instance
 
+**Fixed 2026-11-27** (with a conformance test that failed before).
+
+
 ```kavach
 type Pair<A> { v: A }
 fn launder(p: Pair) -> Pair<Int> { p }
@@ -190,6 +202,9 @@ print(launder(Pair(v: "text")).v + 1)    // panic: can't use `+` on text and 1
 - **Where:** `infer.rs:211-215`, `unify_args`: "Type arguments left out … match anything". `Pair` in a signature should either be an error or mean fresh variables per use, never a wildcard that both sides can pass through.
 
 ### 10. `sum(f)` takes any result type
+
+**Fixed 2026-11-27** (with a conformance test that failed before).
+
 
 ```kavach
 type NetId = distinct Int
@@ -229,6 +244,9 @@ fn take(b: Box<Int>) -> Int { b.item }   // accepted
 - **Harm today:** small, as the bound can't be used either; it becomes finding 5 the day I1 is fixed.
 
 ### 13. Type variables left open are accepted
+
+**Fixed 2026-11-27** (with a conformance test that failed before).
+
 
 ```kavach
 fn zero<T>() -> T? { none }
