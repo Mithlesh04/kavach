@@ -1,0 +1,35 @@
+// Rule: a panic inside the `update` of one task, while tasks on every core update the same `Shared` value, lets go only of that task's hold on the value: no other task's update is lost, and the program goes on using the value.
+// Spec: 9.1, 6.2
+// expect output: 160500
+// expect output: 160501
+// expect stderr: panic: stopped at update 500
+// expect stderr:   at a-panic-in-one-update-loses-no-other-tasks-update.kav:10
+
+fn step(n: Int, i: Int, stop_at: Int) -> Int {
+    if i == stop_at {
+        panic(`stopped at update {i}`)
+    }
+    n + 1
+}
+
+fn count(hits: Shared<Int>, stop_at: Int) -> Int {
+    for i in 0..20_000 {
+        hits.update(n => step(n, i, stop_at))
+    }
+    0
+}
+
+fn main() {
+    const hits = Shared(0)
+    let tasks: [Task<Int>] = []
+    for _ in 0..8 {
+        tasks.push(spawn cores count(hits, -1))
+    }
+    tasks.push(spawn cores count(hits, 500))
+    for t in tasks {
+        const _ = t.wait() catch _ => 0
+    }
+    print(hits.get())
+    hits.update(n => n + 1)
+    print(hits.get())
+}

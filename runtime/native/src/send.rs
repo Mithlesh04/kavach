@@ -9,9 +9,9 @@
 //!
 //! Values shared on purpose (`Shared`, channels, tasks) are objects
 //! around a *cell*, counted atomically: a copy is a new object around the
-//! same cell. What a cell holds is only used by the task holding the turn
-//! (`rt_tasks::turn`), so freeing an object around a cell, which may free
-//! what the cell holds, waits for the turn too. Compiled regular
+//! same cell. What a `Shared` cell holds is used under the cell's lock
+//! (decision 0052); freeing an object around a cell, which may free what
+//! the cell holds, waits for the turn (`rt_tasks::turn`). Compiled regular
 //! expressions are shared as they are: nothing in them changes.
 
 use crate::heap::{
@@ -68,13 +68,23 @@ impl SharedCell {
         kavach_runtime_core::tasks::hold(true);
     }
 
-    fn unlock(&self) {
+    /// Lets go once, and gives how many times its owner still holds it,
+    /// worked out before the lock is free: from then on another core may
+    /// take it and write `depth`, so the caller never reads it again.
+    fn unlock(&self) -> u32 {
         let depth = self.depth.get() - 1;
         self.depth.set(depth);
         if depth == 0 {
             kavach_runtime_core::tasks::hold(false);
             self.owner.store(0, std::sync::atomic::Ordering::Release);
         }
+        depth
+    }
+
+    /// Whether the running task holds the lock.
+    fn mine(&self) -> bool {
+        let me = crate::rt_tasks::me() + 1;
+        self.owner.load(std::sync::atomic::Ordering::Acquire) == me
     }
 }
 
@@ -87,14 +97,20 @@ fn crossing(v: u64, ty: Type) -> u64 {
     copy(v, ty)
 }
 
-// SAFETY: a cell is used only by the thread holding its program's turn
-// (see the top of this file), and the turn passes through a mutex, which
-// orders memory between threads. Only the atomic count of the `Arc`
-// around it is touched by threads running at once.
+// SAFETY: a `Shared` cell's `value` and `depth` are read and written
+// only by the task holding its lock: `owner` is taken with an Acquire
+// compare-exchange and given back with a Release store, so what one
+// owner wrote is seen by the next, on any core. `unlock` reads `depth`
+// before that store and never after (unsafe audit (a) 2). `owner`
+// itself, and the `Arc`'s count, are atomic.
 #[allow(unsafe_code)]
 unsafe impl Send for SharedCell {}
 #[allow(unsafe_code)]
 unsafe impl Sync for SharedCell {}
+// SAFETY: a task's or channel's cell is used only by the thread holding
+// its program's turn, and the turn passes through a mutex, which orders
+// memory between threads. Only the atomic count of the `Arc` around it
+// is touched by threads running at once.
 #[allow(unsafe_code)]
 unsafe impl Send for crate::rt_tasks::TaskObj {}
 #[allow(unsafe_code)]
@@ -189,6 +205,9 @@ thread_local! {
     /// The values whose `update` this thread's task is running: a panic
     /// in the function unwinds past the end of the `update` (decision
     /// 0065), so the task's start lets go of them (`let_go_after_panic`).
+    /// A cell joins at its first take and leaves when its lock is free, so
+    /// the list never holds more than the `update`s running inside each
+    /// other.
     static UPDATING: std::cell::RefCell<Vec<Arc<SharedCell>>> =
         const { std::cell::RefCell::new(Vec::new()) };
 }
@@ -198,25 +217,40 @@ thread_local! {
 pub fn shared_lock(p: i64, taken: bool) {
     if let Data::Shared(c) = &*data(p).borrow() {
         if taken {
-            c.lock();
-            if c.depth.get() == 1 {
-                UPDATING.with(|u| u.borrow_mut().push(Arc::clone(c)));
-            }
+            take_for_update(c);
         } else {
-            c.unlock();
-            if c.depth.get() == 0 {
-                UPDATING.with(|u| u.borrow_mut().retain(|x| !Arc::ptr_eq(x, c)));
-            }
+            let_go_for_update(c);
         }
     }
 }
 
+/// `update` takes `c`'s lock; at the first take, `c` joins this thread's
+/// list. `depth` is read under the lock, where only its owner writes it.
+fn take_for_update(c: &Arc<SharedCell>) {
+    c.lock();
+    if c.depth.get() == 1 {
+        UPDATING.with(|u| u.borrow_mut().push(Arc::clone(c)));
+    }
+}
+
+/// `update` lets go of `c`'s lock; once it is free, `c` leaves this
+/// thread's list. The depth comes from `unlock`: read again after it, it
+/// could be another core's, which took the lock meanwhile.
+fn let_go_for_update(c: &Arc<SharedCell>) {
+    if c.unlock() == 0 {
+        UPDATING.with(|u| u.borrow_mut().retain(|x| !Arc::ptr_eq(x, c)));
+    }
+}
+
 /// A panic unwound out of `update`s, whose functions never stored their
-/// results: their values let go, as they were (spec 9.1).
+/// results: their values let go, as they were (spec 9.1). Only the locks
+/// this task still holds: one it let go of may be another task's by now.
 pub(crate) fn let_go_after_panic() {
     for c in UPDATING.with(|u| std::mem::take(&mut *u.borrow_mut())) {
-        c.depth.set(1);
-        c.unlock();
+        if c.mine() {
+            c.depth.set(1);
+            c.unlock();
+        }
     }
 }
 
@@ -390,5 +424,7 @@ fn copy_held(p: i64, own: Type, tag: u32, words: &mut [u64]) {
     }
 }
 
+#[cfg(test)]
+mod lock_tests;
 #[cfg(test)]
 pub(crate) mod tests;

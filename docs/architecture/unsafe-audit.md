@@ -61,6 +61,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 
 ### 2. `Shared`'s lock depth is read after the lock is released, so `update`'s panic list keeps stale cells
 
+- **Status:** Fixed 2026-11-26, "Read a Shared lock's depth before letting it go", tests `runtime/native/src/send/lock_tests.rs` and `tests/conformance/09-concurrency/a-panic-in-one-update-loses-no-other-tasks-update.kav`. `unlock` gives the depth it left, worked out before `owner` is stored; `let_go_after_panic` lets go only of cells this task still owns. A cell leaves the thread's list whenever its lock is free, so the list holds at most the `update`s running inside each other. `a_panic_lets_go_only_of_the_locks_its_task_holds` failed before (`theirs let go`, `left: 0 right: 10`). The race itself showed in no run before the fix: neither the unit test with 8 threads × 50,000 updates nor the conformance test, built with LLVM and run 5 times on all cores. The value can't be shown freed under `KAVACH_CHECK_LEAKS`: the panicking task's frames keep their copy of the `Shared` (decision 0065), and the leak check then says "a cycle keeps it", which is wrong (as for `a-panic-inside-update-lets-the-value-go.kav`); left for a maintainer's review.
 - **Where:** runtime/native/src/send.rs:198-212 (`shared_lock`), :71-78 (`unlock`) and :216-221 (`let_go_after_panic`).
 - **What happens:**
   1. `shared_lock(p, false)` calls `c.unlock()`, which stores `owner = 0` once the depth reaches 0. Then it reads `c.depth.get()` (a plain `Cell`).
