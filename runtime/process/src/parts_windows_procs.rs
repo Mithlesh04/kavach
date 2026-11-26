@@ -406,6 +406,24 @@ mod tests {
     }
 
     #[test]
+    fn the_adapter_list_is_asked_for_again_too() {
+        // `GetAdaptersAddresses`: 64-bit words, ERROR_BUFFER_OVERFLOW (111).
+        let mut need = 32 * 1024 + 8;
+        let list = filled(111, |words: Option<&mut [u64]>, size| match words {
+            Some(w) if *size >= need => {
+                w[0] = 7;
+                0
+            }
+            _ => {
+                *size = need;
+                need += 4096;
+                111
+            }
+        });
+        assert_eq!(list.map(|l| l[0]), Ok(7));
+    }
+
+    #[test]
     fn this_machines_ports_are_read() {
         let ports = ports().expect("every table read");
         assert!(ports.iter().all(|r| r.len() == 6));

@@ -219,6 +219,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
   - Validate the name in act 3, or have `wide` reject NUL.
   - Fixed 2026-11-26, "Refuse a NUL in text for system calls", tests `runtime/process/src/registry.rs` (`text_for_a_system_call_never_holds_a_zero_before_its_end`) and `runtime/process/src/acts.rs` (`a_user_to_remove_never_holds_a_nul`); both check only the text, and nothing removes a user. Both were done: `wide` gives `None` for text holding a NUL, and act 3 refuses such a name with `Failed` on every system before any call. Act 3 doesn't apply `user_name`, as spec 14.25 says `remove_user` takes any name, for old accounts. The functions are new, so no test failed before.
 - **parts_windows_net.rs:45-60:** `GetAdaptersAddresses` gets a fixed 32 KB buffer and no retry on ERROR_BUFFER_OVERFLOW (111). Hosts with many virtual adapters silently report none. Retry with the size the call returns.
+  - Fixed 2026-11-26, "Ask again for the adapter list when it grows", test `runtime/process/src/parts_windows_procs.rs` (`the_adapter_list_is_asked_for_again_too`, with a fake call; the list now goes through the same `filled` as the IP helper's tables of (a) 7). No test failed before: the old code had no function to give a fake.
 - **parts_windows_net.rs:97:** an `unsafe { utf16_at(..) }` with no SAFETY comment. It is sound; the same call at :109 has a comment.
 
 ## (c) Fine, counted per file

@@ -42,23 +42,34 @@ pub fn network() -> (Vec<Vec<String>>, Vec<String>) {
     use windows_sys::Win32::Networking::WinSock::{
         AF_INET, AF_INET6, AF_UNSPEC, SOCKADDR_IN, SOCKADDR_IN6,
     };
-    let mut size = 32 * 1024u32;
-    let mut buffer = vec![0u64; size as usize / 8];
-    // SAFETY: `buffer` has room for `size` bytes, aligned for the list.
-    let status = unsafe {
-        GetAdaptersAddresses(
-            AF_UNSPEC as u32,
-            GAA_FLAG_INCLUDE_PREFIX,
-            std::ptr::null(),
-            buffer.as_mut_ptr().cast(),
-            &mut size,
-        )
-    };
+    // ERROR_BUFFER_OVERFLOW: the buffer was too small, and `size` is the
+    // size the list needs now. Hosts with many adapters need more than
+    // any fixed size.
+    const TOO_SMALL: u32 = 111;
+    let list = super::windows_procs::filled(TOO_SMALL, |words: Option<&mut [u64]>, size| {
+        let buffer = words.map_or(std::ptr::null_mut(), |w| w.as_mut_ptr().cast());
+        // SAFETY: `buffer` is null or has room for `size` bytes, aligned
+        // for the list (8 bytes).
+        unsafe {
+            GetAdaptersAddresses(
+                AF_UNSPEC as u32,
+                GAA_FLAG_INCLUDE_PREFIX,
+                std::ptr::null(),
+                buffer,
+                size,
+            )
+        }
+    });
     let (mut rows, mut macs) = (Vec::new(), Vec::new());
-    if status != 0 {
+    let Ok(buffer) = list else {
         return (rows, macs);
-    }
-    let mut at = buffer.as_ptr() as *const IP_ADAPTER_ADDRESSES_LH;
+    };
+    // An empty buffer holds no list: nothing to read.
+    let mut at = if buffer.is_empty() {
+        std::ptr::null()
+    } else {
+        buffer.as_ptr() as *const IP_ADAPTER_ADDRESSES_LH
+    };
     while !at.is_null() {
         // SAFETY: each entry of the list the call wrote into `buffer`,
         // which lives until the end of this function.
