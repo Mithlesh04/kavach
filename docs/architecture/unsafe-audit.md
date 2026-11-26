@@ -143,6 +143,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 
 ### runtime/matrix
 
+- **Fixed 2026-11-26, "Check list sizes before the fast matrix product", test `runtime/matrix/src/tests.rs` (`fast_checks_the_sizes_before_reading`).** The check comes after the empty case, which reads nothing.
 - **product.rs:96-127 (`fast_band`), with product.rs:23:** `product` is a safe `pub fn`, but `b`'s length is never checked against `m * p` before `gemm` reads `m × p` items from `b.as_ptr()`.
   - `lhs` is slice-checked, and the exact path panics on bad sizes; only `fast: true` reads out of bounds.
   - Today the sizes come from std.tensor (stdlib/tensor/ops.kav:175-186), and `matrix.product_id` is "only for the standard library". So it is safe only while `shapes.spread` and the Kavach slices always give exactly `m*k` and `k*p` items, and nothing checks that.

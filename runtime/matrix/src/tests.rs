@@ -91,3 +91,10 @@ fn a_product_with_no_rows_is_empty() {
         Vec::<f64>::new()
     );
 }
+
+#[test]
+#[should_panic(expected = "the sizes of the product's lists")]
+fn fast_checks_the_sizes_before_reading() {
+    // `b` is 2 × 2 but holds 3 items: `gemm` would read a 4th past it.
+    let _ = product(&[1.0f64, 2.0], &[1.0, 2.0, 3.0], (1, 2, 2), true, 1);
+}

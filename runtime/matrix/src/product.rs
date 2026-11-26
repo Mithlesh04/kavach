@@ -27,10 +27,23 @@ pub fn product<T: Num>(
     fast: bool,
     cores: usize,
 ) -> Result<Vec<T>, Overflow> {
-    let mut out = vec![T::default(); n * p];
+    let items = n.checked_mul(p).expect("the size of the product");
+    let mut out = vec![T::default(); items];
     if out.is_empty() {
         return Ok(out);
     }
+    // Checked before any work, as `gemm` reads `a` and `b` by pointer
+    // (`fast_band`): a list too short for its sizes is the caller's bug,
+    // so it panics, as the exact path's slicing does.
+    let fits = |len: usize, rows: usize, cols: usize| {
+        rows.checked_mul(cols).is_some_and(|want| len >= want)
+    };
+    assert!(
+        fits(a.len(), n, m) && fits(b.len(), m, p),
+        "the sizes of the product's lists: {} and {} items for {n} × {m} × {p}",
+        a.len(),
+        b.len(),
+    );
     let threads = if n * m * p >= SPREAD {
         cores.clamp(1, n)
     } else {
@@ -98,7 +111,8 @@ fn exact_band<T: Num>(
 fn fast_band<T: Num>(a: &[T], b: &[T], rows: &mut [T], first: usize, (m, p): (usize, usize)) {
     let count = rows.len() / p;
     let lhs = &a[first * m..(first + count) * m];
-    // SAFETY: `lhs` is `count` × `m`, `b` is `m` × `p` and `rows` is
+    // SAFETY: `lhs` is `count` × `m`, `b` is `m` × `p` (`product` checked
+    // that `b` holds at least `m * p` items) and `rows` is
     // `count` × `p`, each row by row: a column stride of 1 and a row
     // stride of its width, so `gemm` reads and writes only their items.
     // `T` is `f32` or `f64` (`T::FLOAT`), which `gemm` supports. With
