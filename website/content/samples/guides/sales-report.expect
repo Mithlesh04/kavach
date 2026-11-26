@@ -1,0 +1,17 @@
+$ kavach check
+src/main.kav: no errors
+$ kavach run src/main.kav
+4 sales, 3 items, written to report.json
+jam: 5 sold, 16.00
+tea: 4 sold, 10.00
+cake: 2 sold, 8.00
+$ kavach run src/main.kav broken.csv
+broken.csv: Value(line: 3, column: "units", expected: "a whole number", found: "two")
+$ kavach run src/main.kav negative.csv
+negative.csv: Value(line: 3, column: "units", expected: "a whole number that fits `Int<range: 0..=1000000>`", found: "-2")
+$ kavach test --seed 7
+✓ totals: example totals([Sale(item: "tea", units: 2, price: 1.5)]) == [Total(item: "tea", units: 2, revenue: 3.0)]
+1 passed, 0 failed
+seed 7
+✓ totals  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested

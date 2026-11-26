@@ -1,0 +1,5 @@
+check
+run src/main.kav
+run src/main.kav broken.csv
+run src/main.kav negative.csv
+test --seed 7

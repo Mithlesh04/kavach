@@ -1,0 +1,50 @@
+use std.cli
+use std.fs
+use std.json
+use std.table
+
+/// One line of the CSV: a sale.
+type Sale {
+    item: String
+    units: Int<range: 0..=1_000_000>
+    price: Decimal
+}
+
+/// One line of the report: an item's total.
+type Total {
+    item: String
+    units: Int
+    revenue: Decimal
+}
+
+/// Each item's units and revenue, the best seller first.
+fn totals(sales: [Sale]) -> [Total]
+    example totals([Sale(item: "tea", units: 2, price: 1.5)]) == [Total(item: "tea", units: 2, revenue: 3.0)]
+{
+    sales
+        .group_by(.item)
+        .to_list()
+        .map(p => Total(
+        item: p.0,
+        units: p.1.sum(s => Int(s.units)),
+        revenue: p.1.sum(s => s.price * Decimal(s.units)),
+    ))
+        .sort_by(t => -t.revenue)
+}
+
+fn main() ! Error {
+    const path = cli.args().first() ?? "sales.csv"
+    const sales = table.read_csv<Sale>(path) catch e => {
+        print(`{path}: {e}`)
+        cli.exit(1)
+        return
+    }
+    const report = totals(sales.rows())
+    try fs.write_text("report.json", json.stringify(report, indent: 2))
+    print(`{sales.len()} sales, {report.len()} items, written to report.json`)
+
+    const back = try json.decode<[Total]>(try fs.read_text("report.json"))
+    for t in back {
+        print(`{t.item}: {t.units} sold, {t.revenue}`)
+    }
+}

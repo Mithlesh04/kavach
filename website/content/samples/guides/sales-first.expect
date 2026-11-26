@@ -1,0 +1,14 @@
+$ kavach test --seed 7
+✓ totals: example totals([Sale(item: "tea", units: 2, price: 1.5)]) == [Total(item: "tea", units: 2, revenue: 3.0)]
+1 passed, 0 failed
+seed 7
+✗ totals: panicked (integer overflow: -9223372036854775808 + -9223372036854775808 doesn't fit in Int)
+    src/main.kav:29   p.1.sum(.units)
+  smallest failing input: sales = [Sale(item: " ", units: -1, price: 0), Sale(item: " ", units: -9223372036854775808, price: 0)]
+  How to fix (pick one):
+    1. Forbid it. Add: require …  (a condition that bounds how large the inputs can be)
+       Choose this if such a value here is always a bug in the calling code.
+    2. Use a wider type, such as `Int` instead of `Int32`.
+    3. Use `checked_add` (and similar), which returns `none` on overflow.
+  saved to tests/found/main.kavf  (replayed on every run)
+1 functions   0 ✓   1 ✗   0 weakly tested
