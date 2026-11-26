@@ -1,5 +1,5 @@
 // Rule: A chain of `map`, `filter` and `sum`, which native code fuses into one loop, gives its value from the list as it was, and changing the list afterwards leaves that value as it is.
-// Spec: 6.1, 14.2
+// Spec: 6.1
 // expect output: [4, 6]
 // expect output: 10
 // expect output: [100, 2, 3, 10]

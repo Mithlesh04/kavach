@@ -80,7 +80,16 @@ Copying everything would be slow, so the compiler avoids it:
 2. **Reference counting under the hood.** Large values are shared internally and counted. The compiler removes most count updates at compile time.
 3. **Copy-on-write, reused in place.** A value is copied only when it is changed *while* someone else still holds it. If nobody else holds it, it is changed in place. So `text += part` or `items.push(x)` in a loop copies only what is added, not the whole value each time. This holds for a list or map in a field or an item too, and through `inout` (3.9): `state.items.push(x)`, `rows[i].push(x)` and `state.names[k] = v` change it where it is.
 
-You never see any of this. You write simple value code and get performance close to hand-managed memory.
+4. **Chains fused into one loop.** A chain such as `xs.map(f).filter(g).sum(h)` may run as one loop that builds no list between its steps. Its value is the one the steps give in turn, over the list as it was when the chain ran:
+
+   ```kavach
+   let xs = [1, 2, 3]
+   const ys = xs.map(x => x * 2).filter(x => x > 2)   // [4, 6]
+   xs.push(10)
+   // ys is still [4, 6]
+   ```
+
+You never see any of this. You write simple value code and get performance close to hand-managed memory. **No optimization changes what a program does:** moving, sharing underneath, changing in place, fusing loops, keeping a record in registers or spreading work over cores gives the same output, the same panics at the same lines and the same values in every copy as running each step on its own copies would. Native code and the interpreter are checked against each other on every conformance test, and chapter 6's tests change one copy through each optimized path and check the others.
 
 What is counted, as the compiler does it today (a program can't tell the difference):
 
