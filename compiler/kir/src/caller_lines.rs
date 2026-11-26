@@ -82,18 +82,24 @@ fn never_overflows(op: BinOp) -> bool {
 }
 
 /// Whether a block has a `Check` (a contract or an `assert`) at any depth.
+/// `any_in_block` reaches every block inside, so each block's own
+/// statements are looked at once: looking at a branch's whole depth
+/// again for each `if` would take time doubling with each arm of a
+/// `match`.
 fn has_check(block: &Block) -> bool {
-    let in_stmts = block.stmts.iter().any(|s| match s {
-        Stmt::Check { .. } => true,
-        Stmt::While { body, .. } | Stmt::ForRange { body, .. } | Stmt::ForEach { body, .. } => {
-            has_check(body)
-        }
-        _ => false,
-    });
-    in_stmts
+    fn in_stmts(block: &Block) -> bool {
+        block.stmts.iter().any(|s| match s {
+            Stmt::Check { .. } => true,
+            Stmt::While { body, .. } | Stmt::ForRange { body, .. } | Stmt::ForEach { body, .. } => {
+                in_stmts(body)
+            }
+            _ => false,
+        })
+    }
+    in_stmts(block)
         || any_in_block(block, &mut |e| match &e.kind {
-            ExprKind::If(_, a, b) | ExprKind::Fallback(a, b) => has_check(a) || has_check(b),
-            ExprKind::Block(b) => has_check(b),
+            ExprKind::If(_, a, b) | ExprKind::Fallback(a, b) => in_stmts(a) || in_stmts(b),
+            ExprKind::Block(b) => in_stmts(b),
             _ => false,
         })
 }

@@ -358,35 +358,41 @@ fn plain_stmts(b: &Block) -> bool {
 }
 
 /// The locals `b` sets up: `let`s and loop variables, at any depth.
+/// `any_in_block` reaches every block inside, so each block's own
+/// statements are read once (reading a branch's whole depth again for
+/// each `if` would take time doubling with each arm of a `match`).
 fn defined(b: &Block, out: &mut Vec<Local>) {
-    for s in &b.stmts {
-        match s {
-            Stmt::Let(l, _) => out.push(*l),
-            Stmt::LetResult { value, error, .. } => out.extend([*value, *error]),
-            Stmt::ForRange { var, body, .. } => {
-                out.push(*var);
-                defined(body, out);
+    fn in_stmts(b: &Block, out: &mut Vec<Local>) {
+        for s in &b.stmts {
+            match s {
+                Stmt::Let(l, _) => out.push(*l),
+                Stmt::LetResult { value, error, .. } => out.extend([*value, *error]),
+                Stmt::ForRange { var, body, .. } => {
+                    out.push(*var);
+                    in_stmts(body, out);
+                }
+                Stmt::ForEach {
+                    var,
+                    index,
+                    list,
+                    body,
+                } => {
+                    out.extend([*var, *index, *list]);
+                    in_stmts(body, out);
+                }
+                Stmt::While { body, .. } => in_stmts(body, out),
+                _ => {}
             }
-            Stmt::ForEach {
-                var,
-                index,
-                list,
-                body,
-            } => {
-                out.extend([*var, *index, *list]);
-                defined(body, out);
-            }
-            Stmt::While { body, .. } => defined(body, out),
-            _ => {}
         }
     }
+    in_stmts(b, out);
     any_in_block(b, &mut |e| {
         match &e.kind {
             ExprKind::If(_, x, y) | ExprKind::Fallback(x, y) => {
-                defined(x, out);
-                defined(y, out);
+                in_stmts(x, out);
+                in_stmts(y, out);
             }
-            ExprKind::Block(x) => defined(x, out),
+            ExprKind::Block(x) => in_stmts(x, out),
             _ => {}
         }
         false

@@ -185,3 +185,24 @@ fn a_loop_that_changes_an_outside_local_is_not_fused() {
     let f = fuse(pipeline(assign(6, local(9, Type::I64)), vec![]));
     assert_eq!(f.body.stmts.len(), 2);
 }
+
+/// Each block of a long `if` chain (a `match`) is read once: the `let`s
+/// of every arm are found at once (it took time doubling with each arm).
+#[test]
+fn the_locals_of_a_long_if_chain_are_found_at_once() {
+    let mut rest = Block::default();
+    for arm in 0..200 {
+        let lets = Block {
+            stmts: vec![Stmt::Let(arm, e(ExprKind::Int(1), Type::I64))],
+            value: None,
+        };
+        let cond = Box::new(e(ExprKind::Bool(true), Type::Bool));
+        rest = Block {
+            stmts: Vec::new(),
+            value: Some(Box::new(e(ExprKind::If(cond, lets, rest), Type::Unit))),
+        };
+    }
+    let mut out = Vec::new();
+    super::defined(&rest, &mut out);
+    assert_eq!(out, (0..200).collect::<Vec<Local>>());
+}

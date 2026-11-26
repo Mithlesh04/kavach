@@ -11,20 +11,23 @@ use crate::module::llvm_type;
 use kavach_kir::{BinOp, Block, Expr, ExprKind, FastOp, Local, PrintPart, Stmt, Type, walk};
 use kavach_runtime_native::heap::{LEN, LIMIT, PTR, RC};
 
-/// Whether `b` has a loop inside, at any depth.
+/// Whether `b` has a loop inside, at any depth. `any_in_block` reaches
+/// every block inside, so only each block's own statements are looked
+/// at (looking at a branch's whole depth again for each `if` would take
+/// time doubling with each arm of a `match`).
 fn contains_loop(b: &Block) -> bool {
-    let is_loop = |s: &Stmt| {
-        matches!(
-            s,
-            Stmt::While { .. } | Stmt::ForRange { .. } | Stmt::ForEach { .. }
-        )
+    let has_loop = |b: &Block| {
+        b.stmts.iter().any(|s| {
+            matches!(
+                s,
+                Stmt::While { .. } | Stmt::ForRange { .. } | Stmt::ForEach { .. }
+            )
+        })
     };
-    b.stmts.iter().any(is_loop)
+    has_loop(b)
         || walk::any_in_block(b, &mut |e| match &e.kind {
-            ExprKind::If(_, t, o) | ExprKind::Fallback(t, o) => {
-                contains_loop(t) || contains_loop(o)
-            }
-            ExprKind::Block(x) => contains_loop(x),
+            ExprKind::If(_, t, o) | ExprKind::Fallback(t, o) => has_loop(t) || has_loop(o),
+            ExprKind::Block(x) => has_loop(x),
             _ => false,
         })
 }
@@ -399,3 +402,39 @@ impl FnEmit<'_> {
 }
 
 mod raw;
+
+#[cfg(test)]
+mod tests {
+    use super::contains_loop;
+    use kavach_kir::{Block, Expr, ExprKind, Stmt, Type};
+
+    /// Each block of a long `if` chain (a `match`) is looked at once: a
+    /// loop in its last arm is found at once, as is the lack of one (it
+    /// took time doubling with each arm).
+    #[test]
+    fn a_loop_deep_in_a_long_if_chain_is_found_at_once() {
+        let at = |kind, ty| Expr { kind, ty, line: 1 };
+        let chain = |last: Block| {
+            (0..200).fold(last, |rest, _| Block {
+                stmts: Vec::new(),
+                value: Some(Box::new(at(
+                    ExprKind::If(
+                        Box::new(at(ExprKind::Bool(true), Type::Bool)),
+                        Block::default(),
+                        rest,
+                    ),
+                    Type::Unit,
+                ))),
+            })
+        };
+        let a_loop = Block {
+            stmts: vec![Stmt::While {
+                cond: at(ExprKind::Bool(false), Type::Bool),
+                body: Block::default(),
+            }],
+            value: None,
+        };
+        assert!(contains_loop(&chain(a_loop)));
+        assert!(!contains_loop(&chain(Block::default())));
+    }
+}
