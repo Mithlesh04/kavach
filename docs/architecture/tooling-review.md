@@ -177,6 +177,7 @@ The grammar tests and `client.test.js` run only by hand (CI is off). The repo ch
 | MCP compiles one file with `Options::default()` (`mcp.rs:141`): no project files, no `kavach.toml`, no dependencies, no tagged-literal checks; false errors in any project | confirmed | `tools/ai/tests/mcp.rs`: a two-module project checks clean through `kavach_check` |
 | MCP needs `file` for every tool; in a project, `query` and `context` don't use the index the CLI keeps | `mcp.rs:139` | MCP's `kavach_query` with no file answers from `.kavach/index` |
 | MCP has no `fix` or `fmt` tool; `edit` (13.8) is Phase 3 | `mcp.rs` | a `kavach_fix` tool |
+| `kavach query type String f.kav` says "no type … named `String`": built-in types (`String`, `[T]`, `Int`, `Json`) have no answer, though `String.members()` (14.32) lists them (reported by a maintainer, 2026-11-27) | confirmed | `kavach query type String` prints its methods with their signatures |
 | `kavach outline <module>` (13.3 says "file or module") takes only a path: `outline money` says "can't read money" | confirmed | `kavach outline money` in a project prints that module |
 | Each tool puts the compile together its own way: CLI `read_as`, MCP, `fmt`, the playground and the server all differ | `main.rs:305`, `mcp.rs:141`, `names.rs:30`, `playground/src/main.rs:30` | decision T3 |
 
