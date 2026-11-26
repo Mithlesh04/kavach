@@ -24,6 +24,7 @@ import { commandsRefDoc, keywordsRefDoc, literalsRefDoc, methodsRefDoc, operator
 import { stdModuleDocs, stdlibRefDoc } from "./reference-std";
 import { testedDocs } from "./reference-tested";
 import { stdlibLessons } from "./index-stdlib";
+import { guideLessons } from "./index-guides";
 import { typesRefDoc } from "./reference-types";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
@@ -339,6 +340,7 @@ export const lessons: Record<string, LessonDoc> = {
   "memory/hardware-registers": registersDoc,
 
   ...stdlibLessons,
+  ...guideLessons,
 
   "speed/how-kavach-is-fast": howFastDoc,
   "speed/loops-on-all-cores": coresDoc,

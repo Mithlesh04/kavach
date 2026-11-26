@@ -1,0 +1,28 @@
+$ kavach check
+src/main.kav: no errors
+$ kavach run src/main.kav --input notes.txt
+3  tea
+2  and
+2  cake
+$ kavach run src/main.kav --input notes.txt --top 2
+3  tea
+2  and
+$ kavach run src/main.kav --help
+usage: main [options]
+  --input <String>         (required)
+  --top <Int>              (default 3)
+$ kavach run src/main.kav --top 2
+missing --input
+usage: main [options]
+  --input <String>         (required)
+  --top <Int>              (default 3)
+$ kavach run src/main.kav --input missing.txt
+can't read missing.txt: NotFound(path: "missing.txt")
+$ kavach test --seed 7
+✓ count_words: example count_words("Tea, tea and cake") == {"tea": 2, "and": 1, "cake": 1}
+✓ most_common: example most_common({"a": 1, "b": 3, "c": 3}, 2) == [("b", 3), ("c", 3)]
+2 passed, 0 failed
+seed 7
+✓ count_words  200 cases
+✓ most_common  200 cases
+2 functions   2 ✓   0 ✗   0 weakly tested

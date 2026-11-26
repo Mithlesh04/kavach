@@ -1,0 +1,51 @@
+use std.cli
+use std.fs
+
+/// What the tool takes on its command line.
+type Args {
+    input: String
+    top: Int = 3
+}
+
+/// How many times each word appears, in lowercase.
+fn count_words(text: String) -> {String: Int}
+    example count_words("Tea, tea and cake") == {"tea": 2, "and": 1, "cake": 1}
+{
+    let counts: {String: Int} = {:}
+    // Anything that isn't a letter, such as a comma, separates words.
+    const letters = text.lower().chars().map(c => if c.is_letter() { c } else { ' ' }).join("")
+    for word in letters.words() {
+        counts[word] = (counts.get(word) ?? 0) + 1
+    }
+    counts
+}
+
+/// The `n` most common words, the most common first; ties in a-z order.
+fn most_common(counts: {String: Int}, n: Int) -> [(String, Int)]
+    require n > 0
+    example most_common({"a": 1, "b": 3, "c": 3}, 2) == [("b", 3), ("c", 3)]
+{
+    const pairs = counts.to_list().sort_by(p => (-p.1, p.0))
+    pairs[:n]
+}
+
+fn main() {
+    const args = cli.parse<Args>() catch e => {
+        print(e)
+        cli.exit(2)
+        return
+    }
+    if args.top < 1 {
+        print(`--top must be 1 or more, not {args.top}`)
+        cli.exit(2)
+        return
+    }
+    const text = fs.read_text(args.input) catch e => {
+        print(`can't read {args.input}: {e}`)
+        cli.exit(1)
+        return
+    }
+    for (word, n) in most_common(count_words(text), args.top) {
+        print(`{n}  {word}`)
+    }
+}

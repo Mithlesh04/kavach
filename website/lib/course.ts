@@ -209,6 +209,9 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["A Library for Any Language", "—"],
     ["kavach audit", "—"],
   ]],
+  ["guides", "Guides", "intermediate", [
+    ["Build a Command-Line Tool", "—"],
+  ]],
   ["reference", "Reference", "intermediate", [
     ["Keywords", "1.6"],
     ["Operators", "1.8"],
