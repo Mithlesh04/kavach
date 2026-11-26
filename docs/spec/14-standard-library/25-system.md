@@ -123,4 +123,4 @@ fn free_8080() ! SystemError uses System.critical.read, System.critical.write, C
 - macOS through IOKit: disks, displays, devices and sensors.
 - Each GPU's memory, and the memory a GPU has free.
 - Changes while the program runs: memory available now, the processor's current speed, its temperature.
-- A new user's name (chosen 2026-11-22, for a maintainer's review): the characters every system takes, at most 20 of them, rather than whatever this system's own tools take. `remove_user` takes any name, as old accounts may have others.
+- A new user's name (chosen 2026-11-22, for a maintainer's review): the characters every system takes, at most 20 of them, rather than whatever this system's own tools take. `remove_user` takes any name, as old accounts may have others, except one holding a NUL character, which fails with `Failed` before any system call (a NUL would cut the name short).
