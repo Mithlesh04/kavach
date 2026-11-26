@@ -1,0 +1,32 @@
+use std.math
+
+// C's math library, libm, has erf: the error function. Kavach's std.math
+// doesn't, so the program calls C for it.
+extern c "m" {
+    fn erf(x: Float) -> Float
+}
+
+/// The share of a normal distribution below `x` standard deviations from
+/// its mean. The one place this program calls C.
+fn below(x: Float) -> Float
+    require x >= -40.0 and x <= 40.0
+    ensure result >= 0.0 and result <= 1.0
+{
+    unsafe { 0.5 * (1.0 + erf(x / math.sqrt(2.0))) }
+}
+
+/// `x` as a percentage with one decimal, for printing: C libraries round
+/// their last digits differently from machine to machine.
+fn percent(x: Float) -> Float
+    example percent(0.84134) == 84.1
+{
+    math.round(x * 1000.0) / 10.0
+}
+
+fn main() {
+    // Exam scores with a mean of 60 and a standard deviation of 10.
+    for score in [50.0, 60.0, 75.0, 90.0] {
+        const z = (score - 60.0) / 10.0
+        print(`{score}: better than {percent(below(z))}% of students`)
+    }
+}

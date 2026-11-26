@@ -1,0 +1,5 @@
+check
+run src/main.kav
+run --native src/main.kav
+audit
+test --seed 7

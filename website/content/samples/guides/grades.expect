@@ -1,0 +1,28 @@
+$ kavach check
+src/main.kav: no errors
+$ kavach run src/main.kav
+panic: `erf` is a C function (library "m"): it runs in native code, so run the program with `kavach run --native` or `kavach build` (spec 10.7)
+  at src/main.kav:15
+$ kavach run --native src/main.kav
+50.0: better than 15.9% of students
+60.0: better than 50.0% of students
+75.0: better than 93.3% of students
+90.0: better than 99.9% of students
+$ kavach audit
+unsafe code:
+  src/main.kav:6  extern c "m" fn erf
+  src/main.kav:15  unsafe block
+revealed secrets:
+  nothing
+audited calls:
+  nothing
+capability use:
+  src/main.kav:26  fn main: Console
+$ kavach test --seed 7
+✓ percent: example percent(0.84134) == 84.1
+1 passed, 0 failed
+seed 7
+✓ percent  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested
+  not generated: erf: a C function, which runs only in native code (10.7)
+  not generated: below: reaches C or raw memory, which run only in native code (10.7, 6.4)

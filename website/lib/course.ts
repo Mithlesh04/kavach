@@ -217,6 +217,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Test with Contracts and Generated Tests", "—"],
     ["Data Work with Tensors", "—"],
     ["Use Every Core and the GPU", "—"],
+    ["Call a C Library Safely", "—"],
   ]],
   ["reference", "Reference", "intermediate", [
     ["Keywords", "1.6"],
