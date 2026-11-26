@@ -157,6 +157,8 @@ To use a hand-written fake instead, provide it in a `test` block (11.8).
 
 ## 11.6 Agents are explored
 
+*Not built yet* (Phase 2, 11.11): `kavach test` doesn't explore agents today. Their handlers are tested like other functions, with capability fakes (11.5).
+
 For each agent, `kavach test` runs every handler many times while varying everything outside the agent's control:
 
 - **Events:** handler parameters are generated (11.3).

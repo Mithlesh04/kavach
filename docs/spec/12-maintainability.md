@@ -82,6 +82,8 @@ company/
 
 ## 12.3 Only rebuild and retest what changed
 
+*Not built yet* (Phase 3, 11.11): today `kavach build` compiles the whole program each time, `kavach test --changed` doesn't exist, and nothing is cached in `.kavach/` between runs.
+
 The compiler knows exactly which modules depend on which. So:
 
 - `kavach build` recompiles only changed modules and the modules that use them.
