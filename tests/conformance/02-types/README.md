@@ -410,6 +410,7 @@ The tests are listed in two files, by section:
 | 2.21 | [distinct-types-hold-a-value.kav](distinct-types-hold-a-value.kav) | A distinct type is made from the value it holds, gives it back as `.value`, compares, sorts and prints as that value, works as a dict key, and is written to and read from JSON as that value. | runs |
 | 2.21 | [distinct-types-are-not-mixed.kav](distinct-types-are-not-mixed.kav) | A value of a distinct type is never mixed with the type it holds or with another distinct type. | compile error |
 | 2.21 | [distinct-types-have-no-arithmetic.kav](distinct-types-have-no-arithmetic.kav) | A distinct type has no arithmetic: work on its `.value` and make a new one. | compile error |
+| 2.21 | [distinct-types-are-not-summed.kav](distinct-types-are-not-summed.kav) | `sum` adds numbers, so a lambda giving a distinct type is a compile error: sum its `.value`. | compile error |
 | 2.21 | [distinct-types-hold-built-in-values.kav](distinct-types-hold-built-in-values.kav) | A distinct type holds a built-in number, `Bool`, `Char` or `String`, nothing else. | compile error |
 | 2.21 | [distinct-types-have-no-methods-yet.kav](distinct-types-have-no-methods-yet.kav) | A distinct type has no methods of its own yet: `extend` of one is a compile error. | compile error |
 | 2.6 | [enum-variants-carry-text.kav](enum-variants-carry-text.kav) | An enum's variants may carry text: `value()` gives it, `from(text)` gives the variant or `none`. | runs |

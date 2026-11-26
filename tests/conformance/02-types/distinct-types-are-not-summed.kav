@@ -1,0 +1,11 @@
+// Rule: `sum` adds numbers, so a lambda giving a distinct type is a compile error: sum its `.value`.
+// Spec: 2.21
+// expect compile error
+
+type NetId = distinct Int
+
+fn main() {
+    const ids = [NetId(1), NetId(2)]
+    print(ids.sum(p => p.value))
+    print(ids.sum(p => p))      // error: `sum` adds numbers, and `NetId` is not one
+}

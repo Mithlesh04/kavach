@@ -116,6 +116,41 @@ impl Checker<'_> {
         self.inf.unify(ret, &Ty::Optional(Box::new(result)));
     }
 
+    /// `xs.sum(f)` adds each item's number (spec 14.2): what `f` gives
+    /// must be a number type, as a `Number` bound asks. A distinct type
+    /// has no arithmetic (2.21), so its `.value` is summed instead.
+    pub(crate) fn sum_gives_a_number(&mut self, ret: &Ty, span: kavach_ast::Span) {
+        // A function that can fail passes its error on (spec 5.2).
+        let gives = &match self.inf.shallow(ret) {
+            Ty::Result(ok, _) => *ok,
+            _ => ret.clone(),
+        };
+        let ok = match self.inf.shallow(gives) {
+            Ty::Prim(p) => p.is_numeric(),
+            Ty::Param(_) => self.number_param(gives, false),
+            // Not known yet: it may only become a number.
+            Ty::Var(_) => {
+                let number = self.inf.fresh(crate::infer::VarKind::IntLiteral);
+                self.inf.unify(gives, &number)
+            }
+            Ty::Error | Ty::Never => true,
+            _ => false,
+        };
+        if ok {
+            return;
+        }
+        let shown = self.show(gives);
+        let message = match self.distinct_held(gives) {
+            Some(_) => format!(
+                "`sum` adds numbers, and `{shown}` is a distinct type, which has no arithmetic: sum its value, as `xs.sum(x => x.value)` (spec 2.21)"
+            ),
+            None => format!(
+                "`sum` adds numbers, and the function gives `{shown}`: give each item's number, as `words.sum(w => w.len())` (spec 14.2)"
+            ),
+        };
+        self.error(span, message);
+    }
+
     /// A method added to a collection twice (spec 2.5): a program's own
     /// `extend<T> [T] { fn mean … }` takes the name of a method the
     /// standard library adds (14.2). The error is at the program's; the

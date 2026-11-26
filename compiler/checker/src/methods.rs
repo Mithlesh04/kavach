@@ -253,6 +253,9 @@ impl Checker<'_> {
                 c.args_with(args, &params, &secret, e.span, &label, "argument");
             });
             self.updating -= u32::from(update);
+            if name.name == "sum" && matches!(recv, Ty::List(_) | Ty::Set(_)) {
+                self.sum_gives_a_number(&ret, e.span);
+            }
             // `people.sort_by(p => (p.age, p.name))`: the key must have an
             // order (spec 14.2).
             if let (Some(key), Some(arg)) = (key, args.first()) {
