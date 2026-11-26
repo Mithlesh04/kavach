@@ -9,6 +9,7 @@ import { guideDataDoc } from "./guides-data";
 import { guideAgentDoc } from "./guides-agent";
 import { guideTestDoc } from "./guides-test";
 import { guideTensorsDoc } from "./guides-tensors";
+import { guideCoresDoc } from "./guides-cores";
 
 export const guideLessons: Record<string, LessonDoc> = {
   "guides/build-a-command-line-tool": guideCliDoc,
@@ -17,4 +18,5 @@ export const guideLessons: Record<string, LessonDoc> = {
   "guides/build-an-agent-with-limits-and-approvals": guideAgentDoc,
   "guides/test-with-contracts-and-generated-tests": guideTestDoc,
   "guides/data-work-with-tensors": guideTensorsDoc,
+  "guides/use-every-core-and-the-gpu": guideCoresDoc,
 };

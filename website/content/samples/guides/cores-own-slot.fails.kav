@@ -1,0 +1,7 @@
+fn main() {
+    let out = [0, 0, 0]
+    on cores for n in 1..4 {
+        out[n - 1] = n * n
+    }
+    print(out)
+}

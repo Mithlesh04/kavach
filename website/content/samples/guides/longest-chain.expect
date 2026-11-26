@@ -1,0 +1,17 @@
+$ kavach check
+src/main.kav: no errors
+$ kavach run --native src/main.kav
+the same on one core, every core and the GPU: true
+below 100000, 77031 takes the most steps: 350
+$ kavach test --seed 7
+✓ steps: example steps(27) == 111
+✓ on_one_core: example on_one_core([6, 7, 27]) == [8, 16, 111]
+✓ on_every_core: example on_every_core([6, 7, 27]) == [8, 16, 111]
+✓ on_the_gpu: example on_the_gpu([6, 7, 27]) == [8, 16, 111]
+4 passed, 0 failed
+seed 7
+✓ steps  200 cases
+✓ on_one_core  171 cases
+✓ on_every_core  188 cases
+✓ on_the_gpu  190 cases
+4 functions   4 ✓   0 ✗   0 weakly tested

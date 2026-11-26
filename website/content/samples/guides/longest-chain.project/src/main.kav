@@ -1,0 +1,71 @@
+/// How many steps `start` takes to reach 1: halve an even number, and
+/// turn an odd one into 3n + 1. A `gpu fn`, so it runs on the GPU and on
+/// the CPU alike, with whole numbers, which give the same answer on both.
+gpu fn steps(start: Int32) -> Int32
+    require start >= 1 and start < 100_000
+    example steps(27) == 111
+{
+    let n = start
+    let count = 0
+    while n != 1 {
+        if n % 2 == 0 {
+            n = n / 2
+        } else {
+            n = 3 * n + 1
+        }
+        count += 1
+    }
+    count
+}
+
+/// One core: one number after another.
+fn on_one_core(numbers: [Int32]) -> [Int32]
+    require numbers.all(n => n >= 1 and n < 100_000)
+    example on_one_core([6, 7, 27]) == [8, 16, 111]
+{
+    let out: [Int32] = []
+    for n in numbers {
+        out.push(steps(n))
+    }
+    out
+}
+
+/// Every core: the rounds of the loop are shared out between the cores,
+/// and each round writes only its own place, `out[i]`.
+fn on_every_core(numbers: [Int32]) -> [Int32]
+    require numbers.all(n => n >= 1 and n < 100_000)
+    example on_every_core([6, 7, 27]) == [8, 16, 111]
+{
+    let out: [Int32] = []
+    for _ in numbers {
+        out.push(0)
+    }
+    on cores for i in 0..numbers.len() {
+        out[i] = steps(numbers[i])
+    }
+    out
+}
+
+/// The GPU: one `map`, each number on a GPU thread. Without a GPU, the
+/// same map runs on the CPU and gives the same list.
+fn on_the_gpu(numbers: [Int32]) -> [Int32]
+    require numbers.all(n => n >= 1 and n < 100_000)
+    example on_the_gpu([6, 7, 27]) == [8, 16, 111]
+{
+    numbers.map(n => steps(n))
+}
+
+fn main() {
+    const numbers: [Int32] = (1..100_000).map(n => Int32(n))
+    const one = on_one_core(numbers)
+    const every = on_every_core(numbers)
+    const gpu = on_the_gpu(numbers)
+    print(`the same on one core, every core and the GPU: {one == every and every == gpu}`)
+    let best = 0
+    for (i, s) in gpu.enumerate() {
+        if s > gpu[best] {
+            best = i
+        }
+    }
+    print(`below 100000, {numbers[best]} takes the most steps: {gpu[best]}`)
+}
