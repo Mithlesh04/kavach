@@ -1,0 +1,57 @@
+use std.math
+use std.table
+use std.tensor
+
+/// One line of the file: the hour, and each sensor's temperature.
+type Reading {
+    hour: Int
+    north: Float
+    south: Float
+    roof: Float
+}
+
+const sensors = ["north", "south", "roof"]
+
+/// A sensor that fails writes -99. Each such reading is replaced by the
+/// mean of that sensor's other readings.
+fn repair(t: Tensor<Float>) -> Tensor<Float>
+    example repair(tensor.of_rows([[1.0], [-99.0], [3.0]])).items == [1.0, 2.0, 3.0]
+{
+    const broken = t < -50.0
+    const fine = tensor.where(broken, 0.0, t)
+    const counts = Tensor<Float>(tensor.where(broken, 0, 1)).sum(axis: 0)
+    const means = fine.sum(axis: 0) / counts
+    tensor.where(broken, means.reshape([1, t.shape[1]]), t)
+}
+
+/// How much each column grows an hour: the slope of the straight line
+/// a + b * hour closest to it, by least squares, (AᵀA) x = Aᵀt.
+fn trends(hours: Tensor<Float>, t: Tensor<Float>) -> Tensor<Float> ! tensor.Singular
+    example (try trends(tensor.of([0.0, 1.0, 2.0]), tensor.of_rows([[1.0], [3.0], [5.0]])))[0].near(2.0)
+{
+    const a = tensor.stack([tensor.ones<Float>([hours.len()]), hours], axis: 1)
+    const fit = try (a.transpose() @ a).solve(a.transpose() @ t)
+    fit[1, :]
+}
+
+/// `x` rounded to two places, for printing.
+fn two_places(x: Float) -> Float
+    example two_places(0.4914) == 0.49
+{
+    math.round(x * 100.0) / 100.0
+}
+
+fn main() ! Error {
+    const rows = try table.read_csv<Reading>("readings.csv")
+    // One row per hour, one column per sensor.
+    const raw = tensor.of_rows(rows.rows().map(r => [r.north, r.south, r.roof]))
+    print(`shape: {raw.shape}, broken readings: {raw.count(x => x < -50.0)}`)
+
+    const t = repair(raw)
+    print(`south after repair: {t[:, 1].items}`)
+
+    const slopes = try trends(Tensor<Float>(tensor.of(rows["hour"])), t)
+    for (i, name) in sensors.enumerate() {
+        print(`{name}: mean {t[:, i].mean() ?? 0.0}, warms {two_places(slopes[i])} degrees an hour`)
+    }
+}

@@ -1,0 +1,18 @@
+$ kavach check
+src/main.kav: no errors
+$ kavach run src/main.kav
+shape: [6, 3], broken readings: 1
+south after repair: [21.0, 21.5, 22.3, 22.5, 23.0, 23.5]
+north: mean 19.25, warms 0.5 degrees an hour
+south: mean 22.3, warms 0.49 degrees an hour
+roof: mean 17.5, warms 1.0 degrees an hour
+$ kavach test --seed 7
+✓ repair: example repair(tensor.of_rows([[1.0], [-99.0], [3.0]])).items == [1.0, 2.0, 3.0]
+✓ trends: example (try trends(tensor.of([0.0, 1.0, 2.0]), tensor.of_rows([[1.0], [3.0], [5.0]])))[0].near(2.0)
+✓ two_places: example two_places(0.4914) == 0.49
+3 passed, 0 failed
+seed 7
+✓ two_places  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested
+  not generated: repair: takes values that can't be generated yet
+  not generated: trends: takes values that can't be generated yet
