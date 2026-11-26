@@ -376,7 +376,7 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             // CliExit: ends the program at once (spec 14.6).
             flush();
             crate::rt_end::run_at_exit();
-            std::process::exit(a as i32)
+            crate::rt_end::end_now(a as i32)
         }
     }
 }

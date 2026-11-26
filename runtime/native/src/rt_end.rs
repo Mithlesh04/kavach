@@ -52,6 +52,64 @@ pub(crate) fn run_free_at_end() {
     run(&FREE_AT_END);
 }
 
+/// Ends the program at once with `code`: on a panic, `cli.exit` or a stop
+/// signal, after the finishing hooks. Output is flushed first: Rust's,
+/// then the C library's (a C function the program called may have
+/// printed). Then the process ends and nothing else runs.
+/// `std::process::exit` would run this thread's thread-local destructors
+/// and the C library's exit handlers. Some of those let go of objects
+/// (lists kept on the GPU) after the pools they go back to were
+/// destroyed, a crash, and while other threads may still run (unsafe
+/// audit (a) 3).
+pub fn end_now(code: i32) -> ! {
+    use std::io::Write;
+    let _ = std::io::stdout().flush();
+    let _ = std::io::stderr().flush();
+    // SAFETY: `fflush(NULL)` flushes every C output stream; it touches
+    // no Rust memory.
+    unsafe {
+        c::fflush(std::ptr::null_mut());
+    }
+    quit(code)
+}
+
+/// Ends the process with `code` now, flushing nothing and running no
+/// destructors or exit handlers: for a second stop signal, which must
+/// not wait for a lock another thread may hold.
+pub fn quit(code: i32) -> ! {
+    #[cfg(unix)]
+    // SAFETY: `_exit` ends the process; it runs no handler and touches no
+    // memory of ours.
+    unsafe {
+        libc::_exit(code)
+    }
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::System::Threading::{GetCurrentProcess, TerminateProcess};
+        // SAFETY: `GetCurrentProcess` gives this process's pseudo-handle,
+        // with every right; ending this process doesn't return.
+        unsafe {
+            TerminateProcess(GetCurrentProcess(), code as u32);
+        }
+        // Not reached: the call above ends this thread with the rest.
+        std::process::exit(code)
+    }
+    #[cfg(not(any(unix, windows)))]
+    std::process::exit(code)
+}
+
+/// The C library's `fflush`: `libc` names it on Unix; on Windows it is
+/// the C runtime's, which every Rust program links.
+mod c {
+    #[cfg(unix)]
+    pub(super) use libc::fflush;
+
+    #[cfg(not(unix))]
+    unsafe extern "C" {
+        pub(super) fn fflush(stream: *mut std::ffi::c_void) -> i32;
+    }
+}
+
 /// Each hook is taken off `list` before it runs, so one that panics
 /// leaves the rest to the panic's own run.
 fn run(list: &Mutex<Vec<fn()>>) {
@@ -111,5 +169,48 @@ mod tests {
         assert_eq!(FREED.load(Ordering::SeqCst), 1);
         assert_eq!(crate::rt_display::own_form(value, 6), None);
         release(value);
+    }
+
+    /// Says when it is dropped: thread-locals like it (lists kept on the
+    /// GPU) let go of objects, after the pools they go back to are gone.
+    struct Kept;
+
+    impl Drop for Kept {
+        fn drop(&mut self) {
+            eprintln!("a thread-local was dropped");
+        }
+    }
+
+    thread_local! {
+        static KEPT: Kept = const { Kept };
+    }
+
+    /// A panic ends the program with 101, its output flushed, and runs no
+    /// thread-local destructors: in a child run of this same test, as the
+    /// panic ends the process.
+    #[test]
+    fn a_panic_ends_without_running_thread_local_destructors() {
+        const CHILD: &str = "KAVACH_TEST_END_CHILD";
+        if std::env::var_os(CHILD).is_some() {
+            KEPT.with(|_| ());
+            // No newline: still in the buffer when the panic comes.
+            print!("printed before");
+            crate::rt::panic_with("boom", 0);
+        }
+        let out = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "rt_end::tests::a_panic_ends_without_running_thread_local_destructors",
+            ])
+            .args(["--nocapture", "--test-threads=1"])
+            .env(CHILD, "1")
+            .stdin(std::process::Stdio::null())
+            .output()
+            .unwrap();
+        let said = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(out.status.code(), Some(101), "{said}");
+        assert!(said.contains("panic: boom"), "{said}");
+        assert!(!said.contains("dropped"), "{said}");
+        assert!(String::from_utf8_lossy(&out.stdout).contains("printed before"));
     }
 }

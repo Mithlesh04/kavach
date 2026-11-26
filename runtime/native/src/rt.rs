@@ -242,7 +242,7 @@ pub fn panic_with(message: &str, line: i32) -> ! {
             .write_all(kavach_runtime_core::processes::outcome_line(&json).as_bytes());
         let _ = std::io::stdout().flush();
     }
-    std::process::exit(101)
+    crate::rt_end::end_now(101)
 }
 
 /// Shows `bits` as a value of integer type `t`.

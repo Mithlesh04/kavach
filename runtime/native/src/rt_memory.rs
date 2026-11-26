@@ -129,13 +129,16 @@ struct Allocator;
 static ALLOCATOR: Allocator = Allocator;
 
 /// The program ends: nothing more may be asked of the allocator, so the
-/// message is written without making text, and no end hooks run.
+/// message is written without making text, and no end hooks run. Nor do
+/// destructors (`rt_end::quit`), which may free and allocate; output is
+/// not flushed either, as reaching it the first time allocates its buffer.
 #[cold]
 fn out_of_memory(size: usize) -> ! {
     let mut err = std::io::stderr().lock();
     let _ = writeln!(err, "panic: out of memory (asked for {size} bytes)");
     let _ = err.flush();
-    std::process::exit(101)
+    drop(err);
+    crate::rt_end::quit(101)
 }
 
 // SAFETY: every method passes its arguments on to the system allocator

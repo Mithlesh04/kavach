@@ -42,7 +42,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_waits.rs` | Waiting: for a time, a socket or a channel, while other tasks run; refused inside `Shared.update` |
 | `src/rt_coroutines.rs` | Tasks as coroutines on the main thread, with `corosensei` (decision 0048): the context each switch saves and restores |
 | `src/rt_drops.rs` | `Drop` (spec 6.1): a value's last release waits for its `drop`, which runs at the next statement boundary |
-| `src/rt_end.rs` | What runs when a program ends: finishing hooks (logs, traces, GPU errors) however it ends, and freeing hooks (for the leak check) only when `main` returns |
+| `src/rt_end.rs` | What runs when a program ends: finishing hooks (logs, traces, GPU errors) however it ends, and freeing hooks (for the leak check) only when `main` returns; `end_now`, the end of a panic, `cli.exit` or a stop: output flushed, then no destructors or exit handlers |
 | `src/rt_agents.rs` | Agents (spec 8.3): started agents' guards (bookkeeping from `runtime/core`), the stack of running agents, each call's checks |
 | `src/rt_approvals.rs` | Approval requests answered in code (spec 14.16): `agents.waiting` and `answer`, in the project's agents folder, through `runtime/core` |
 | `src/rt_replays.rs` | Events run again after a restart (decision 0072): each a task `start` waits for until it ends or asks a person; one left waiting is joined by a send of the same event, and its outcome goes to the audit log |

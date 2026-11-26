@@ -43,17 +43,20 @@ pub fn catch_stops(hooks: fn()) {
 }
 
 /// A stop signal came, with the exit code it gives: the hooks run, then
-/// the program ends; when one came already, it ends at once.
+/// the program ends; when one came already, it ends at once, flushing
+/// nothing: the first may be stuck holding the output's lock. Neither
+/// runs destructors or exit handlers, as other threads still run
+/// (`rt_end::end_now`).
 fn stop(code: i32) {
     if STOPPING.swap(true, Ordering::SeqCst) {
-        std::process::exit(code);
+        crate::rt_end::quit(code);
     }
     kavach_runtime_core::stop_holds::let_holders_finish(code);
     let _ending = ENDING.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(hooks) = HOOKS.get() {
         hooks();
     }
-    std::process::exit(code);
+    crate::rt_end::end_now(code);
 }
 
 #[cfg(unix)]

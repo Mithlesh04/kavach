@@ -133,7 +133,7 @@ fn outcome_of(outcome: Option<String>, exit: Option<i32>, code: i64) -> i64 {
     let Some(Tree::Object(mut fields)) = tree else {
         let _ = std::io::stdout().flush();
         crate::rt_end::run_at_exit();
-        std::process::exit(exit.unwrap_or(101));
+        crate::rt_end::end_now(exit.unwrap_or(101));
     };
     let (key, value) = fields.remove(0);
     // The call panicked (the child printed it): the task's error, as for
