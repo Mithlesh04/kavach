@@ -1,0 +1,10 @@
+fn main() {
+    let xs = [1, 2, 3]
+    const ys = xs.map(x => x * 2).filter(x => x > 2)
+    const total = xs.map(x => x * 2).filter(x => x > 2).sum(x => x)
+    print(`{ys} {total}`)
+    xs.push(10)
+    xs[0] = 100
+    print(xs)
+    print(`{ys} {total}`)
+}

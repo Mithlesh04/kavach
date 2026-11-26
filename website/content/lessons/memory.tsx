@@ -109,7 +109,28 @@ export const fastDoc: LessonDoc = {
         <li><strong className="text-ink">Moved, not copied.</strong> When a value is used for the last time, it is handed over instead of copied.</li>
         <li><strong className="text-ink">Shared and counted.</strong> A large value is shared inside, with a count of who holds it. The compiler removes most count updates while compiling.</li>
         <li><strong className="text-ink">Copied only on change.</strong> A value is copied only when it is changed while someone else still holds it. If nobody else does, it is changed in place. So <C>text += part</C> or <C>items.push(x)</C> in a loop copies only what is added, not the whole value each time.</li>
+        <li><strong className="text-ink">Chains fused into one loop.</strong> A chain such as <C>xs.map(f).filter(g).sum(h)</C> may run as one loop that builds no list between its steps. Its value is the one the steps give in turn, over the list as it was when the chain ran.</li>
       </ol>
+      <P>
+        <strong className="text-ink">No optimization changes what a program does.</strong> Moving, sharing, changing
+        in place, fusing loops, keeping a record in registers or spreading work over cores gives the same output, the
+        same panics at the same lines, and the same values in every copy as running each step on its own copies
+        would. Here a fused chain&apos;s value stays as it was after the list changes:
+      </P>
+      <Ex name="memory/fused-chain" />
+      <P>
+        This is checked, not hoped for: native code and the interpreter run every conformance test and must agree, and
+        the memory tests change one copy through each optimized path, then check the others.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/06-memory.md" label="spec 6.1 · how it stays fast" />
+        <SrcRef file="tests/conformance/06-memory/a-fused-chain-reads-the-list-as-it-was.kav" label="fused chain, tested" />
+        <SrcRef file="tests/conformance/06-memory/a-record-copy-in-a-loop-is-its-own.kav" label="record copy in a loop" />
+        <SrcRef file="tests/conformance/06-memory/a-slice-is-its-own-copy.kav" label="slice copy" />
+        <SrcRef file="tests/conformance/06-memory/setting-a-slice-leaves-earlier-copies.kav" label="setting a slice" />
+        <SrcRef file="tests/conformance/06-memory/a-callback-field-copy-is-its-own.kav" label="callback field copy" />
+        <SrcRef file="tests/conformance/06-memory/a-tensor-product-is-its-own.kav" label="tensor product" />
+      </div>
       <P>
         Step through what happens in memory, line by line. Every case, for every type, is on{" "}
         <Link href="/docs/memory/automatic-memory/memory-step-by-step/">Memory, Step by Step</Link>:

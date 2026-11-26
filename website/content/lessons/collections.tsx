@@ -179,6 +179,11 @@ export const pipelineDoc: LessonDoc = {
       <H2>What the machine does</H2>
       <P>The same chain, step by step: as written, then fused into one loop.</P>
       <Explainer id="chain" />
+      <P>
+        Fusing never changes the result: the chain gives what its steps give in turn, over the list as it was when
+        the chain ran, as the interpreter does. See{" "}
+        <Link href="/docs/memory/automatic-memory/how-it-stays-fast/">How It Stays Fast</Link>.
+      </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="compiler/kir/src/lower_lambda.rs" line={22} symbol="LIST_LOOPS" />
         <SrcRef file="compiler/kir/src/fuse.rs" line={24} symbol="fuse_loops" />
