@@ -21,6 +21,24 @@ pub fn wide(s: &str) -> Option<Vec<u16>> {
     (!s.contains('\0')).then(|| s.encode_utf16().chain([0]).collect())
 }
 
+/// Zero-ended UTF-16 text at `p`.
+///
+/// # Safety
+/// `p` is null or points at UTF-16 text that ends with a zero.
+pub unsafe fn text_at(p: *const u16) -> String {
+    if p.is_null() {
+        return String::new();
+    }
+    let mut len = 0;
+    // SAFETY: the text ends with a zero, as the caller promises.
+    unsafe {
+        while *p.add(len) != 0 {
+            len += 1;
+        }
+        String::from_utf16_lossy(std::slice::from_raw_parts(p, len))
+    }
+}
+
 /// Text value `name` of key `key` under `root`.
 pub fn text(root: HKEY, key: &str, name: &str) -> Option<String> {
     let (Some(key), Some(name)) = (wide(key), wide(name)) else {

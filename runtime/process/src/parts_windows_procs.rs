@@ -9,6 +9,7 @@
 #![allow(unsafe_code)]
 
 use crate::parts::yes;
+use crate::registry::text_at;
 use std::collections::HashMap;
 
 fn utf16(b: &[u16]) -> String {
@@ -266,24 +267,6 @@ pub fn user() -> Vec<Vec<String>> {
         std::env::var("USERPROFILE").unwrap_or_default(),
         yes(elevated()),
     ]]
-}
-
-/// Zero-ended UTF-16 text at `p`.
-///
-/// # Safety
-/// `p` is null or points at UTF-16 text that ends with a zero.
-unsafe fn text_at(p: *const u16) -> String {
-    if p.is_null() {
-        return String::new();
-    }
-    let mut len = 0;
-    // SAFETY: the text ends with a zero, as the caller promises.
-    unsafe {
-        while *p.add(len) != 0 {
-            len += 1;
-        }
-        String::from_utf16_lossy(std::slice::from_raw_parts(p, len))
-    }
 }
 
 /// Each enabled account's name and full name (`NetUserEnum` at level

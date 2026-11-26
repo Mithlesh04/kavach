@@ -9,29 +9,11 @@
 #![allow(unsafe_code)]
 
 use crate::parts::yes;
-use crate::registry::{HKEY_LOCAL_MACHINE, text, wide};
+use crate::registry::{HKEY_LOCAL_MACHINE, text, text_at, wide};
 
 /// Text from a zero-ended UTF-16 buffer.
 fn utf16(b: &[u16]) -> String {
     String::from_utf16_lossy(&b[..b.iter().position(|c| *c == 0).unwrap_or(b.len())])
-}
-
-/// Text from a zero-ended UTF-16 pointer.
-///
-/// # Safety
-/// `p` is null or points at UTF-16 text that ends with a zero.
-unsafe fn utf16_at(p: *const u16) -> String {
-    if p.is_null() {
-        return String::new();
-    }
-    let mut len = 0;
-    // SAFETY: the text ends with a zero, as the caller promises.
-    unsafe {
-        while *p.add(len) != 0 {
-            len += 1;
-        }
-        String::from_utf16_lossy(std::slice::from_raw_parts(p, len))
-    }
 }
 
 /// The adapters' rows, and their MAC addresses.
@@ -105,7 +87,8 @@ pub fn network() -> (Vec<Vec<String>>, Vec<String>) {
             6 => "Ethernet",
             71 => "WiFi",
             24 => "Loopback",
-            _ if (unsafe { utf16_at(a.Description) }).contains("Bluetooth") => "Bluetooth",
+            // SAFETY: the description is zero-ended text inside the list.
+            _ if (unsafe { text_at(a.Description) }).contains("Bluetooth") => "Bluetooth",
             _ => "Other",
         };
         let mac_len = (a.PhysicalAddressLength as usize).min(8);
@@ -117,7 +100,7 @@ pub fn network() -> (Vec<Vec<String>>, Vec<String>) {
             macs.push(mac.join(":"));
         }
         // SAFETY: the names are zero-ended text inside the list.
-        let (name, description) = unsafe { (utf16_at(a.FriendlyName), utf16_at(a.Description)) };
+        let (name, description) = unsafe { (text_at(a.FriendlyName), text_at(a.Description)) };
         let mbps = if a.TransmitLinkSpeed == u64::MAX {
             0
         } else {
@@ -265,7 +248,7 @@ pub fn sensors() -> Vec<Vec<String>> {
             // SAFETY: the call wrote `count` items, their names inside `buffer`.
             let (name, kelvin) = unsafe {
                 (
-                    (utf16_at((*items.add(i)).szName)),
+                    (text_at((*items.add(i)).szName)),
                     (*items.add(i)).FmtValue.Anonymous.doubleValue,
                 )
             };

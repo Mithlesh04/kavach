@@ -221,6 +221,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 - **parts_windows_net.rs:45-60:** `GetAdaptersAddresses` gets a fixed 32 KB buffer and no retry on ERROR_BUFFER_OVERFLOW (111). Hosts with many virtual adapters silently report none. Retry with the size the call returns.
   - Fixed 2026-11-26, "Ask again for the adapter list when it grows", test `runtime/process/src/parts_windows_procs.rs` (`the_adapter_list_is_asked_for_again_too`, with a fake call; the list now goes through the same `filled` as the IP helper's tables of (a) 7). No test failed before: the old code had no function to give a fake.
 - **parts_windows_net.rs:97:** an `unsafe { utf16_at(..) }` with no SAFETY comment. It is sound; the same call at :109 has a comment.
+  - Fixed 2026-11-26, "Merge the zero-ended text helpers", test none: a comment only.
 
 ## (c) Fine, counted per file
 
@@ -265,6 +266,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 - **Six closure-pointer transmutes:** one `closure_fn::<F>()` helper.
 - **Duplicates in runtime/process:**
   - `utf16_at` (parts_windows_net.rs:23) and `text_at` (parts_windows_procs.rs:243) are identical; keep one next to `wide` in registry.rs.
+    Fixed 2026-11-26, "Merge the zero-ended text helpers": one `text_at` in registry.rs; test none, as the code didn't change.
   - The `DISK_GEOMETRY_EX` cast can become byte reads.
   - `query<T>` and `each<T>` should be typed per class.
 - **Redeclared `extern` blocks:** `calloc`/`free` (rt_ptr.rs:16) and `RtlAddFunctionTable` (unwind_tables.rs:29) could come from `libc` and `windows-sys`, which are already dependencies. The signatures were checked and match today.
