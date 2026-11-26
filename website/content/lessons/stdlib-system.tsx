@@ -123,7 +123,10 @@ export const systemDoc: LessonDoc = {
         here, never run:
       </P>
       <SpecCode file={FILE} number="14.25" text={'add_user("web-01"'} />
-      <P><C>remove_user</C> takes any name, as old accounts may have others.</P>
+      <P>
+        <C>remove_user</C> takes any name, as old accounts may have others, except one holding a NUL character, which
+        fails with <C>Failed</C>.
+      </P>
       <SrcRef file="tests/conformance/14-standard-library/system-a-new-user-name-is-plain.kav" label="names, tested" />
       <H2>A report&apos;s header</H2>
       <P>

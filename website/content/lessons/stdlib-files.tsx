@@ -115,7 +115,7 @@ export const readingDoc: LessonDoc = {
         a value, so only code that asks for a mapping gets one. <C>fs.read_bytes</C> never maps.
       </P>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><strong className="text-ink">Another program&apos;s writes can show through</strong> while you hold the <C>Bytes</C>. Map only files nobody changes meanwhile, such as a finished download or a model file.</li>
+        <li><strong className="text-ink">Another program&apos;s writes can show through</strong> while you hold the <C>Bytes</C>. A change can make what you read wrong, but never makes a value broken: <C>text()</C> checks the bytes it copies, so it gives valid text or <C>none</C>. Map only files nobody changes meanwhile, such as a finished download or a model file.</li>
         <li><strong className="text-ink">A file made shorter can end the program</strong> on Linux and macOS, when it reads past the new end, with no panic message. Windows refuses to shorten a mapped file instead.</li>
         <li><strong className="text-ink">Replacing the file is safe:</strong> <C>fs.write_bytes</C> writes a new file and renames it, so <C>Bytes</C> mapped before keep the old contents.</li>
         <li>The interpreter and <C>kavach test</C>&apos;s fake files read the whole file instead: the same bytes, without the sharing.</li>
