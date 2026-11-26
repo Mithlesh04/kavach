@@ -46,6 +46,8 @@ const d = Box(raw: text)                    // compile error: nothing says what 
 
 Inside the type's methods, and in an `extend<I> Box<I>` block (2.5), `I` is the type the value was made with.
 
+A signature (2.10) writes a generic type with its arguments: `fn launder(p: Pair) -> Pair<Int>` is a compile error that names what `Pair` is missing; write `Pair<Int>`, or `Pair<T>` with the function's own `<T>`.
+
 ## Number bounds
 
 Two built-in bounds let generic code do arithmetic ([decision 0115](../../decisions/0115-generic-math-and-std-vec.md)):
@@ -227,4 +229,5 @@ fn port_of(n: Int) -> Int<range: 1..=65535> ! SizeError {
 - **A number left open:** `Tensor<Float32, shape: [_, 768]>`, or a program's own type with a number left out to mean "any, checked while running", as `Tensor<Float>` has. A function's number parameter covers most uses today: `fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>)`.
 - **A name for a type with numbers:** `type Port = Int<range: 1..=65535>` as an alias. Aliases exist only for anonymous records (2.14).
 - **Numbers deeper inside a type:** a `[[Float]]` given where a `[[Float]<len: 3>]` is expected is not yet refused; only a collection's own numbers are compared, and an item's when both types have them.
+- **A generic type without its arguments outside a signature** (for a maintainer's review): `fn f(p: Pair)` is refused, but a variable's or a field's type written as `Pair` is still taken as any `Pair`. Refusing it there too, or reading it as "worked out from the value", is not decided.
 - **`extend` blocks of types with numbers** (`extend<T, width: Int> Grid<T, width: width>`) are not built: methods of such a type go in its declaration.

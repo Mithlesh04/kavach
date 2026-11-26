@@ -170,6 +170,9 @@ impl Checker<'_> {
             self.bounds.insert(def, bounds.clone());
             generics.push((def, bounds));
         }
+        // `fn f(p: Pair)` without `Pair`'s type arguments (spec 2.9).
+        let written = f.params.iter().filter_map(|p| p.ty.as_ref());
+        (written.chain(&f.ret).chain(&f.errors)).for_each(|t| self.bare_generics(t));
         let params = f
             .params
             .iter()

@@ -108,6 +108,7 @@ mod tagged_templates;
 mod text_views;
 mod tuple_assign;
 mod ty;
+mod type_args;
 mod unwraps;
 mod user_index;
 mod user_ops;

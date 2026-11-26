@@ -1,0 +1,18 @@
+// Rule: A generic type in a signature is written with its type arguments: `Pair` alone is a compile error.
+// Spec: 2.9
+// expect compile error
+
+type Pair<A> {
+    v: A
+}
+
+fn fine(p: Pair<Int>) -> Pair<Int> { p }
+
+fn launder(p: Pair) -> Pair<Int> {     // error: `Pair` needs its type argument `A`
+    p
+}
+
+fn main() {
+    print(fine(Pair(v: 1)).v)
+    print(launder(Pair(v: "text")).v + 1)
+}
