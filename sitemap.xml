@@ -777,6 +777,10 @@
 <priority>0.8</priority>
 </url>
 <url>
+<loc>https://kavachlang.com/docs/memory/hardware-registers/</loc>
+<priority>0.8</priority>
+</url>
+<url>
 <loc>https://kavachlang.com/docs/standard-library/files/</loc>
 <priority>0.8</priority>
 </url>
@@ -885,6 +889,10 @@
 <priority>0.8</priority>
 </url>
 <url>
+<loc>https://kavachlang.com/docs/standard-library/gpu-screens/drawing-for-user-interfaces/</loc>
+<priority>0.6</priority>
+</url>
+<url>
 <loc>https://kavachlang.com/docs/standard-library/the-machine/</loc>
 <priority>0.8</priority>
 </url>
@@ -911,6 +919,10 @@
 <url>
 <loc>https://kavachlang.com/docs/standard-library/fonts/</loc>
 <priority>0.8</priority>
+</url>
+<url>
+<loc>https://kavachlang.com/docs/standard-library/fonts/installed-fonts/</loc>
+<priority>0.6</priority>
 </url>
 <url>
 <loc>https://kavachlang.com/docs/standard-library/reflection/</loc>
@@ -1694,10 +1706,6 @@
 </url>
 <url>
 <loc>https://kavachlang.com/docs/std/std-font/</loc>
-<priority>0.8</priority>
-</url>
-<url>
-<loc>https://kavachlang.com/docs/std/std-matrix/</loc>
 <priority>0.8</priority>
 </url>
 <url>

@@ -160,7 +160,7 @@ kavach context NAME file.kav --budget 2000
 Kavach is compiled, statically typed and general-purpose: as quick to
 try as a script (`kavach run`), compiled to one native executable
 (`kavach build`), with no garbage collector. Every integer and index is
-checked, and it is faster than C++ in 21 of 26 published,
+checked, and it is faster than C++ in 18 of 23 published,
 reproducible benchmarks that are like for like (each side on the same
 number of cores).
 
@@ -194,7 +194,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [What You Can Build](https://kavachlang.com/docs/start/what-you-can-build/): Project ideas from your first afternoon to expert work, each with the pages that teach what it needs.
 - [What a Program Is](https://kavachlang.com/docs/start/what-a-program-is/): A program is a list of steps for the computer, written in a language both you and the computer can read.
 - [The Terminal](https://kavachlang.com/docs/start/the-terminal/): The terminal is a window where you type commands. You need four of them to run Kavach programs.
-- [Install](https://kavachlang.com/docs/start/install/): One clone, one build. A single-command installer comes with the first public release.
+- [Install](https://kavachlang.com/docs/start/install/): Download a ready-made Kavach from its latest release, or build it from source in a few minutes.
 - [Your First Program](https://kavachlang.com/docs/start/your-first-program/): Write a file, run it, and turn it into a program anyone can start.
 - [Reading Errors](https://kavachlang.com/docs/start/reading-errors/): Error messages are help: each one says what is wrong, where, and usually what to write instead.
 
@@ -330,7 +330,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Records](https://kavachlang.com/docs/types/records/): A record is a type of your own: named fields grouped under one name, such as a User with a name and an age.
 - [Records: Declaring](https://kavachlang.com/docs/types/records/declaring/): type Name { field: Type … } declares a record; Name(field: value, …) makes one.
 - [Records: Default values](https://kavachlang.com/docs/types/records/default-values/): A field with = value may be left out when the record is made, and then takes that value.
-- [Records: Updating with with](https://kavachlang.com/docs/types/records/updating-with-with/): record with { field: value } makes a copy with some fields changed.
+- [Records: Updating with with](https://kavachlang.com/docs/types/records/updating-with-with/): record with { field: value } makes a copy of a record with some fields changed. The record you started from stays as it was.
 - [Methods](https://kavachlang.com/docs/types/methods/): A method is a function that belongs to a type, written inside it. self is the value it is called on.
 - [Method Chains](https://kavachlang.com/docs/types/method-chains/): Call one method on the result of the last: text.trim().lower(). Each step gives a new value for the next.
 - [Extend](https://kavachlang.com/docs/types/extend/): extend adds methods to a type you didn't write: a built-in type, a list or dict, a union, or a type from another module.
@@ -348,7 +348,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Frozen Values](https://kavachlang.com/docs/types/frozen-values/): x.freeze() gives a Frozen<T>: a value whose fields and items never change, even in a let, all the way down. unfreeze() gives a copy that can change.
 - [Frozen Values: Sealed with a Key](https://kavachlang.com/docs/types/frozen-values/sealed-with-a-key/): x.freeze(key: k) seals a value: only unfreeze(key: k), with an equal key, opens it. A library makes the key a type of its own, so only the library unfreezes what it froze.
 - [Distinct Types](https://kavachlang.com/docs/types/distinct-types/): type NetId = distinct Int makes a new type that holds an Int but is never mixed with an Int or with another distinct type, so ids of different things can't be swapped by mistake.
-- [Matrices](https://kavachlang.com/docs/types/matrices/): A Matrix<T> is a grid of numbers in std.matrix. a @ b is the matrix product, + - * work item by item, and a product gives the same bits on every machine.
+- [Matrices](https://kavachlang.com/docs/types/matrices/): A matrix is a tensor of two dimensions, Tensor<T, dims: 2>, from std.tensor. a @ b is the matrix product, and + - * work item by item.
 - [Classes and Inheritance](https://kavachlang.com/docs/types/classes-and-inheritance/): Kavach has no classes and no inheritance. Records, methods, interfaces and composition do the same jobs, with fewer surprises.
 - [Writing Types](https://kavachlang.com/docs/types/writing-types/): Types are written where people read them: parameters, results and record fields. Everywhere else they are worked out.
 
@@ -388,6 +388,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Shared State](https://kavachlang.com/docs/memory/shared-state/): When several parts of a program must change the same thing, say so with Shared<T>: the one value that is shared.
 - [Arenas](https://kavachlang.com/docs/memory/arenas/): An arena frees every value made inside it together, when it ends. Only its block's value comes out.
 - [Unsafe](https://kavachlang.com/docs/memory/unsafe/): unsafe { … } turns off the safety checks for a block, to work with raw memory and C. A package must allow it.
+- [Hardware Registers](https://kavachlang.com/docs/memory/hardware-registers/): A device's registers are memory with side effects. read_volatile and write_volatile read and write them exactly once each time the code runs, in order, and kavach svd turns a chip's description into typed register blocks.
 
 ## Part 7: Standard Library
 
@@ -418,19 +419,21 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Windows](https://kavachlang.com/docs/standard-library/windows/): std.window opens windows on the screen and reads the keyboard, mouse, touch and gamepad input that comes to them: the start of games, tools, charts and user interfaces.
 - [Running Programs](https://kavachlang.com/docs/standard-library/running-programs/): std.process runs other programs: a compiler, a simulator, git, any tool with no library. It needs the capability Process, never goes through a shell, and ends everything a program started when it stops.
 - [GPU Screens](https://kavachlang.com/docs/standard-library/gpu-screens/): std.gpu draws into a window with the GPU: a screen for the window, a frame for each picture, cleared and shown at the screen's rate, with triangles drawn by gpu fns written in Kavach.
+- [GPU Screens: Drawing for user interfaces](https://kavachlang.com/docs/standard-library/gpu-screens/drawing-for-user-interfaces/): A user interface draws thousands of small shapes a frame. std.gpu clips them to a box, masks them to a rounded shape, smooths their edges, draws into canvases off the screen, and changes part of a texture as a glyph atlas grows.
 - [The Machine](https://kavachlang.com/docs/standard-library/the-machine/): std.system says what machine the program runs on: its system, processor, memory, GPUs, drives and devices, and the programs and users on it. The basics are free; what could tell one machine from another needs System, and what is critical needs System.critical.
 - [Gamepads](https://kavachlang.com/docs/standard-library/gamepads/): std.input reads gamepads in one standard layout, whatever pad is plugged in: as state a game loop reads once a frame, or as events in a window's stream. It needs Input, as the keyboard does.
 - [Sound](https://kavachlang.com/docs/standard-library/sound/): std.audio plays sound, effects and music, and records what the microphone hears. A sound is data until it plays, so loading or making one needs nothing; playing needs Audio, and recording needs Microphone.
 - [Vectors](https://kavachlang.com/docs/standard-library/vectors/): std.vec has the math of games, graphics and simulations: Vec2, Vec3 and Vec4, the matrices Mat3 and Mat4, and the rotation Quat. Vectors work over any number type; matrices over Float or Float32.
 - [Images](https://kavachlang.com/docs/standard-library/images/): std.image reads PNG and JPEG files into an Image, writes an Image as PNG, and gives its pixels to the GPU as they are. An image is data, so it needs no capability.
 - [Desktop Apps](https://kavachlang.com/docs/standard-library/desktop-apps/): std.app gives a desktop program or game what it needs from the system: its own folders for saves, settings and caches, a crash report when it crashes, and the system's file and message dialogs.
-- [Fonts](https://kavachlang.com/docs/standard-library/fonts/): std.font reads OpenType and TrueType fonts, shapes text into glyphs and their places, and draws glyphs into an atlas the GPU can draw text from at any size. A font is data, so it needs no capability.
+- [Fonts](https://kavachlang.com/docs/standard-library/fonts/): std.font reads OpenType and TrueType fonts, shapes text into glyphs and their places, and draws glyphs into an atlas the GPU draws text from: at any size, or sharp at one small size. A font is data, so it needs no capability.
+- [Fonts: Installed fonts](https://kavachlang.com/docs/standard-library/fonts/installed-fonts/): A program can use the fonts the machine has instead of shipping each one, and find a fallback: an installed font with the glyphs another font lacks. Kavach shapes and draws them itself, so text looks the same on every system.
 - [Reflection](https://kavachlang.com/docs/standard-library/reflection/): std.reflect tells a program what a type or a module offers: its members, each a field, method, function, type or constant, with its parameters, what it gives, and where it comes from.
 - [Tensors](https://kavachlang.com/docs/standard-library/tensors/): std.tensor gives Tensor<T>: numbers in any number of dimensions, Kavach's one array type, as NumPy's ndarray is Python's. Every operation checks its shapes, and every result is the same on every machine.
 - [Tensors: Making tensors](https://kavachlang.com/docs/standard-library/tensors/making-tensors/): tensor.of, of_rows, zeros, ones, full and eye make a tensor from numbers; arange and linspace count; random and normal draw, the same under one seed on every machine.
 - [Tensors: Indexing](https://kavachlang.com/docs/standard-library/tensors/indexing/): t[i, j] reads one number, with one index per dimension; t[0:2, :, #1] is a slice of each dimension, as NumPy writes them. #k counts from the end of its own dimension.
 - [Tensors: Arithmetic and broadcasting](https://kavachlang.com/docs/standard-library/tensors/arithmetic-and-broadcasting/): + - * / % and ** work item by item on two tensors, or on a tensor and a number. Tensors of different shapes are broadcast to one, as NumPy does.
-- [Tensors: Masks](https://kavachlang.com/docs/standard-library/tensors/masks/): t > 0.5 compares item by item and gives a mask, a Tensor<Bool>. t[mask] picks the numbers where it is true, and tensor.where chooses between two tensors.
+- [Tensors: Masks](https://kavachlang.com/docs/standard-library/tensors/masks/): t > 0.5 compares item by item and gives a mask, a Tensor<Bool>. Masks combine with & | ~, t[mask] picks the numbers where it is true, and tensor.where chooses between two tensors.
 - [Tensors: Reductions](https://kavachlang.com/docs/standard-library/tensors/reductions/): sum, prod, min, max, mean, var and std work on every number, or along one axis: m.sum(axis: 0) sums each column. A float sum is exact, so it is the same on every machine.
 - [Tensors: Sorting and joining](https://kavachlang.com/docs/standard-library/tensors/sorting-and-joining/): sort, argsort, unique and percentile order a tensor's numbers; concatenate, stack, split and split_at join tensors and cut them apart.
 - [Tensors: Linear algebra](https://kavachlang.com/docs/standard-library/tensors/linear-algebra/): a.inv(), a.solve(b), a.det(), a.eig() and a.svd() work on a matrix of floats: a tensor of two dimensions. Each is one fixed algorithm, so its result has the same bits on every machine.
@@ -645,7 +648,6 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [std.image](https://kavachlang.com/docs/std/std-image/): Every type, method and function of std.image: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.app](https://kavachlang.com/docs/std/std-app/): Every type, method and function of std.app: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.font](https://kavachlang.com/docs/std/std-font/): Every type, method and function of std.font: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [std.matrix](https://kavachlang.com/docs/std/std-matrix/): Every type, method and function of std.matrix: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.reflect](https://kavachlang.com/docs/std/std-reflect/): Every type, method and function of std.reflect: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.tensor](https://kavachlang.com/docs/std/std-tensor/): Every type, method and function of std.tensor: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.table](https://kavachlang.com/docs/std/std-table/): Every type, method and function of std.table: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
