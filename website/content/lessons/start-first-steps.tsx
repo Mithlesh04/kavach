@@ -129,6 +129,7 @@ export const installDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Pick the file for your system, unpack it anywhere, and add the folder that holds <C>kavach</C> to your PATH.</li>
         <li>To check the file, compare its hash with the <C>.sha256</C> file: <C>Get-FileHash</C> in PowerShell, <C>sha256sum</C> on Linux.</li>
+        <li>The Linux file is for x86-64 with glibc 2.34 or newer. It is checked on Ubuntu 22.04 and 24.04.</li>
         <li>On Linux, <C>kavach</C> needs the sound library <C>libasound.so.2</C> to start. Desktop Linux has it; a server or a container may not: <C>sudo apt install libasound2t64</C> on Ubuntu 24.04 and Debian 13, <C>sudo apt install libasound2</C> on older ones, <C>sudo dnf install alsa-lib</C> on Fedora.</li>
         <li>No file for your system? Build Kavach from source, <Link href="#build-it">below</Link>. On macOS that is the way today.</li>
       </ul>
