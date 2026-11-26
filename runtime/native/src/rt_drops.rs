@@ -73,11 +73,12 @@ fn register(ty: i64, drop: i64) -> i64 {
         let _ = run();
     });
     static AT_EXIT: std::sync::Once = std::sync::Once::new();
-    AT_EXIT.call_once(|| crate::rt::at_exit(forget_all));
+    AT_EXIT.call_once(|| crate::rt_end::free_at_end(forget_all));
     0
 }
 
-/// Lets go of the closures at the end (for the leak check).
+/// Lets go of the closures when `main` returns, for the leak check: a
+/// freeing hook (`rt_end`), never run while other threads run.
 fn forget_all() {
     let all: Vec<i64> = table().drain().map(|(_, c)| c).collect();
     for c in all {
@@ -143,6 +144,12 @@ fn run() -> i64 {
         // SAFETY: slot 0 of a closure is its function's address; the code
         // generator compiled a `drop` closure as `fn(closure, value)`,
         // returning nothing, and the code lives as long as the program.
+        // `closure` isn't retained for the call, as that would change its
+        // count, which isn't atomic, from any thread. It stays alive all
+        // the same: `drop` closures capture nothing, and the table lets go
+        // of one only in `register`, at the program's start before any
+        // task, and in `forget_all`, a freeing hook (`rt_end`) that runs
+        // after `main` waited for every task, never on a stop or a panic.
         #[allow(unsafe_code)]
         let f: extern "C-unwind" fn(i64, i64) = unsafe { std::mem::transmute(f) };
         f(closure, p);

@@ -343,7 +343,7 @@ fn start(description: &str) -> Started {
                     kavach_runtime_core::agents::set_audit_sink(
                         kavach_runtime_net::otlp::export_audit,
                     );
-                    crate::rt::at_exit(kavach_runtime_net::otlp::finish);
+                    crate::rt_end::at_exit(kavach_runtime_net::otlp::finish);
                     Some((endpoint.clone(), service.clone()))
                 }
                 _ => None,

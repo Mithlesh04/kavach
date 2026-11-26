@@ -45,11 +45,12 @@ pub(crate) fn register(ty: i64, check: i64, texts: i64) -> i64 {
         }
     }
     static AT_EXIT: std::sync::Once = std::sync::Once::new();
-    AT_EXIT.call_once(|| crate::rt::at_exit(forget_all));
+    AT_EXIT.call_once(|| crate::rt_end::free_at_end(forget_all));
     0
 }
 
-/// Lets go of the checks at the end (for the leak check).
+/// Lets go of the checks when `main` returns, for the leak check: a
+/// freeing hook (`rt_end`), never run while other threads run.
 fn forget_all() {
     let all: Vec<i64> = checks().drain().map(|(_, (c, _))| c).collect();
     for c in all {

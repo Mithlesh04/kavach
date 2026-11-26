@@ -34,11 +34,12 @@ pub fn register(ty: i64, display: i64) -> i64 {
     }
     ANY.store(true, Ordering::Release);
     static AT_EXIT: std::sync::Once = std::sync::Once::new();
-    AT_EXIT.call_once(|| crate::rt::at_exit(forget_all));
+    AT_EXIT.call_once(|| crate::rt_end::free_at_end(forget_all));
     0
 }
 
-/// Lets go of the closures at the end, for the leak check.
+/// Lets go of the closures when `main` returns, for the leak check: a
+/// freeing hook (`rt_end`), never run while other threads run.
 fn forget_all() {
     ANY.store(false, Ordering::Release);
     for (_, closure) in table().drain() {
@@ -57,7 +58,12 @@ pub fn own_form(p: i64, ty: u32) -> Option<String> {
     // SAFETY: slot 0 of a closure is its function's address; the code
     // generator compiled a `display` closure as `fn(closure, value) ->
     // String`, borrowing the closure and taking the value (held once more
-    // here), and the code lives as long as the program.
+    // here), and the code lives as long as the program. `closure` isn't
+    // retained for the call: its count isn't atomic, and any thread may
+    // show a value. It stays alive all the same: the table lets go of a
+    // closure only in `register`, at the program's start before any task,
+    // and in `forget_all`, a freeing hook (`rt_end`) that runs after
+    // `main` waited for every task and never while a stop's hooks run.
     #[allow(unsafe_code)]
     let f: extern "C-unwind" fn(i64, i64) -> i64 = unsafe { std::mem::transmute(f) };
     retain(p);

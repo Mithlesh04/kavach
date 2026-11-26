@@ -52,7 +52,9 @@ const _: () = assert!(std::mem::offset_of!(Pool, next) == POOL_NEXT as usize);
 const _: () = assert!(std::mem::offset_of!(Pool, end) == POOL_END as usize);
 
 // SAFETY: the global pool is used only while one thread runs at a time
-// (see the top of this file).
+// (see the top of this file). The thread a stop signal runs on frees no
+// object: the end hooks that free run only when `main` returns, with no
+// other thread running the program (`rt_end`).
 unsafe impl Sync for Global {}
 
 /// The pool. Generated code takes small objects from it directly (the

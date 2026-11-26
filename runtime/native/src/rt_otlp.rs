@@ -31,7 +31,7 @@ pub fn otlp_op(op: RtOp, a: i64, b: i64, c: i64) -> i64 {
             .is_ok()
         {
             // The last events go before the program ends.
-            crate::rt::at_exit(otlp::finish);
+            crate::rt_end::at_exit(otlp::finish);
             let _ = crate::rt_scopes::SPAN_SINK.set(send_spans);
         }
         return 0;

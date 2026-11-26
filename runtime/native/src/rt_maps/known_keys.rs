@@ -147,7 +147,7 @@ fn held_entry(t: &crate::table::Table, key: u64) -> Option<usize> {
 /// Holds key object `key` in a slot; `true`.
 fn hold(key: u64) -> bool {
     static AT_EXIT: std::sync::Once = std::sync::Once::new();
-    AT_EXIT.call_once(|| crate::rt::at_exit(forget_held));
+    AT_EXIT.call_once(|| crate::rt_end::free_at_end(forget_held));
     retain(key as i64);
     HELD.fetch_add(1, Ordering::Relaxed);
     true

@@ -19,7 +19,7 @@ static FAILED: std::sync::Mutex<Vec<std::sync::Weak<TaskObj>>> = std::sync::Mute
 
 pub(crate) fn note_failed(task: i64) {
     static AT_EXIT: std::sync::Once = std::sync::Once::new();
-    AT_EXIT.call_once(|| crate::rt::at_exit(unread_at_exit));
+    AT_EXIT.call_once(|| crate::rt_end::at_exit(unread_at_exit));
     if let Data::Task(t) = &*crate::heap::data(task).borrow() {
         let mut failed = FAILED.lock().unwrap_or_else(|e| e.into_inner());
         failed.retain(|w| w.strong_count() > 0);

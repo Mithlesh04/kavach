@@ -206,30 +206,6 @@ fn piece(text: &str) {
     }
 }
 
-/// What runs when the program ends, however it ends: a feature that
-/// must finish something (sending the last log events) adds itself.
-static AT_EXIT: std::sync::Mutex<Vec<fn()>> = std::sync::Mutex::new(Vec::new());
-
-/// Runs `f` when the program ends.
-pub fn at_exit(f: fn()) {
-    AT_EXIT.lock().unwrap_or_else(|e| e.into_inner()).push(f);
-}
-
-/// Runs what `at_exit` gathered, once, in order. Each is taken before
-/// it runs, so one that panics leaves the rest to the panic's own run.
-pub fn run_at_exit() {
-    loop {
-        let next = {
-            let mut hooks = AT_EXIT.lock().unwrap_or_else(|e| e.into_inner());
-            (!hooks.is_empty()).then(|| hooks.remove(0))
-        };
-        match next {
-            Some(f) => f(),
-            None => break,
-        }
-    }
-}
-
 /// A panic unwinding to the start of its task (decision 0065): the error
 /// `.wait()` on the task gives.
 pub(crate) struct TaskPanic(pub(crate) String);
@@ -248,7 +224,7 @@ pub fn panic_with(message: &str, line: i32) -> ! {
         kavach_runtime_core::tasks::panic_shown(&why);
         std::panic::resume_unwind(Box::new(TaskPanic(why)));
     }
-    run_at_exit();
+    crate::rt_end::run_at_exit();
     eprintln!("panic: {message}\n  at {path}:{line}");
     // A report too, when the program asked for them (spec 14.30).
     let running = kavach_runtime_core::app::running();

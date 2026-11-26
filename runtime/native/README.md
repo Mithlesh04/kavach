@@ -30,7 +30,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_text_methods.rs` | Text methods from `runtime/core`: `capitalize`, `title`, `words`, padding and the rest (spec 14.2), an entry of their own |
 | `src/rt_std.rs` | `std.fs` (atomic writes), `std.time`, `std.math`, `std.io`, `std.cli` |
 | `src/rt_memory.rs` | The global allocator: an allocation the system refuses is a panic, `panic: out of memory` with exit code 101 (spec 5.6), not Rust's abort |
-| `src/rt_stop.rs` | Ctrl+C, `SIGTERM` and closing the console (spec 5.8, decision 0063): the end hooks run, then exit code 130 or 143; a second one ends at once |
+| `src/rt_stop.rs` | Ctrl+C, `SIGTERM` and closing the console (spec 5.8, decision 0063): the finishing end hooks run (`rt_end`), then exit code 130 or 143; a second one ends at once |
 | `src/rt_zone.rs` | Time zones (spec 14.4): `time.zone_offset` through `runtime/core`; its own entry, so only programs that use zones link `jiff` and the zone data |
 | `src/rt_clipboard.rs` | The clipboard (spec 14.17): `read_text` and `write_text` through `runtime/core`; its own entry, so only programs that use it link `arboard` |
 | `src/rt_process.rs` | `spawn process f(args)` (spec 9.8): the call run in a child, its value or error given back as JSON; its own entry, so only programs that use it link it |
@@ -42,6 +42,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_waits.rs` | Waiting: for a time, a socket or a channel, while other tasks run; refused inside `Shared.update` |
 | `src/rt_coroutines.rs` | Tasks as coroutines on the main thread, with `corosensei` (decision 0048): the context each switch saves and restores |
 | `src/rt_drops.rs` | `Drop` (spec 6.1): a value's last release waits for its `drop`, which runs at the next statement boundary |
+| `src/rt_end.rs` | What runs when a program ends: finishing hooks (logs, traces, GPU errors) however it ends, and freeing hooks (for the leak check) only when `main` returns |
 | `src/rt_agents.rs` | Agents (spec 8.3): started agents' guards (bookkeeping from `runtime/core`), the stack of running agents, each call's checks |
 | `src/rt_approvals.rs` | Approval requests answered in code (spec 14.16): `agents.waiting` and `answer`, in the project's agents folder, through `runtime/core` |
 | `src/rt_replays.rs` | Events run again after a restart (decision 0072): each a task `start` waits for until it ends or asks a person; one left waiting is joined by a send of the same event, and its outcome goes to the audit log |

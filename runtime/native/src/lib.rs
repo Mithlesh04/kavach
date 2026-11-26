@@ -52,6 +52,7 @@ pub mod rt_data;
 mod rt_display;
 mod rt_draw;
 mod rt_drops;
+mod rt_end;
 pub mod rt_errors;
 mod rt_events;
 mod rt_exact;
@@ -198,7 +199,10 @@ pub fn run_entry(entry: *const u8, fails: bool) -> i32 {
         Some(code) if exit_code == 0 => code,
         _ => exit_code,
     };
-    rt::run_at_exit();
+    rt_end::run_at_exit();
+    // `main` waited for every task it spawned (spec 9.2), so what the
+    // program kept can be freed now; never while a stop's hooks run.
+    rt_stop::not_while_stopping(rt_end::run_free_at_end);
     // With KAVACH_CHECK_LEAKS=1, report `Shared` values a cycle kept
     // alive (spec 6.2), else objects reference counting missed.
     let cycles = if check_leaks {
@@ -243,10 +247,11 @@ fn call_entry(entry: *const u8, fails: bool) -> i64 {
 }
 
 /// What runs before a program ends on Ctrl+C or `SIGTERM` (`rt_stop`):
-/// its output flushed, then its end hooks, as at a normal end.
+/// its output flushed, then its finishing hooks. Not its freeing hooks
+/// (`rt_end`): other threads may still run the program.
 pub fn end_hooks() {
     rt::flush();
-    rt::run_at_exit();
+    rt_end::run_at_exit();
 }
 
 /// A write to a socket or pipe whose other end closed is an error the

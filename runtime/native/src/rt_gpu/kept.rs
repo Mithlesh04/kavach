@@ -60,8 +60,8 @@ pub(super) fn only_on_gpu(list: i64) -> bool {
 pub(super) fn keep(list: i64, items: kavach_runtime_gpu::Resident, stale: bool) {
     static FREE_AT_EXIT: std::sync::Once = std::sync::Once::new();
     FREE_AT_EXIT.call_once(|| {
-        crate::rt::at_exit(finish_late);
-        crate::rt::at_exit(forget_all);
+        crate::rt_end::at_exit(finish_late);
+        crate::rt_end::free_at_end(forget_all);
     });
     crate::rc::retain(list);
     let dropped: Vec<Kept> = RESIDENT.with(|r| {

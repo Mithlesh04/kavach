@@ -165,7 +165,7 @@ pub(crate) fn on_host() -> bool {
                 suspend,
                 resume,
             });
-            crate::rt::at_exit(forget_waiting);
+            crate::rt_end::at_exit(forget_waiting);
         });
     }
     here

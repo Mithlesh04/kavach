@@ -9,8 +9,8 @@
 //! ends it at once. Holds (`cli.on_stop`, decision 0088) get their grace
 //! first (`kavach_runtime_core::stop_holds`).
 
-use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Mutex, OnceLock};
 
 /// What runs before the program ends: the end hooks of native code, or
 /// of the interpreter.
@@ -18,6 +18,19 @@ static HOOKS: OnceLock<fn()> = OnceLock::new();
 
 /// Set when the first signal came: a second one doesn't wait for hooks.
 static STOPPING: AtomicBool = AtomicBool::new(false);
+
+/// Held while a stop's hooks run, to the program's end, and while the
+/// normal end frees what the program kept (`rt_end`): a stop's hooks may
+/// still use what that frees (a `Display` closure, to show a task's
+/// error), so the two never overlap.
+static ENDING: Mutex<()> = Mutex::new(());
+
+/// Runs `free`, never while a stop's hooks run: a stop that comes first
+/// ends the program, and this waits for that.
+pub(crate) fn not_while_stopping(free: fn()) {
+    let _ending = ENDING.lock().unwrap_or_else(|e| e.into_inner());
+    free();
+}
 
 /// Catches the signals that stop a program, so `hooks` runs before it
 /// ends. Call it before any other thread starts: on Unix the signals are
@@ -36,6 +49,7 @@ fn stop(code: i32) {
         std::process::exit(code);
     }
     kavach_runtime_core::stop_holds::let_holders_finish(code);
+    let _ending = ENDING.lock().unwrap_or_else(|e| e.into_inner());
     if let Some(hooks) = HOOKS.get() {
         hooks();
     }

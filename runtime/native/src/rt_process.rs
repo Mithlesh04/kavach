@@ -132,7 +132,7 @@ fn outcome_of(outcome: Option<String>, exit: Option<i32>, code: i64) -> i64 {
     let tree = outcome.and_then(|o| json::parse(&o, &no_limits()).ok());
     let Some(Tree::Object(mut fields)) = tree else {
         let _ = std::io::stdout().flush();
-        crate::rt::run_at_exit();
+        crate::rt_end::run_at_exit();
         std::process::exit(exit.unwrap_or(101));
     };
     let (key, value) = fields.remove(0);
