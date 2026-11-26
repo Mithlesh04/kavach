@@ -31,8 +31,10 @@ use std::process::Command;
 /// Rust's 128-bit parsing. Numbers with bits or a range (spec 2.1),
 /// whose shapes the same table holds: 782 KB on Linux (2026-11-22); their
 /// checks have an entry of their own (`kv_rt_whole`), so only the
-/// shape reading is in every program.
-const BUDGET: u64 = 784 * 1024;
+/// shape reading is in every program. Packed lists kept at their exact
+/// capacity, with a debug check on every push in this development build
+/// (the `unsafe` audit's first finding): 786 KB on Linux (2026-11-26).
+const BUDGET: u64 = 788 * 1024;
 
 #[test]
 fn hello_world_stays_small() {
