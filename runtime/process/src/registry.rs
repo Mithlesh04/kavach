@@ -14,13 +14,18 @@ use windows_sys::Win32::System::Registry::{
 
 pub use windows_sys::Win32::System::Registry::{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
 
-pub fn wide(s: &str) -> Vec<u16> {
-    s.encode_utf16().chain([0]).collect()
+/// `s` as zero-ended UTF-16 text for a system call; `None` when `s` holds
+/// a zero itself, which would end the text early: `"guest\0x"` would
+/// name the user `guest`.
+pub fn wide(s: &str) -> Option<Vec<u16>> {
+    (!s.contains('\0')).then(|| s.encode_utf16().chain([0]).collect())
 }
 
 /// Text value `name` of key `key` under `root`.
 pub fn text(root: HKEY, key: &str, name: &str) -> Option<String> {
-    let (key, name) = (wide(key), wide(name));
+    let (Some(key), Some(name)) = (wide(key), wide(name)) else {
+        return None;
+    };
     let mut buffer = vec![0u16; 1024];
     let mut size = (buffer.len() * 2) as u32;
     // SAFETY: the key and name end with a zero; `buffer` has room for
@@ -46,7 +51,9 @@ pub fn text(root: HKEY, key: &str, name: &str) -> Option<String> {
 
 /// Number value `name` of key `key` under `root`.
 pub fn number(root: HKEY, key: &str, name: &str) -> Option<u32> {
-    let (key, name) = (wide(key), wide(name));
+    let (Some(key), Some(name)) = (wide(key), wide(name)) else {
+        return None;
+    };
     let mut value = 0u32;
     let mut size = 4u32;
     // SAFETY: as in `text`, with room for one 32-bit number.
@@ -66,7 +73,9 @@ pub fn number(root: HKEY, key: &str, name: &str) -> Option<u32> {
 
 /// The names of key `key`'s subkeys under `root`.
 pub fn subkeys(root: HKEY, key: &str) -> Vec<String> {
-    let key = wide(key);
+    let Some(key) = wide(key) else {
+        return Vec::new();
+    };
     let mut open: HKEY = std::ptr::null_mut();
     // SAFETY: `key` ends with a zero; `open` receives a handle, closed below.
     if unsafe { RegOpenKeyExW(root, key.as_ptr(), 0, KEY_READ, &mut open) } != 0 {
@@ -100,4 +109,18 @@ pub fn subkeys(root: HKEY, key: &str) -> Vec<String> {
     // SAFETY: `open` is the handle opened above, closed once.
     unsafe { RegCloseKey(open) };
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn text_for_a_system_call_never_holds_a_zero_before_its_end() {
+        assert_eq!(wide("ab"), Some(vec![97, 98, 0]));
+        assert_eq!(wide(""), Some(vec![0]));
+        // It would end the text early: `guest\0x` would name `guest`.
+        assert_eq!(wide(&format!("guest{}x", char::from(0))), None);
+        assert_eq!(wide(&char::from(0).to_string()), None);
+    }
 }

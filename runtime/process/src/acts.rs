@@ -63,7 +63,9 @@ pub fn act(which: i64, text: &str, number: i64) -> String {
         2 => account(text).and_then(|(name, password, admin)| {
             system::add_user(name, password, admin).map(|()| String::new())
         }),
-        3 => system::remove_user(text).map(|()| String::new()),
+        3 => old_user(text)
+            .and_then(system::remove_user)
+            .map(|()| String::new()),
         4 => system::lock().map(|()| String::new()),
         _ => Err(Refused::Failed("no such action".into())),
     })
@@ -109,6 +111,16 @@ fn user_name(name: &str) -> bool {
     (1..=20).contains(&name.len())
         && first.is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
         && (name.chars()).all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '.'))
+}
+
+/// The user `remove_user` removes: any name, as old accounts may have
+/// others (spec 14.25), but never one holding a NUL. The system would
+/// read it as the name's end, so `"guest\0x"` would remove `guest`.
+fn old_user(name: &str) -> Result<&str, Refused> {
+    if name.contains('\0') {
+        return Err(Refused::Failed("a user's name can't hold a NUL".into()));
+    }
+    Ok(name)
 }
 
 /// The account `add_user` makes: `name`, `password` and `admin` or `""`,
@@ -162,6 +174,15 @@ mod tests {
             "\0pw\0",
         ] {
             assert!(matches!(account(text), Err(Refused::Failed(_))), "{text:?}");
+        }
+    }
+
+    #[test]
+    fn a_user_to_remove_never_holds_a_nul() {
+        // Only the check: nothing here removes a user.
+        assert_eq!(old_user("Web Team"), Ok("Web Team"), "an old name");
+        for bad in ["guest\0x", "\0", "guest\0"] {
+            assert!(matches!(old_user(bad), Err(Refused::Failed(_))), "{bad:?}");
         }
     }
 

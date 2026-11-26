@@ -81,7 +81,9 @@ fn volumes() -> Vec<Vec<String>> {
     let all = String::from_utf16_lossy(&list[..len.min(list.len())]);
     let mut out = Vec::new();
     for root in all.split('\0').filter(|r| !r.is_empty()) {
-        let w = wide(root);
+        let Some(w) = wide(root) else {
+            continue;
+        };
         // SAFETY: `w` ends with a zero.
         let kind = unsafe { GetDriveTypeW(w.as_ptr()) };
         // Removable (2) and fixed (3) drives; not network shares or discs.

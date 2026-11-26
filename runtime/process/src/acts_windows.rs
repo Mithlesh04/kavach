@@ -54,7 +54,11 @@ pub fn add_user(name: &str, password: &str, admin: bool) -> Result<(), Refused> 
         LOCALGROUP_MEMBERS_INFO_3, NetLocalGroupAddMembers, NetUserAdd, UF_SCRIPT, USER_INFO_1,
         USER_PRIV_USER,
     };
-    let (mut n, mut p) = (wide(name), wide(password));
+    let (Some(mut n), Some(mut p)) = (wide(name), wide(password)) else {
+        return Err(Refused::Failed(
+            "a user's name and password can't hold a NUL".into(),
+        ));
+    };
     let info = USER_INFO_1 {
         usri1_name: n.as_mut_ptr(),
         usri1_password: p.as_mut_ptr(),
@@ -84,7 +88,7 @@ pub fn add_user(name: &str, password: &str, admin: bool) -> Result<(), Refused> 
         let member = LOCALGROUP_MEMBERS_INFO_3 {
             lgrmi3_domainandname: n.as_mut_ptr(),
         };
-        let g = wide(&group);
+        let g = wide(&group).ok_or_else(|| Refused::Failed("no administrators' group".into()))?;
         // SAFETY: one member, its name zero-ended text that lives past the call.
         let status = unsafe {
             NetLocalGroupAddMembers(
@@ -142,8 +146,10 @@ fn administrators() -> Option<String> {
 
 pub fn remove_user(name: &str) -> Result<(), Refused> {
     use windows_sys::Win32::NetworkManagement::NetManagement::NetUserDel;
-    let n = wide(name);
-    // SAFETY: `n` is zero-ended text.
+    let Some(n) = wide(name) else {
+        return Err(Refused::Failed("a user's name can't hold a NUL".into()));
+    };
+    // SAFETY: `n` is zero-ended text, with no zero before its end.
     match unsafe { NetUserDel(std::ptr::null(), n.as_ptr()) } {
         0 => Ok(()),
         code => Err(refused(code, &format!("user {name}"))),

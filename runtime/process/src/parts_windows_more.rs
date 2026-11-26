@@ -41,7 +41,9 @@ fn disks() -> Vec<Vec<String>> {
     };
     let mut out = Vec::new();
     for n in 0..32 {
-        let path = wide(&format!(r"\\.\PhysicalDrive{n}"));
+        let Some(path) = wide(&format!(r"\\.\PhysicalDrive{n}")) else {
+            continue;
+        };
         // SAFETY: `path` ends with a zero; no access is asked, only
         // queries, so no admin rights are needed. Closed below.
         let h = unsafe {

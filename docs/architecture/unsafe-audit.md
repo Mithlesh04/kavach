@@ -217,6 +217,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
   - Fixed 2026-11-26, "Report a failed wait for a program as -1", test `runtime/process/src/unix.rs` (`a_wait_that_fails_is_not_a_success`, Linux and macOS only: before the fix it gives 0).
 - **acts_windows.rs:143-151 and registry.rs:178 (`wide`):** an interior NUL is not rejected, and act 3 (`remove_user`) skips the `user_name` check, so `remove_user("guest\0x")` deletes "guest".
   - Validate the name in act 3, or have `wide` reject NUL.
+  - Fixed 2026-11-26, "Refuse a NUL in text for system calls", tests `runtime/process/src/registry.rs` (`text_for_a_system_call_never_holds_a_zero_before_its_end`) and `runtime/process/src/acts.rs` (`a_user_to_remove_never_holds_a_nul`); both check only the text, and nothing removes a user. Both were done: `wide` gives `None` for text holding a NUL, and act 3 refuses such a name with `Failed` on every system before any call. Act 3 doesn't apply `user_name`, as spec 14.25 says `remove_user` takes any name, for old accounts. The functions are new, so no test failed before.
 - **parts_windows_net.rs:45-60:** `GetAdaptersAddresses` gets a fixed 32 KB buffer and no retry on ERROR_BUFFER_OVERFLOW (111). Hosts with many virtual adapters silently report none. Retry with the size the call returns.
 - **parts_windows_net.rs:97:** an `unsafe { utf16_at(..) }` with no SAFETY comment. It is sound; the same call at :109 has a comment.
 

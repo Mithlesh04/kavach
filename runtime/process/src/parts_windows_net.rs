@@ -205,7 +205,9 @@ pub fn sensors() -> Vec<Vec<String>> {
     };
     let mut query = 0isize;
     let mut counter = 0isize;
-    let path = wide(r"\Thermal Zone Information(*)\Temperature");
+    let Some(path) = wide(r"\Thermal Zone Information(*)\Temperature") else {
+        return Vec::new();
+    };
     // SAFETY: plain handles the calls fill; `path` ends with a zero.
     unsafe {
         if PdhOpenQueryW(std::ptr::null(), 0, &mut query as *mut isize as _) != 0 {
