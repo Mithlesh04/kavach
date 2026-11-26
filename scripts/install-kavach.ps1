@@ -39,10 +39,20 @@ Remove-Item -Recurse -Force $new
 if ($temp) { Remove-Item -Force $temp }
 
 $bin = Join-Path $home_dir "bin"
-$user_path = [Environment]::GetEnvironmentVariable("Path", "User")
-if (($user_path -split ";") -notcontains $bin) {
-    [Environment]::SetEnvironmentVariable("Path", "$user_path;$bin", "User")
-    Write-Host "added $bin to your PATH (new terminals see it)"
+# Kavach's folder goes first in the user's PATH, so an older kavach found
+# elsewhere doesn't win, and into this window's PATH too, so `kavach`
+# works at once when the script runs here (`irm … | iex`).
+# KAVACH_NO_MODIFY_PATH=1 leaves the PATH alone.
+if (-not $env:KAVACH_NO_MODIFY_PATH) {
+    $user_path = [Environment]::GetEnvironmentVariable("Path", "User")
+    $others = ($user_path -split ";") | Where-Object { $_ -and $_ -ne $bin }
+    [Environment]::SetEnvironmentVariable("Path", (@($bin) + $others) -join ";", "User")
+    $env:Path = (@($bin) + (($env:Path -split ";") | Where-Object { $_ -and $_ -ne $bin })) -join ";"
+    Write-Host "added $bin to your PATH; other open terminals and editors see it once restarted"
+    $found = Get-Command kavach -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($found -and $found.Source -ne (Join-Path $bin "kavach.exe")) {
+        Write-Host "note: another kavach comes first: $($found.Source); remove or rename it"
+    }
 }
 Write-Host "installed $(& (Join-Path $bin 'kavach.exe') --version)"
 

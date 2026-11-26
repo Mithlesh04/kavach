@@ -66,9 +66,34 @@ else
     esac
 fi
 
+# New shells find kavach: $BIN_DIR goes into the startup file of each shell
+# the user has, once. A script run as `curl … | sh` can't change the shell
+# that started it, so that one is told what to run.
+# KAVACH_NO_MODIFY_PATH=1 leaves the startup files alone.
+add_to() {
+    file=$1
+    line=$2
+    if [ -f "$file" ] && grep -qF "$BIN_DIR" "$file"; then
+        return
+    fi
+    mkdir -p "$(dirname "$file")"
+    printf '\n# added by the Kavach installer\n%s\n' "$line" >> "$file"
+    echo "added $BIN_DIR to the PATH in $file"
+}
+if [ -z "$KAVACH_NO_MODIFY_PATH" ]; then
+    add_to "$HOME/.profile" "export PATH=\"$BIN_DIR:\$PATH\""
+    [ -f "$HOME/.bashrc" ] && add_to "$HOME/.bashrc" "export PATH=\"$BIN_DIR:\$PATH\""
+    case "${SHELL:-}" in
+        *zsh) add_to "$HOME/.zshrc" "export PATH=\"$BIN_DIR:\$PATH\"" ;;
+        *) [ -f "$HOME/.zshrc" ] && add_to "$HOME/.zshrc" "export PATH=\"$BIN_DIR:\$PATH\"" ;;
+    esac
+    if [ -d "$HOME/.config/fish" ]; then
+        add_to "$HOME/.config/fish/conf.d/kavach.fish" "fish_add_path $BIN_DIR"
+    fi
+fi
 case ":$PATH:" in
     *":$BIN_DIR:"*) ;;
-    *) echo "note: add $BIN_DIR to your PATH to run kavach from anywhere" ;;
+    *) echo "open a new terminal to use kavach, or run in this one: export PATH=\"$BIN_DIR:\$PATH\"" ;;
 esac
 if ! command -v cc > /dev/null 2>&1; then
     echo "note: building programs needs a C compiler for linking."
