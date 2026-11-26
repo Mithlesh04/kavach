@@ -219,6 +219,18 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Use Every Core and the GPU", "—"],
     ["Call a C Library Safely", "—"],
   ]],
+  ["concepts", "Concepts", "intermediate", [
+    ["Values, Not Shared References", "6.1"],
+    ["Errors as Values", "5"],
+    ["Capabilities in Types", "8.1"],
+    ["Memory without a Garbage Collector", "6.1"],
+    ["Tests from Contracts", "11"],
+    ["The One-Core Answer", "4.9"],
+    ["No Silent Number Surprises", "2.1"],
+    ["Small Files, Enforced", "12.1"],
+    ["Built for AI to Read and Write", "13"],
+    ["Agents with Limits", "8.3"],
+  ]],
   ["reference", "Reference", "intermediate", [
     ["Keywords", "1.6"],
     ["Operators", "1.8"],
