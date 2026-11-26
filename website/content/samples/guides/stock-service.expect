@@ -1,0 +1,18 @@
+$ kavach check
+src/main.kav: no errors
+$ kavach run src/main.kav
+GET /stock/tea: 200 {"item":"tea","count":3}
+POST /stock: 201 {"item":"cake","count":5}
+now: 5 cake
+GET /stock/jam: 404 no jam here
+POST /stock: 400 send a JSON object with an item and a count
+DELETE /stock/tea: 404 nothing at DELETE /stock/tea
+$ kavach test --seed 7
+✓ ask: example ask("GET", "/stock/tea", "").path == "/stock/tea"
+✓ test "a known item gives its count"
+✓ test "a count below zero is refused and changes nothing"
+3 passed, 0 failed
+seed 7
+✓ ask  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested
+  not generated: handle: takes values that can't be generated yet

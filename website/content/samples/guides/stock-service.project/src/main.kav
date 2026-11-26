@@ -1,0 +1,25 @@
+use std.http
+use std.json
+use std.net
+use stock.{Stock, handle}
+
+fn main() ! Error {
+    const stock = Shared({"tea": 3})
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, r => handle(r, stock))
+    const base = `http://{listener.address()}`
+
+    const tea = try http.get(`{base}/stock/tea`)
+    print(`GET /stock/tea: {tea.status} {tea.body.text() ?? ""}`)
+
+    const added = try http.post(`{base}/stock`, json.stringify(Stock(item: "cake", count: 5)).bytes())
+    print(`POST /stock: {added.status} {added.body.text() ?? ""}`)
+
+    const cake = try http.get_json<Stock>(`{base}/stock/cake`)
+    print(`now: {cake.count} {cake.item}`)
+
+    for (method, path, body) in [("GET", "/stock/jam", ""), ("POST", "/stock", "five cakes"), ("DELETE", "/stock/tea", "")] {
+        const r = try http.request(method, `{base}{path}`, body: body.bytes())
+        print(`{method} {path}: {r.status} {r.body.text() ?? ""}`)
+    }
+}

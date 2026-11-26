@@ -1,0 +1,30 @@
+use std.http
+use std.json
+
+/// How many of one item the shop has.
+pub type Stock {
+    pub item: String
+    pub count: Int
+}
+
+/// Answers one request. `stock` is the one value every request shares.
+pub fn handle(r: Request, stock: Shared<{String: Int}>) -> Response {
+    if r.method == "GET" and r.path.starts_with("/stock/") {
+        const item = r.path[7:]
+        const count = stock.get().get(item) ?? return http.text(404, `no {item} here`)
+        return http.json_response(200, json.of(Stock(item: item, count: count)))
+    }
+    if r.method == "POST" and r.path == "/stock" {
+        const s = http.read_json<Stock>(r) catch _ => return http.text(400, "send a JSON object with an item and a count")
+        if s.count < 0 {
+            return http.text(400, `count can't be below 0, not {s.count}`)
+        }
+        stock.update(all => {
+            let next = all
+            next[s.item] = s.count
+            next
+        })
+        return http.json_response(201, json.of(s))
+    }
+    http.text(404, `nothing at {r.method} {r.path}`)
+}

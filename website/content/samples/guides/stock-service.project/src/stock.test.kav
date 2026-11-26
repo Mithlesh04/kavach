@@ -1,0 +1,21 @@
+/// A request as a client would send it, with no network.
+fn ask(method: String, path: String, body: String) -> Request
+    example ask("GET", "/stock/tea", "").path == "/stock/tea"
+{
+    Request(method: method, path: path, headers: [], body: body.bytes())
+}
+
+test "a known item gives its count" {
+    const stock = Shared({"tea": 3})
+    const r = handle(ask("GET", "/stock/tea", ""), stock)
+    assert r.status == 200
+    const got = try json.decode<Stock>(r.body.text() ?? "")
+    assert got == Stock(item: "tea", count: 3)
+}
+
+test "a count below zero is refused and changes nothing" {
+    const stock = Shared({"tea": 3})
+    const r = handle(ask("POST", "/stock", json.stringify(Stock(item: "tea", count: -1))), stock)
+    assert r.status == 400
+    assert stock.get() == {"tea": 3}
+}

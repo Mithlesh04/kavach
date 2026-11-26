@@ -4,7 +4,7 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
-import { loadProject } from "@/lib/samples";
+import { guideProject } from "./guide-parts";
 import { H2, Note, P } from "./parts";
 
 // ---------- Guides › Build a Command-Line Tool ----------
@@ -15,26 +15,9 @@ import { H2, Note, P } from "./parts";
 // the page shows the code a piece at a time, cut from the checked file,
 // and each command's output cut from the checked session.
 
-const tool = loadProject("guides/top-words", ["src/main.kav", "kavach.toml", "notes.txt"]);
-const [main, toml, notes] = tool.files;
-
-/** The lines of main.kav from the one holding `start` to the first `}` at the start of a line. */
-function piece(start: string): string {
-  const lines = main.code.split("\n");
-  // Doc comments above a declaration go with it.
-  let from = lines.findIndex((l) => l.includes(start));
-  if (from < 0) throw new Error(`guides/top-words: no line holds ${JSON.stringify(start)}`);
-  while (from > 0 && lines[from - 1].startsWith("///")) from--;
-  const to = lines.findIndex((l, i) => i > from && l === "}");
-  return lines.slice(from, to + 1).join("\n");
-}
-
-/** What `kavach <command>` printed in the checked session, with its command line. */
-function said(command: string): string {
-  const block = (tool.output ?? "").split(/^(?=\$ kavach )/m).find((b) => b.startsWith(`$ kavach ${command}\n`));
-  if (!block) throw new Error(`guides/top-words: the session has no "kavach ${command}"`);
-  return block.trimEnd();
-}
+const tool = guideProject("top-words", ["src/main.kav", "kavach.toml", "notes.txt"]);
+const piece = (start: string) => tool.piece("src/main.kav", start);
+const said = tool.said;
 
 export const guideCliDoc: LessonDoc = {
   lead: "One task from start to finish: a command-line tool that reads a text file and prints its most common words, with options, clear mistakes, tests and a program to ship.",
@@ -53,9 +36,9 @@ export const guideCliDoc: LessonDoc = {
         <Link href="/docs/tools/the-kavach-command/new/">kavach new</Link>). The package&apos;s name is the
         program&apos;s name:
       </P>
-      <CodeBlock code={toml.code} file="kavach.toml" lang="toml" />
+      <CodeBlock code={tool.file("kavach.toml")} file="kavach.toml" lang="toml" />
       <P>A text file to try it on, in the project&apos;s folder:</P>
-      <CodeBlock code={notes.code} file="notes.txt" lang="text" />
+      <CodeBlock code={tool.file("notes.txt")} file="notes.txt" lang="text" />
       <H2>2. Say what it takes, as a type</H2>
       <P>
         The command line is a record type. Each field is an option: <C>input</C> is <C>--input</C>, and a field with a
@@ -117,7 +100,7 @@ export const guideCliDoc: LessonDoc = {
         <Link href="/docs/tools/the-kavach-command/build/">kavach build</Link>.
       </P>
       <H2>The whole program</H2>
-      <CodeBlock code={main.code} file="src/main.kav" />
+      <CodeBlock code={tool.file("src/main.kav")} file="src/main.kav" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/14-standard-library/06-io-and-cli.md" label="spec 14.6 · std.cli" />
         <SrcRef file="docs/spec/10-modules-and-packages/03-project-layout.md" label="spec 10.3 · where the program goes" />
