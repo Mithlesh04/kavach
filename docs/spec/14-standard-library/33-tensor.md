@@ -38,6 +38,8 @@ fn main() {
 | `tensor.linspace<T: Floating>(start: T, end: T, count: Int) -> Tensor<T, dims: 1>` | `count` numbers from `start` to `end`, both included, evenly spaced |
 | `tensor.random<T: Floating>(shape: [Int]) -> Tensor<T> uses Random` | Each number from 0 up to, not including, 1, as `random.float()` (14.15) |
 | `tensor.normal<T: Floating>(shape: [Int], mean: T = 0.0, std: T = 1.0) -> Tensor<T> uses Random` | Numbers from the normal distribution with this mean and standard deviation |
+
+*Not built yet:* the `dims:` in these result types ([the number of dimensions in the type](#the-number-of-dimensions-in-the-type), below). Today each gives a plain `Tensor<T>`, and a program writes `Tensor<T>` too.
 | `tensor.random_int(shape: [Int], from: Int, until: Int) -> Tensor<Int> uses Random` | Each a whole number from `from` up to, not including, `until`, drawn as `random.int` draws it, so a seed gives the same numbers either way (14.15); at most 16,777,216 (2^24) numbers at a time (a `require`) |
 
 ```kavach
