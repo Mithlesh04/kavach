@@ -51,7 +51,11 @@ Some functions get no generated arguments. The report lists each as **not genera
 - a capability with no fake yet (11.5);
 - a C function (10.7), or a function a generated case found reaching C or raw memory (`alloc`, `*p`, 6.4): they run only in native code.
 
-An `example` whose call reaches C or raw memory isn't run either, for the same reason: the report lists it as **not run**, with that reason, and it doesn't fail `kavach test`. So a function wrapping a C library can carry examples as documentation; they are checked once tests can run in native code. *Not built yet:* today such an example runs in the interpreter and fails.
+An `example` whose call reaches C or raw memory isn't run either, for the same reason: the report lists it as **not run**, with that reason, and it doesn't fail `kavach test`. So a function wrapping a C library can carry examples as documentation; they are checked once tests can run in native code. The report shows it as:
+
+```
+  not run: error_function: example error_function(0.0) == 0.0: reaches C or raw memory, which run only in native code (10.7, 6.4)
+```
 
 When no generated input meets a function's `require`, its `example`s are what checks it. The report says "checked by its examples only", or warns when it has none.
 
