@@ -46,6 +46,18 @@ export const gpuDrawDoc: LessonDoc = {
           is, and never comes back to the CPU.
         </li>
       </ul>
+      <H2>A value every pixel reads</H2>
+      <P>
+        A <C>gpu fragment fn</C> may take the value shared by the draw too, after its input and before any textures: a
+        colour, a corner radius or a time that every pixel reads. Here each box&apos;s corners are rounded by the
+        draw&apos;s one <C>Style</C>. Shown, not run:
+      </P>
+      <SpecCode file="15-gpu.md" number="15.3" text={"gpu fragment fn rounded"} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>It is the same value the vertex fn takes last, of the same type. A vertex fn that doesn&apos;t read it need not take it, and the draw still gives it as <C>shared:</C>.</li>
+        <li>A vertex fn and a fragment fn taking shared values of two types is a compile error.</li>
+      </ul>
+      <SrcRef file="tests/conformance/15-gpu/gpu-fragment-fn-reads-the-shared-value.kav" label="the fragment fn's shared value, tested" />
       <H2>The same fns on the CPU</H2>
       <P>
         A vertex or fragment fn is an ordinary function on the CPU too. So you can call it with one corner and see

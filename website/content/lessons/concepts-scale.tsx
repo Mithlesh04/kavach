@@ -38,7 +38,7 @@ export const conceptSmallFilesDoc: LessonDoc = {
       <Files name="projects/limits.fails" first={["kavach.toml", "src/main.kav"]} outcome="refused" />
       <ul className={ul}>
         <li>Which module may use which is written under <C>[architecture]</C>, and a dependency cycle is an error.</li>
-        <li><C>kavach api check</C> finds breaking changes before a release, including ones other languages miss: a new capability, a new error, a stronger <C>require</C>.</li>
+        <li>Not built yet: <C>kavach api check</C>, to find breaking changes before a release, including ones other languages miss: a new capability, a new error, a stronger <C>require</C>.</li>
         <li>The Kavach repository holds itself to the same 500 lines.</li>
       </ul>
       <H2>What it costs</H2>
