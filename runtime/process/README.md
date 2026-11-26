@@ -19,7 +19,8 @@ Other programs, run for `std.process` (spec 14.23) with no shell, as trees that 
 | `src/acts_tests.rs` | Those changes, tested so this machine never changes (see below) |
 | `src/smbios.rs` | The SMBIOS tables: memory modules and ids |
 | `src/windows.rs` | Windows: the program starts suspended and joins a job object that ends everything in it; the job's processor time and peak committed memory |
-| `src/unix.rs` | Linux and macOS: a process group ended with `killpg`; `wait4` for the end, processor time and largest resident set |
+| `src/unix.rs` | Linux and macOS: a process group ended with `killpg` until its first program is reaped; `wait4` for the end, processor time and largest resident set |
+| `src/reaped.rs` | The lock that keeps `killpg` from reaching a group once its first program is reaped: its id may be a stranger's then |
 | `src/tests.rs` | Output and errors as lines, the folder and environment, killing a tree, a missing program or folder, the end coming again; the machine's facts |
 
 ## Testing what changes the machine

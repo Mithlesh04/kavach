@@ -3,28 +3,36 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! A program's tree on Linux and macOS (decision 0105): a process group
-//! of its own, which `killpg` ends whole. `wait4` gives the program's end
-//! with its processor time and largest resident set, its own and those of
-//! the programs it waited for.
+//! of its own, which `killpg` ends whole while its first program is
+//! unreaped (`reaped.rs`). `wait4` gives the program's end with its
+//! processor time and largest resident set, its own and those of the
+//! programs it waited for.
 #![allow(unsafe_code)]
 
 use super::Exit;
+use crate::reaped::Leader;
 use std::os::unix::process::CommandExt;
 use std::process::{Child, Command};
 
 /// The process group holding a program's tree: its first program's id.
 pub struct Tree {
     group: libc::pid_t,
+    leader: Leader,
 }
 
 impl Tree {
-    /// Ends every program in the group.
+    /// Ends every program in the group, unless its first program was
+    /// reaped: then the group's id may be a stranger's.
     pub fn kill(&self) {
-        // SAFETY: sending a signal touches no memory of ours. A group id
-        // isn't given to another group while any program is still in it.
-        unsafe {
-            libc::killpg(self.group, libc::SIGKILL);
-        }
+        self.leader.signal(|| {
+            // SAFETY: sending a signal touches no memory of ours. The
+            // group's first program isn't reaped (`signal` runs this only
+            // then, under the lock `wait` reaps it under), so the id is
+            // still this group's and no other group's.
+            unsafe {
+                libc::killpg(self.group, libc::SIGKILL);
+            }
+        });
     }
 }
 
@@ -32,7 +40,8 @@ impl Tree {
 pub fn spawn(command: &mut Command) -> std::io::Result<(Child, Tree)> {
     let child = unblocked(command.process_group(0)).spawn()?;
     let group = child.id() as libc::pid_t;
-    Ok((child, Tree { group }))
+    let leader = Leader::default();
+    Ok((child, Tree { group, leader }))
 }
 
 /// `command` with no signal blocked in the program it starts. A Kavach
@@ -53,23 +62,45 @@ pub fn unblocked(command: &mut Command) -> &mut Command {
     }
 }
 
+/// `call`, again while a signal interrupts it; what it gave at last.
+fn retried(mut call: impl FnMut() -> libc::c_int) -> libc::c_int {
+    loop {
+        let r = call();
+        if r >= 0 || std::io::Error::last_os_error().kind() != std::io::ErrorKind::Interrupted {
+            return r;
+        }
+    }
+}
+
 /// Waits for the program's end with `wait4`, which the standard library
 /// can't give: it reaps the program, so `child` is never waited for again.
-pub fn wait(child: Child, _tree: &Tree) -> Exit {
+/// It first waits without reaping, so `kill` can end the group until the
+/// reap, which takes the lock `kill` takes.
+pub fn wait(child: Child, tree: &Tree) -> Exit {
     let pid = child.id() as libc::pid_t;
-    // SAFETY: `status` and `usage` are plain C values the call fills;
-    // `wait4` is retried when a signal interrupts it.
-    let (status, usage) = unsafe {
+    // SAFETY: `info` is a plain C value the call fills. `WNOWAIT` leaves
+    // the program unreaped, so its id stays its own.
+    let ended = retried(|| unsafe {
+        let mut info: libc::siginfo_t = std::mem::zeroed();
+        libc::waitid(
+            libc::P_PID,
+            pid as libc::id_t,
+            &mut info,
+            libc::WEXITED | libc::WNOWAIT,
+        )
+    }) == 0;
+    // SAFETY: `status` and `usage` are plain C values the call fills. The
+    // program has ended, so `wait4` returns at once, with the lock held.
+    let (_, status, usage) = tree.leader.reap(|| unsafe {
         let mut status: libc::c_int = 0;
         let mut usage: libc::rusage = std::mem::zeroed();
-        loop {
-            let r = libc::wait4(pid, &mut status, 0, &mut usage);
-            if r >= 0 || std::io::Error::last_os_error().kind() != std::io::ErrorKind::Interrupted {
-                break;
-            }
-        }
-        (status, usage)
-    };
+        let r = if ended {
+            retried(|| libc::wait4(pid, &mut status, 0, &mut usage))
+        } else {
+            -1
+        };
+        (r, status, usage)
+    });
     drop(child);
     let code = if libc::WIFEXITED(status) {
         libc::WEXITSTATUS(status)
@@ -138,5 +169,15 @@ mod tests {
         command.args(["-c", "kill -TERM $$; exit 3"]);
         let status = unblocked(&mut command).status().unwrap();
         assert_eq!(status.signal(), Some(libc::SIGTERM));
+    }
+
+    #[test]
+    fn a_group_is_ended_while_it_runs_and_never_signalled_once_reaped() {
+        let (child, tree) = spawn(Command::new("sleep").arg("60")).unwrap();
+        tree.kill();
+        let exit = wait(child, &tree);
+        assert_eq!(exit.code, 128 + i64::from(libc::SIGKILL));
+        // Reaped: its id may be a stranger's group now.
+        assert!(!tree.leader.signal(|| panic!("signalled after the reap")));
     }
 }

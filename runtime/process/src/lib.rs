@@ -20,6 +20,8 @@ use std::io::{BufRead, BufReader, Read};
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex, OnceLock};
 
+#[cfg(any(unix, test))]
+mod reaped;
 #[cfg(unix)]
 mod unix;
 #[cfg(unix)]

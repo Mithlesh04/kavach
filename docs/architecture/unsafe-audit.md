@@ -119,6 +119,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 
 ### 6. runtime/process (Unix): `killpg` after the group may be gone kills a stranger's group
 
+- **Status:** Fixed 2026-11-26, "Never signal a program's group after its reap", tests `runtime/process/src/reaped.rs` (the lock's logic: no signal after the reap, and a signal waits for a reap under way; these run on every system) and `runtime/process/src/unix.rs` (`a_group_is_ended_while_it_runs_and_never_signalled_once_reaped`, Linux and macOS only). The second fix was taken: `wait` first waits with `waitid(WEXITED | WNOWAIT)`, which leaves the program unreaped, then reaps it with `wait4` under a lock that `kill` and `close` take too; `kill` sends nothing once the reap is done. No test failed before: the old code had no state to test, and pid reuse can't be forced in a test. Left for a maintainer's review: a program the tree started that outlives the first one and has closed its output is no longer ended by `close` on Linux and macOS, since its group's id can't be trusted once the first program is reaped (spec 14.23 says the whole tree ends; Windows' job still does that).
 - **Where:** runtime/process/src/unix.rs:22-27 (`Tree::kill`), with lib.rs:181-194 (`kill`, `close`) and unix.rs:58-73 (`wait`).
 - **What happens:**
   - `wait` reaps the leader with `wait4`, but `close(id)` still runs `killpg(group, SIGKILL)` when the Kavach `Child` is let go. A late `kill(id)` does the same.
