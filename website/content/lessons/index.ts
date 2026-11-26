@@ -25,6 +25,7 @@ import { stdModuleDocs, stdlibRefDoc } from "./reference-std";
 import { testedDocs } from "./reference-tested";
 import { stdlibLessons } from "./index-stdlib";
 import { guideLessons } from "./index-guides";
+import { pathsDoc } from "./start-paths";
 import { conceptLessons } from "./index-concepts";
 import { typesRefDoc } from "./reference-types";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
@@ -141,6 +142,7 @@ export const lessons: Record<string, LessonDoc> = {
   "reference/commands": commandsRefDoc,
   "reference/compiler-messages": messagesRefDoc,
   "start/kavach-home": homeDoc,
+  "start/learning-paths": pathsDoc,
   "start/why-kavach": whyDoc,
   "start/what-kavach-does-for-you": smartDoc,
   "start/classic-mistakes-fixed": classicDoc,

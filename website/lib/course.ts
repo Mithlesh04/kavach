@@ -27,6 +27,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Classic Mistakes, Fixed", "—"],
     ["Mistakes Caught Before a Run", "—"],
     ["Who Kavach Is For", "—"],
+    ["Learning Paths", "—"],
     ["FAQ", "—"],
     ["Coming From Another Language", "—", ["Python", "JavaScript", "C++", "Rust", "Go"]],
     ["What You Can Build", "—"],

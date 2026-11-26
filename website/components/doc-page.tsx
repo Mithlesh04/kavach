@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PathBar } from "./path-bar";
 import { notFound } from "next/navigation";
 import { pageScenes } from "@/components/explain/scene-pages";
 import { sceneStructured } from "@/components/explain/scene-text";
@@ -75,6 +76,7 @@ export function DocPage({ nodeKey }: { nodeKey: string }) {
 
       <Lesson node={node} doc={lesson} nextTitle={next?.title} />
 
+      <PathBar />
       <nav aria-label="Previous and next" className="flex flex-wrap justify-between gap-4 px-10 pb-12 max-md:px-5 max-sm:px-4">
         {prev ? (
           <Link href={prev.href} className="rounded-lg border border-line px-4 py-2.5 text-sm font-bold text-muted no-underline">

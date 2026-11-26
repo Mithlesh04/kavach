@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { CHANGED, readPages } from "./path-store";
 import { useNavDrawer } from "@/components/nav-drawer";
 import type { SidePart } from "@/lib/site";
 
@@ -25,6 +26,21 @@ export function Sidebar({ tree, links }: { tree: SidePart[]; links: { title: str
   const { open: menuOpen, close } = useNavDrawer();
   const closeButton = useRef<HTMLButtonElement>(null);
   const pane = useRef<HTMLElement>(null);
+  // Pages read in this browser get a tick (components/path-store.ts); filled after the page loads.
+  const [read, setRead] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const load = () => setRead(readPages());
+    load();
+    window.addEventListener(CHANGED, load);
+    return () => window.removeEventListener(CHANGED, load);
+  }, []);
+  const tick = (href: string) =>
+    read.has(href) ? (
+      <span className="ml-1.5 text-[11px] text-soft">
+        <span aria-hidden="true">✓</span>
+        <span className="sr-only">(read)</span>
+      </span>
+    ) : null;
 
   // An opened menu shows where you are, and the keyboard starts in it.
   useEffect(() => {
@@ -102,6 +118,7 @@ export function Sidebar({ tree, links }: { tree: SidePart[]; links: { title: str
                           }
                         >
                           {page.title}
+                          {tick(page.href)}
                         </Link>
                         {page.subs.length > 0 && (
                           <button
@@ -130,6 +147,7 @@ export function Sidebar({ tree, links }: { tree: SidePart[]; links: { title: str
                                   }
                                 >
                                   {sub.title}
+                                  {tick(sub.href)}
                                 </Link>
                               </li>
                             );
