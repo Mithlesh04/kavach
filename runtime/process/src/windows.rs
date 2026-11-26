@@ -126,18 +126,25 @@ pub fn spawn(command: &mut Command) -> std::io::Result<(Child, Tree)> {
         let _ = child.kill();
         return Err(e);
     }
-    resume(child.id());
+    if let Err(e) = resume(child.id()) {
+        // Left suspended, it would never end, and `wait` would wait forever.
+        tree.kill();
+        let _ = child.kill();
+        return Err(e);
+    }
     Ok((child, tree))
 }
 
-/// Resumes every thread of process `pid` (it has one: it never ran).
-fn resume(pid: u32) {
+/// Resumes every thread of process `pid` (it has one: it never ran); an
+/// error when none was.
+fn resume(pid: u32) -> std::io::Result<()> {
+    let mut resumed = 0;
     // SAFETY: the snapshot and each thread handle are checked and closed;
     // the entry's size is set before the system fills it.
     unsafe {
         let snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
         if snapshot == INVALID_HANDLE_VALUE {
-            return;
+            return Err(std::io::Error::last_os_error());
         }
         let mut entry: THREADENTRY32 = std::mem::zeroed();
         entry.dwSize = std::mem::size_of::<THREADENTRY32>() as u32;
@@ -146,7 +153,9 @@ fn resume(pid: u32) {
             if entry.th32OwnerProcessID == pid {
                 let thread = OpenThread(THREAD_SUSPEND_RESUME, 0, entry.th32ThreadID);
                 if !thread.is_null() {
-                    ResumeThread(thread);
+                    if ResumeThread(thread) != u32::MAX {
+                        resumed += 1;
+                    }
                     CloseHandle(thread);
                 }
             }
@@ -154,6 +163,12 @@ fn resume(pid: u32) {
         }
         CloseHandle(snapshot);
     }
+    if resumed == 0 {
+        return Err(std::io::Error::other(
+            "the program was started suspended and couldn't be resumed",
+        ));
+    }
+    Ok(())
 }
 
 /// Waits for the program's end; the job gives what its tree cost.
@@ -208,5 +223,16 @@ pub fn peak_self() -> i64 {
             return 0;
         }
         counters.PeakWorkingSetSize as i64
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_program_whose_thread_isnt_resumed_is_an_error() {
+        // No process has an odd id on Windows: there is no thread to resume.
+        assert!(resume(u32::MAX).is_err());
     }
 }
