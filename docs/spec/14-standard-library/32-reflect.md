@@ -34,6 +34,7 @@ fn main() {
 | `T.members() -> [Member]` | Every field and method of type `T`: built in, declared in its body, or added by an `extend`, sorted by name. `T` is a type's name: `String`, `Int`, `Order`, and `List`, `Dict`, `Set` and `Ring` for collections |
 | `m.members() -> [Member]` | What module `m` offers to the code that uses it: its `pub` functions, types and constants, sorted by name |
 | `x.has_member(name) -> Bool` | Whether `x`'s type has a field or method `name`; `name` is a text literal. For an interface value (2.15), whether the interface has it |
+| `reflect.type_of(x) -> String` | `x`'s type as code writes it: `[Int]`, `{String: Float}`, `String?`, `Order` (*not built yet*; a maintainer asked 2026-11-27, the name for a maintainer's review). Known while compiling, except for a value whose type is only known when the program runs: an interface value (2.15) or an inline union (2.6) gives its own type then, `type_of(shape)` giving `Circle` |
 
 The program needs no `use std.reflect` for these calls; it does to name the types below, as `MemberOrigin` above.
 
