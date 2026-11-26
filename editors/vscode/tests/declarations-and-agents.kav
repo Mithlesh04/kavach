@@ -72,6 +72,20 @@ test "refunds are capped" {
 // <---- storage.type.kavach
 //   ^^^^^^^^^^^^^^^^^^^^ string.quoted.double.kavach
 
+test "reports go to an in-memory disk" uses Fs with Fs = fake {
+// <---- storage.type.kavach
+//                                     ^^^^ keyword.other.agent.kavach
+}
+
+fn test() {
+// ^^^^ entity.name.function.kavach
+    test()
+//  ^^^^ entity.name.function.call.kavach
+    const test = 1
+//        ^^^^ variable.other.readwrite.kavach
+    print(report.test)
+//               ^^^^ variable.other.property.kavach
+}
 
 fn bump(inout n: Int) {
 //      ^^^^^ storage.modifier.kavach
