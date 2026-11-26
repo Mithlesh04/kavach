@@ -6,7 +6,7 @@ import { Ex, H2, P } from "./parts";
 
 // ---------- Matrices ----------
 //
-// Spec 2.17 (decision 0136): a matrix is a Tensor<T, dims: 2> from
+// Spec 2.17 (decision 0136): a matrix is a two-dimension Tensor<T> from
 // std.tensor, Kavach's one array type. `Matrix<T>` and `std.matrix` are
 // gone, and naming them is a compile error that says what to write.
 
@@ -14,7 +14,7 @@ const SPEC = "docs/spec/02-types/17-matrices.md";
 const TESTS = "tests/conformance/02-types";
 
 export const matricesDoc: LessonDoc = {
-  lead: "A matrix is a tensor of two dimensions, Tensor<T, dims: 2>, from std.tensor. a @ b is the matrix product, and + - * work item by item.",
+  lead: "A matrix is a tensor of two dimensions from std.tensor, written Tensor<T> in a program. a @ b is the matrix product, and + - * work item by item.",
   simple: <>A matrix is a table of numbers: rows and columns, like a spreadsheet. Many calculations are a matrix times another: scores times weights, points times a turn, inputs times a layer of a neural network. <C>a @ b</C> does that in one step.</>,
   minutes: 4,
   before: ["types/operators-for-your-types", "collections/lists"],

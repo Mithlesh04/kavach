@@ -2,7 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, H2, P } from "./parts";
+import { Ex, H2, Note, P } from "./parts";
 import { TENSOR_SPEC, TENSOR_SRC, TENSOR_TESTS, tensorTable } from "./stdlib-tensor";
 
 // ---------- Tensors: making them, and indexing ----------
@@ -55,6 +55,10 @@ export const tensorMakeDoc: LessonDoc = {
       <Ex name="tensor/convert" />
       <H2>Every call</H2>
       {tensorTable("Making tensors")}
+      <Note>
+        Not built yet: the <C>dims:</C> in these result types. Today each gives a plain <C>Tensor&lt;T&gt;</C>, and a
+        program writes <C>Tensor&lt;T&gt;</C> too: <C>fn f(t: Tensor&lt;Float&gt;)</C>.
+      </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${TENSOR_SPEC}`} label="spec 14.33 · making tensors" />
         <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={239} symbol="fn of" />
