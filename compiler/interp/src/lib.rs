@@ -10,6 +10,7 @@ mod agents;
 mod ai;
 mod ai_checks;
 mod arena;
+mod baton;
 mod bigint;
 mod builtins;
 mod bytes;
@@ -321,14 +322,19 @@ fn on_big_stack(
                 i.tasks = Some(shared.clone());
                 let exit_code = body(&mut i);
                 i.flush();
+                // What holds values goes before the turn passes on: the
+                // program's state, and what ended it (`tasks::Baton`).
                 drop(i);
-                shared.sched.end(0);
+                let (sched, out, err) =
+                    (shared.sched.clone(), shared.out.clone(), shared.err.clone());
+                drop(shared);
+                baton::end_turn(&sched, 0);
                 let take = |s: &std::sync::Mutex<String>| {
                     std::mem::take(&mut *s.lock().unwrap_or_else(|e| e.into_inner()))
                 };
                 Output {
-                    stdout: take(&shared.out),
-                    stderr: take(&shared.err),
+                    stdout: take(&out),
+                    stderr: take(&err),
                     exit_code,
                 }
             })

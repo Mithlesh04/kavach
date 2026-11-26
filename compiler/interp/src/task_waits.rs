@@ -6,8 +6,9 @@
 //! time, and for the tasks a call spawned; the points where a cancelled
 //! task stops; and why a wait or a task ends early.
 
+use crate::baton::Baton;
 use crate::interp::Interp;
-use crate::tasks::{Baton, Limit, TaskHandle, copy, copy_flow};
+use crate::tasks::{Limit, TaskHandle, copy, copy_flow};
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::Span;
 use kavach_runtime_core::tasks::Stop;

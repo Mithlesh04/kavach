@@ -123,3 +123,52 @@ fn key(text: String) -> Int
     assert!(out.contains(examples), "{out}");
     assert!(!out.contains("0 cases"), "{out}");
 }
+
+/// A server's loop: each round spawns a task whose arguments and result
+/// share text and lists with the spawner, waits for it or leaves its
+/// error unread, and lets the task go when the function returns. The
+/// task's thread must let go of its handle, and of every value, before
+/// it hands the turn on: a value let go of after that changes `Rc`
+/// counts while another task runs (`Baton` in `tasks.rs`), which the
+/// handle's `Drop` checks in debug builds.
+#[test]
+fn tasks_let_their_values_go_before_the_turn_passes() {
+    let src = "fn handle(name: String, items: [String], n: Int) -> [String] ! Error {
+    if n % 3 == 0 {
+        fail Error(name)
+    }
+    let out = items
+    out.push(name)
+    out
+}
+
+fn serve(name: String, items: [String], n: Int) -> Int {
+    if n % 5 == 0 {
+        const _ignored = spawn handle(name, items, n)
+        return 0
+    }
+    const t = spawn handle(name, items, n)
+    const got = t.wait() catch _ => [name]
+    got.len()
+}
+
+fn main() {
+    const name = \"request\"
+    const items = [\"a\", \"b\", \"c\"]
+    let total = 0
+    for i in 0..3000 {
+        total += serve(name, items, i)
+    }
+    print(total)
+}
+";
+    let compiled = kavach_driver::compile(src, "serve.kav", Default::default());
+    assert!(!compiled.has_errors(), "{}", compiled.render());
+    for _ in 0..5 {
+        let output = super::run(&compiled);
+        assert_eq!(output.stdout, "7200\n", "{}", output.stderr);
+        assert_eq!(output.exit_code, 0, "{}", output.stderr);
+        let unread = output.stderr.lines();
+        assert_eq!(unread.filter(|l| l.contains("request")).count(), 200);
+    }
+}

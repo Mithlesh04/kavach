@@ -9,7 +9,8 @@
 //! spawned by no line of the program: its error says which event it is
 //! (spec 8.6).
 
-use crate::tasks::{Baton, TaskHandle};
+use crate::baton::Baton;
+use crate::tasks::TaskHandle;
 use crate::value::Flow;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -37,6 +38,12 @@ pub(crate) fn replay_error(event: &str, error: &str) -> String {
 
 impl Drop for TaskHandle<'_> {
     fn drop(&mut self) {
+        // Its result holds values: only a thread holding the turn may
+        // let them go (`Baton`).
+        debug_assert!(
+            !crate::baton::turn_given_up(),
+            "a task's handle was let go of after its thread gave up the turn"
+        );
         let u = &self.unread;
         if u.read.load(Ordering::Relaxed) || u.cancelled.load(Ordering::Relaxed) {
             return;

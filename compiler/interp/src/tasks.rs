@@ -11,6 +11,7 @@
 //! moves what it printed into the program's output whenever it hands the
 //! turn on, so the output is in the order things happened.
 
+use crate::baton::{Baton, end_turn};
 use crate::interp::{Frame, Interp};
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::{Expr, Span};
@@ -65,26 +66,6 @@ impl<'a> Tasks<'a> {
             rounds: Arc::default(),
             loops: Arc::default(),
         }
-    }
-}
-
-/// A value moved to, or read from, another task's thread.
-///
-/// Values hold `Rc`s, which threads may not share. Tasks take turns: only
-/// the task holding the scheduler's turn runs, and the turn passes
-/// through a mutex, which orders memory between the threads. A `Baton` is
-/// only made, moved and opened by the task holding the turn, so no two
-/// threads ever touch its `Rc`s at the same time.
-pub(crate) struct Baton<T>(pub(crate) T);
-
-// SAFETY: see `Baton` above: its contents are only used by the one
-// thread running at a time, after the turn passed to it through a mutex.
-#[allow(unsafe_code)]
-unsafe impl<T> Send for Baton<T> {}
-
-impl<T> Baton<T> {
-    fn into_inner(self) -> T {
-        self.0
     }
 }
 
@@ -252,7 +233,7 @@ impl<'a> Interp<'a> {
         let job = Baton((child, Arc::clone(&handle), work));
         let start: Job<'a> = Box::new(move || {
             let (child, handle, work) = job.into_inner();
-            child.run_task(work, span, &handle);
+            child.run_task(work, span, handle);
         });
         if tasks.spawner.send(start).is_err() {
             return Err(self.panic("the program is ending", span));
@@ -366,7 +347,11 @@ impl<'a> Interp<'a> {
         }
     }
 
-    fn run_task(mut self, work: Work<'a>, span: Span, handle: &TaskHandle<'a>) {
+    /// Runs `work` as task `self.task`, then gives its turn up for good.
+    /// Everything that holds values (`self`, `work`, `handle`) goes
+    /// before that: the parent may let its own handle go as soon as the
+    /// turn passes, and then this thread's would be the last (`Baton`).
+    fn run_task(mut self, work: Work<'a>, span: Span, handle: Arc<TaskHandle<'a>>) {
         let json = self.c.resolution.builtin_type("std.json", "Json");
         crate::json::set_json_type(json);
         let tasks = self.tasks.clone().expect("a task has tasks");
@@ -413,12 +398,16 @@ impl<'a> Interp<'a> {
             }
             self.flush();
             *handle.result.lock().unwrap_or_else(|e| e.into_inner()) = Some(Baton(result));
+        } else {
+            // The program is ending: the task never ran.
+            drop(work);
         }
         // Everything this task holds goes before the turn passes on.
+        drop(handle);
         drop(self);
         let sched = Arc::clone(&tasks.sched);
         drop(tasks);
-        sched.end(id);
+        end_turn(&sched, id);
     }
 
     /// Moves what this task printed into the program's output: onto the

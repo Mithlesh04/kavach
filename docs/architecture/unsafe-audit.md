@@ -32,6 +32,7 @@ Every `unsafe` block, function, `impl` and `extern` in the Rust code, read and c
 1. **compiler/interp/src/tasks.rs:82-83** has Rust `unsafe` outside the four allowed places, with no decision record. Either:
    - add a decision record and an exception in AGENTS.md section 8; or
    - remove it. This is preferred: wrapping in a struct whose Send comes from `Mutex` doesn't work for `Rc`, so the real fix is to make the cross-thread hand-off explicit. See (a) 5.
+   - **2026-11-26:** kept, as removing it needs a large redesign: a task's thread starts with a copy of the spawner's frame and the program's tables, all holding `Rc`s, and gives back a result holding them too. Safe Rust would need values with atomic counts, or a copy into a form that is `Send`, at every spawn and wait. It is now `unsafe impl<T: Crosses> Send for Baton<T>` in `compiler/interp/src/baton.rs`, for four kinds only. It still needs a decision record and an exception in AGENTS.md section 8.
 2. **runtime/native's crate-wide allow** means the lint enforces nothing there. See the closing note.
 3. Decision 0077 says `unsafe` is allowed only in `runtime/native`, then makes the gpu exception; that is consistent with AGENTS.md. Decision 0111 says matrix has "one `unsafe` call", and that is true.
 
@@ -107,6 +108,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 
 ### 5. compiler/interp: a task's last `TaskHandle` can drop on the task's thread after it gave up the turn
 
+- **Status:** Fixed 2026-11-26, "Let a task's values go before its turn passes", test `compiler/interp/src/tests.rs` (`tasks_let_their_values_go_before_the_turn_passes`). `run_task` takes the handle by value and lets it, the work and the interpreter go before `end_turn`; a task that never ran lets its work go too, and the main task lets its `Tasks` go before `end(0)`. A thread notes when it has given its turn up, and `Drop for TaskHandle` checks it in debug builds. Before the fix the test failed in its first run: 7 handles were let go of by task threads that had given the turn up. `Baton` stays (see the policy issue): it moved to `compiler/interp/src/baton.rs`, and carries only the four kinds that implement `Crosses`, each saying where it is made, read and let go of.
 - **Where:** compiler/interp/src/tasks.rs:252-256 (the `Job` closure), :418-421, and task_errors.rs:38-61 (`Drop for TaskHandle`).
 - **What happens:**
   1. `child.run_task(work, span, &handle)` ends with `sched.end(id)`, which passes the turn on.
@@ -155,6 +157,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 
 ### compiler/interp
 
+- **Bounded 2026-11-26 with (a) 5:** `Baton` carries only kinds that implement `Crosses`, and each names where it is let go of. The decision record is still open.
 - **tasks.rs:83:** `unsafe impl<T> Send for Baton<T>` has no bound on `T`, so any type can cross threads through it. Its argument ("only made, moved and opened by the task holding the turn") is broken by (a) 5. It also needs a decision record (see the policy issues).
 
 ### runtime/native: threads
