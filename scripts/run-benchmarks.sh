@@ -20,6 +20,9 @@
 # Kavach with KAVACH_CORES=1 against the one-core programs, and
 # `all cores`, Kavach as built against the twins, so every row compares
 # like with like.
+# Each row also shows Kavach's and C++'s peak memory in MB, from one more
+# run outside the timed ones, so a speedup that copies more shows (GNU
+# time's `%M`, where /usr/bin/time exists).
 # Usage: sh scripts/run-benchmarks.sh [path/to/kavach] [benchmarks/chains]
 set -e
 cd "$(dirname "$0")/.."
@@ -37,6 +40,16 @@ ms() {
     "$@" > "$OUT/out.txt"
     end=$(date +%s%N)
     echo $(( (end - start) / 1000000 ))
+}
+# A program's peak memory in MB (its largest resident set), through GNU
+# time; `-` where that isn't installed.
+peak() {
+    if [ -x /usr/bin/time ]; then
+        /usr/bin/time -f %M "$@" > /dev/null 2> "$OUT/peak.txt"
+        echo $(( $(tail -1 "$OUT/peak.txt") / 1024 ))
+    else
+        echo -
+    fi
 }
 # Times one benchmark: the row label to print, its name, the suffix of
 # the other languages' programs (`_cores` for the all-core twins), the
@@ -89,8 +102,12 @@ time_one() {
             [ "$t" -lt "$node_ms" ] && node_ms=$t
         done
     fi
-    printf "%-34s %10s %10s %7sx %11s %9s %7s %7s
-" "$label" "$kv" "$cpp" "$ratio" "$py" "$node_ms" "$go_ms" "$cs"
+    # Peak memory, from one more run of each outside the timed ones.
+    [ -n "$cores" ] && export KAVACH_CORES="$cores"
+    kv_mb=$(peak "$OUT/kv_$name" "$@")
+    unset KAVACH_CORES
+    cpp_mb=$(peak "$OUT/cpp_$name$twin" "$@")
+    printf "%-34s %10s %10s %7sx %11s %9s %7s %7s %9s %8s\n" "$label" "$kv" "$cpp" "$ratio" "$py" "$node_ms" "$go_ms" "$cs" "$kv_mb" "$cpp_mb"
 }
 # Times a benchmark in one row, or in two (1 core, all cores) when it
 # has all-core twins.
@@ -105,7 +122,7 @@ time_rows() {
         time_one "$label" "$name" "" "" "$@"
     fi
 }
-printf "%-34s %10s %10s %8s %11s %9s %7s %7s\n" benchmark "kavach ms" "c++ ms" ratio "python ms" "node ms" "go ms" "c# ms"
+printf "%-34s %10s %10s %8s %11s %9s %7s %7s %9s %8s\n" benchmark "kavach ms" "c++ ms" ratio "python ms" "node ms" "go ms" "c# ms" "kavach MB" "c++ MB"
 for src in "$BENCH"/kavach/*.kav; do
     name=$(basename "$src" .kav)
     if ! "$KAVACH" build "$src" -o "$OUT/kv_$name" > "$OUT/build.txt" 2>&1; then
