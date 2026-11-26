@@ -340,6 +340,12 @@ main h2 {
   scroll-margin-top: 5rem;
 }
 
+/* A printed page shows each sample's output, which a reader can't Run on paper. */
+@media print {
+  .run-output[hidden] { display: block !important; }
+  .run-action { display: none !important; }
+}
+
 /* Readers who ask for less motion get none. */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }

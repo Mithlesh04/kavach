@@ -44,6 +44,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${mono.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        {/* Without JavaScript, Run can't run: each sample's checked output shows as it is, and the buttons go. */}
+        <noscript>
+          <style>{".run-output[hidden]{display:block!important}.run-action{display:none!important}"}</style>
+        </noscript>
       </head>
       {tagManager && <GoogleTagManager gtmId={GTM_ID} />}
       <body className="min-h-full flex flex-col">

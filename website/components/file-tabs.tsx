@@ -14,12 +14,15 @@ export function FileTabs({
   bodies,
   statuses,
   dots,
+  actions,
   terminal,
 }: {
   files: { path: string; code: string }[];
   bodies: ReactNode[];
   statuses: ReactNode[];
   dots: ReactNode;
+  /** Buttons beside Copy, such as Run. */
+  actions?: ReactNode;
   terminal: ReactNode;
 }) {
   const [active, setActive] = useState(0);
@@ -65,8 +68,9 @@ export function FileTabs({
             </button>
           ))}
         </div>
-        <span className="shrink-0 self-center py-1.5">
+        <span className="flex shrink-0 items-center gap-1.5 self-center py-1.5">
           <CopyButton text={files[active].code} />
+          {actions}
         </span>
       </div>
       {bodies.map((body, i) => (

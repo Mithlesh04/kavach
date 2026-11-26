@@ -79,6 +79,20 @@ export function PlaygroundEditor({ starters }: { starters: Starter[] }) {
   const shineRun = useRef(0);
   const preRef = useRef<HTMLDivElement>(null);
 
+  // A sample's Edit button opens the playground with its code in the
+  // address, #code= and the code's UTF-8 bytes in base64url.
+  useEffect(() => {
+    const packed = new URLSearchParams(window.location.hash.slice(1)).get("code");
+    if (!packed) return;
+    try {
+      const text = atob(packed.replace(/-/g, "+").replace(/_/g, "/"));
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the address is only readable once mounted
+      setSource(new TextDecoder().decode(Uint8Array.from(text, (c) => c.charCodeAt(0))));
+    } catch {
+      // A damaged address keeps the first starter.
+    }
+  }, []);
+
   const check = useCallback(async (src: string) => {
     const mine = ++run.current;
     try {

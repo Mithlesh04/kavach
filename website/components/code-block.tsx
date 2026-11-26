@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { getSingletonHighlighter, type DecorationItem, type ShikiTransformer, type ThemedToken } from "shiki";
 import { CopyButton } from "./copy-button";
+import { EditButton, RunButton, RunOutput, RunScope } from "./run-sample";
 import { FileTabs } from "./file-tabs";
 import { Blades } from "./logo";
 import { NameOrigins } from "./name-origins";
@@ -236,6 +237,7 @@ export async function CodeBlock({
     </div>
   );
   const terminal = output !== undefined && (
+    <RunOutput command={typed}>
     <div role="group" aria-label="Terminal" className="border-t border-code-line bg-[var(--term-bg)]">
       {/* VS Code's panel: its tabs start at the code's column, past the gutter. Decoration, so screen readers skip it. */}
       <div aria-hidden="true" className="flex items-center overflow-hidden whitespace-nowrap border-b border-code-line pr-3.5 font-mono text-[11px] uppercase tracking-wider">
@@ -289,10 +291,19 @@ export async function CodeBlock({
         </div>
       </div>
     </div>
+    </RunOutput>
+  );
+  /* Run shows the checked output; Edit opens one Kavach file in the playground. */
+  const actions = (
+    <>
+      {lang === "kavach" && also.length === 0 && <EditButton code={code} />}
+      {output !== undefined && <RunButton />}
+    </>
   );
   return (
     <figure className="code-window m-0">
       {/* An editor window: its title bar with the file's tab, numbered lines, and a status bar. */}
+      <RunScope>
       <div className="overflow-hidden rounded-[10px] border border-code-line bg-code-bg shadow-[0_10px_30px_-12px_rgba(0,0,0,0.55)]">
         {also.length > 0 && file ? (
           <FileTabs
@@ -300,6 +311,7 @@ export async function CodeBlock({
             bodies={[body(code, html), ...also.map((f, i) => body(f.code, others[i]))]}
             statuses={[status(code), ...also.map((f) => status(f.code))]}
             dots={dots}
+            actions={actions}
             terminal={terminal}
           />
         ) : (
@@ -313,8 +325,9 @@ export async function CodeBlock({
                 </span>
               )}
               <span className="flex-1" />
-              <span className="shrink-0 self-center py-1.5">
+              <span className="flex shrink-0 items-center gap-1.5 self-center py-1.5">
                 <CopyButton text={code} />
+                {actions}
               </span>
             </div>
             {body(code, html)}
@@ -323,6 +336,7 @@ export async function CodeBlock({
           </>
         )}
       </div>
+      </RunScope>
       {lang === "kavach" ? <NameOrigins origins={originsIn([{ path: file, code }, ...also])} /> : null}
       <figcaption className="sr-only">
         {file ? `${file}${also.length ? ` and ${also.length} more ${also.length === 1 ? "file" : "files"}` : ""}: ` : ""}
