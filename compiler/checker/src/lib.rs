@@ -273,6 +273,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_frozen_passes(file);
     checker.check_numbers_later();
     checker.iface_bounds_later();
+    checker.open_type_args();
     checker.check_tensor_items();
     checker.check_pointees();
     checker.check_float32_literals();

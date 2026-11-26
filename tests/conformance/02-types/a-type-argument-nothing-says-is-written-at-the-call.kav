@@ -1,0 +1,14 @@
+// Rule: A generic function's type argument that nothing works out must be written at the call.
+// Spec: 2.9
+// expect compile error
+
+fn zero<T>() -> T? {
+    none
+}
+
+fn main() {
+    print(zero<Int>())
+    const z: Int? = zero()
+    print(z)
+    print(zero())       // error: nothing here says what `T` of `zero` is
+}

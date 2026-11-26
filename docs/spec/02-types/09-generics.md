@@ -48,6 +48,8 @@ Inside the type's methods, and in an `extend<I> Box<I>` block (2.5), `I` is the 
 
 A signature (2.10) writes a generic type with its arguments: `fn launder(p: Pair) -> Pair<Int>` is a compile error that names what `Pair` is missing; write `Pair<Int>`, or `Pair<T>` with the function's own `<T>`.
 
+A generic function's type arguments are worked out from its arguments and from where its result goes. When nothing says what one is, write it at the call: with `fn zero<T>() -> T? { none }`, `print(zero())` is a compile error, and `print(zero<Int>())` prints `none`.
+
 ## Number bounds
 
 Two built-in bounds let generic code do arithmetic ([decision 0115](../../decisions/0115-generic-math-and-std-vec.md)):
