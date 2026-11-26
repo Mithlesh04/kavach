@@ -239,6 +239,9 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
     // The last log events go to the collector, if there is one.
     // `std.log` events and agents' audit entries still waiting.
     kavach_runtime_net::otlp::finish();
+    // A GPU still opening in the background is let finish, so the end
+    // never stops a thread inside the driver (it can hang the process).
+    kavach_runtime_gpu::settle(std::time::Duration::from_secs(10));
     exit_code
 }
 
@@ -246,6 +249,7 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
 /// log events and audit entries are sent, and output is flushed.
 pub fn end_hooks() {
     kavach_runtime_net::otlp::finish();
+    kavach_runtime_gpu::settle(std::time::Duration::from_secs(10));
     let _ = std::io::Write::flush(&mut std::io::stdout());
 }
 

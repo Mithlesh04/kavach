@@ -355,7 +355,7 @@ Where several choices cover one call, the nearest wins: the call's `on:`, then t
 
 - **No choice covers it:** no `on:`, `gpu.on`, `on gpu(n)` or `gpu(n) fn`, and no device named by `KAVACH_GPU` or `[run] gpu`. A choice says where the work goes, so it goes there whole.
 - **Its items are in main memory.** A list already in one GPU's memory is worked on there (above), and so are `filter`, `sum`, `min` and `max`, which run only on a list a GPU holds (15.2).
-- **Two or more devices may take automatic work:** not software, not failed, and open. A device not open yet doesn't hold the work up: it opens meanwhile, and takes parts of later work.
+- **Two or more devices may take automatic work:** not software, not failed, and open. A device not open yet doesn't hold the work up: it opens meanwhile, and takes parts of later work. A program ends only once no device is still opening, waiting at most 10 seconds, so its end never stops a thread inside a GPU driver, which can leave the program hanging; a short GPU program may end up to one device's opening later.
 - **Its size pays for moving the data:** the work would take the CPU at least a second, and is at least 100 units for each 32-bit word of an item and its result that crosses to a GPU and back, where a unit is the compiler's estimate of one simple operation (15.2). The results of a split come back to main memory, where those of one device could have stayed, so light work stays on one device. Once each device has done parts of earlier work, its speed is known, and a `map` splits only when its parts would end at least a tenth sooner than the fastest device alone, counting 2 ms for each part's own cost.
 
 How it is cut, and what it gives:
