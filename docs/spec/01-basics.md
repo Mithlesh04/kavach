@@ -97,7 +97,7 @@ const limit: Int = 10  // an explicit type is optional
 - `snake_case` for variables, functions and modules.
 - `PascalCase` for types, union variants, interfaces, capabilities and agents.
 
-The compiler enforces these styles, and `kavach fmt` fixes them automatically: it renames the declaration and every use. Two names it leaves alone, and says so: a `pub` name, which other files may use, and one whose fixed spelling is already taken. One style across all Kavach code makes every codebase look familiar.
+The compiler enforces these styles: a name in the wrong style is an error that carries its fix, which `kavach fix` and the editor's quick fix apply, renaming the declaration and every use. `kavach fmt` sets only the layout and never renames (12.7; a maintainer, 2026-11-27; *not built yet*: today `kavach fmt` renames too). Two names it leaves alone, and says so: a `pub` name, which other files may use, and one whose fixed spelling is already taken. One style across all Kavach code makes every codebase look familiar.
 
 A name that mixes letters from different scripts (for example a Latin `a` and a Cyrillic `а` in one name) is a **warning**: look-alike letters can hide malicious code. Names written fully in one script, such as `नाम`, are fine.
 
