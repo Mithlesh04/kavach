@@ -13,6 +13,16 @@ const prompt = `Card ends with {customer.card_number}`   // compile error E0302
 
 A secret can only be passed to code that is allowed to receive it: a parameter or field that is itself marked `secret`, such as `StripePayments.api_key`. To deliberately reveal one, write `reveal(value)`. This is visible in code review and listed by `kavach audit`.
 
+**Anything made from a secret is secret** (a maintainer, 2026-11-26; *not built yet*: today only a secret field, a name declared from one and a few expressions are tracked). An expression with a secret part is secret, whatever it computes: a method's result (`card.upper()`, `card.len()`, `card == other`), a list, tuple, dict or record holding it, an `if` or `match` whose branch gives it, and text built from it. A variable or field given a secret, when it is made or later (`=` and `+=`), is secret from then on. Only `reveal(…)` makes a value public, so even a secret's length or a comparison with it is written out where it happens:
+
+```kavach
+print(customer.card.upper())                 // compile error: a secret
+print([customer.card])                       // compile error: a list holding a secret
+let last = ""
+last = customer.card                         // `last` is secret from here
+print(reveal(customer.card.len()))           // allowed, and visible in review
+```
+
 Encoding is covered too: `json.of` and `json.stringify` write a `secret` field as `"<secret>"`, as `print` does (2.12, [decision 0132](../../decisions/0132-json-for-every-value.md)), and so does `grpc.encode<T>`, which builds JSON before its Protocol Buffers. The secret's value never leaves this way; to send it, pass it to a `secret` parameter or `reveal` it. The agent journal (8.5) is the one deliberate exception: it holds secrets as state, not as a log.
 
 ```kavach

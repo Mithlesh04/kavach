@@ -10,6 +10,7 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[package]` | `version` | text | `""` | 10.4 |
 | `[package]` | `edition` | text, such as `"2026"` | `""` | 10.8 |
 | `[package]` | `unsafe` | `true`, `false` | `false` | 6.4 |
+| `[capabilities]` | `default` | a list of capability names | `["Console"]` | 8.1: what every function in the package may use without writing `uses`; `[]` makes every effect explicit (not built yet) |
 | `[build]` | `version_flag` | `true`, `false` | `false` | 10.5: the program answers `--version` itself |
 | `[build]` | `icon` | a PNG file's path, relative to `kavach.toml` | none | 10.5: the Windows executable's icon |
 | `[build]` | `console` | `true`, `false` | `true` | 10.5: `false` makes a Windows program with no console window |

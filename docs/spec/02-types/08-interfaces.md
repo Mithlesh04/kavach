@@ -46,4 +46,25 @@ type Name: Getter<String> {
 }
 ```
 
+**An interface method says what it may use** ([decision 0147](../../decisions/0147-interfaces-declare-uses.md); *not built yet*: today an interface method has no `uses`, and an implementation's is not compared). It lists its capabilities with `uses`, as a function does (8.1), and one without `uses` is pure. An implementation may use only what the interface's method lists, so code that calls the method through the interface, or through a generic bound such as `T: Describe`, needs exactly that, and knows it from the interface alone:
+
+```kavach
+interface Report {
+    fn write(self) ! Error uses Fs
+}
+
+fn save(r: Report) ! Error uses Fs {   // calling `write` needs `Fs`
+    try r.write()
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String uses Console {   // error: `Describe.describe` uses nothing
+        print(self.name)
+        self.name
+    }
+}
+```
+
 An interface is also a value type: see [2.15](15-interface-values.md).

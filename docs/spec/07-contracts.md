@@ -133,7 +133,17 @@ Contracts written today keep working unchanged as checking gets stronger.
 
 ## 7.5 Contracts must be pure
 
-A contract must not change anything or use any capability. It can only read values and call functions that have no `uses` clause.
+A contract must not change anything or use any capability. It can only read values and call functions that have no `uses` clause. *Not built yet:* a function value may be called in a contract only when its type says it uses nothing (today any function value may be called), `fn(Int) -> Int uses ()`, as calling an unknown function value could do anything its maker could (8.1):
+
+```kavach
+fn check(f: fn(Int) -> Int, x: Int) -> Int
+    require f(x) > 0        // error: `f` may use capabilities; give it the type `fn(Int) -> Int uses ()`
+{ x }
+
+fn checked(f: fn(Int) -> Int uses (), x: Int) -> Int
+    require f(x) > 0        // allowed: `f` uses nothing
+{ x }
+```
 
 "For all" and "there exists" need no special syntax. Use collection methods:
 

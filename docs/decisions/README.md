@@ -152,6 +152,8 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0144](0144-one-map-across-gpus.md) | One big `map` across several GPUs: parts sized to each device's speed, run at once, results in order; only when nothing chooses the device and the size pays | Accepted |
 | [0145](0145-volatile-pointer-access.md) | Volatile reads and writes through `Ptr` (`read_volatile`, `write_volatile`, `Ptr.at`), Cranelift's atomics standing in for volatile; `kavach svd` makes register blocks from SVD files | Accepted |
 | [0146](0146-interpreter-task-hand-off.md) | One `unsafe` hand-off between the interpreter's task threads, bounded to four kinds in `compiler/interp/src/baton.rs`, every task value let go of before its turn passes | Accepted |
+| [0147](0147-interfaces-declare-uses.md) | Interface methods declare their `uses`; an implementation may use only that, and calls through the interface or a generic bound need it | Accepted |
+| [0148](0148-default-capabilities.md) | `[capabilities] default` in kavach.toml: what every function may use without writing `uses`, `["Console"]` when left out, removable; agents get none | Accepted |
 
 ## Open decisions
 
