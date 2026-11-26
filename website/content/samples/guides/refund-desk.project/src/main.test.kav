@@ -1,0 +1,8 @@
+test "a refund past the limit is refused before the bank is called" uses Payments {
+    const bot = Refunder.start(Payments: TestBank())
+    let refused = ""
+    bot.refund(9, 900) catch e => {
+        refused = `{e}`
+    }
+    assert refused == `Denied(reason: "limit broken: amount <= 500")`
+}

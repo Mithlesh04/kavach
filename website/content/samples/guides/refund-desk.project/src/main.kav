@@ -1,0 +1,62 @@
+use std.agents
+use std.fs
+use std.time
+
+type PayError = Declined | Denied(reason: String)
+
+/// What the agent may do in the world: refund an order. Every call can be
+/// refused, so its error has a Denied case.
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+/// A stand-in for the payment provider, for this guide and for tests.
+type TestBank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+        print(`  bank: refunded {amount} on order {order}`)
+    }
+}
+
+/// Refunds orders, within limits a person set, and asks finance first for
+/// a large one.
+agent Refunder {
+    settings AgentSettings(audit: Audit())
+    can Payments.refund
+
+    limit Payments.refund {
+        amount <= 500
+        sum(amount) <= 1_000 per day
+    }
+
+    approve Payments.refund when amount > 100 by "finance" within 2.days
+
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+fn main() ! Error {
+    const bot = Refunder.start(Payments: TestBank())
+
+    print("order 1, 40: small, so no one is asked")
+    bot.refund(1, 40) catch e => print(`  refused: {e}`)
+
+    print("order 2, 900: past the limit")
+    bot.refund(2, 900) catch e => print(`  refused: {e}`)
+
+    print("order 3, 300: finance is asked first")
+    const waits = spawn {
+        bot.refund(3, 300) catch e => print(`  refused: {e}`)
+    }
+    time.sleep(1.seconds)
+    for r in agents.waiting() {
+        print(`  waiting for finance: {r.id}`)
+        try agents.answer(r.id, approved: true, by: "asha")
+    }
+    try waits.wait()
+
+    print("the audit log:")
+    for line in try fs.lines("agents/Refunder/audit.log") {
+        print(`  {line.split("Z ").last() ?? line}`)
+    }
+}

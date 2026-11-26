@@ -213,6 +213,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Build a Command-Line Tool", "—"],
     ["Write an HTTP Service", "—"],
     ["Read and Write Data Files", "—"],
+    ["Build an Agent with Limits and Approvals", "—"],
   ]],
   ["reference", "Reference", "intermediate", [
     ["Keywords", "1.6"],

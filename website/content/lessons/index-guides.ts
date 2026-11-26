@@ -6,9 +6,11 @@ import type { LessonDoc } from "@/lib/chapter";
 import { guideCliDoc } from "./guides-cli";
 import { guideHttpDoc } from "./guides-http";
 import { guideDataDoc } from "./guides-data";
+import { guideAgentDoc } from "./guides-agent";
 
 export const guideLessons: Record<string, LessonDoc> = {
   "guides/build-a-command-line-tool": guideCliDoc,
   "guides/write-an-http-service": guideHttpDoc,
   "guides/read-and-write-data-files": guideDataDoc,
+  "guides/build-an-agent-with-limits-and-approvals": guideAgentDoc,
 };

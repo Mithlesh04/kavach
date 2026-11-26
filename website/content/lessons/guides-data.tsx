@@ -90,6 +90,7 @@ export const guideDataDoc: LessonDoc = {
         <SrcRef file="docs/spec/02-types/12-json.md" label="spec 2.12 · JSON" />
         <SrcRef file="docs/spec/14-standard-library/03-fs.md" label="spec 14.3 · write_text is atomic" />
         <SrcRef file="docs/spec/11-testing.md" label="spec 11.3 · generated values" />
+        <SrcRef file="docs/spec/02-types/01-built-in-types.md" label="spec 2.1 · range types and sum" />
         <SrcRef file="website/content/samples/guides/sales-report.project/runs" label="the commands this page runs" />
       </div>
     </>
