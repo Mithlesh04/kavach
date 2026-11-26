@@ -178,8 +178,11 @@ impl Checker<'_> {
             return t;
         }
         if let Some(t) = self.view_call(&recv, &name.name, args) {
-            if matches!(recv, Ty::Builtin("TextBuilder", _)) && name.name != "view" {
+            // `b.push(text)` changes the builder, as the methods below
+            // that change their receiver do (spec 2.18, 3.3).
+            if changes_in_place(&recv, &name.name) {
                 self.require_var(base, &name.name);
+                self.check_captured_change(base);
             }
             return t;
         }
@@ -413,9 +416,12 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
     })
 }
 
-/// Whether method `name` changes a receiver of type `recv` in place, so
-/// the receiver must be a `let` (spec 2.2).
-pub(crate) fn changes_in_place(recv: &Ty, name: &str) -> bool {
+/// Whether built-in method `name` changes a receiver of type `recv` in
+/// place, so the receiver must be a `let` (spec 2.2). The one list: the
+/// interpreter and lowering ask it too. `recv` is the receiver's type
+/// with its variables resolved; a method a program adds (2.5) is never
+/// one, whatever its name.
+pub fn changes_in_place(recv: &Ty, name: &str) -> bool {
     matches!(
         (recv, name),
         (Ty::List(_), "push" | "pop" | "swap")
@@ -427,4 +433,20 @@ pub(crate) fn changes_in_place(recv: &Ty, name: &str) -> bool {
             | (Ty::Map(..) | Ty::Set(_), "remove")
             | (Ty::Set(_), "add")
     )
+}
+
+/// Whether method `name` changes its receiver in place for some receiver
+/// type: for code that sees a call before its types are known, as
+/// lowering's scan of a lambda's body. Made from `changes_in_place`.
+pub fn changes_some_receiver(name: &str) -> bool {
+    let error = || Box::new(Ty::Error);
+    [
+        Ty::List(error()),
+        Ty::Map(error(), error()),
+        Ty::Set(error()),
+        Ty::Builtin("Ring", Vec::new()),
+        Ty::Builtin("TextBuilder", Vec::new()),
+    ]
+    .iter()
+    .any(|t| changes_in_place(t, name))
 }

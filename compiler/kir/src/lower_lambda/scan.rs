@@ -6,20 +6,6 @@
 
 use kavach_ast::{self as ast, ExprKind};
 
-/// The methods that change the value they are called on (as the checker
-/// has them, `compiler/checker/src/methods.rs`).
-const CHANGING: [&str; 9] = [
-    "push",
-    "pop",
-    "remove",
-    "add",
-    "swap",
-    "push_char",
-    "insert",
-    "replace",
-    "clear",
-];
-
 /// The variable at the root of `x`, `x.f`, `x.0` or `x[i]`.
 fn root_name(mut e: &ast::Expr) -> Option<&ast::Ident> {
     while let ExprKind::Field { base, .. }
@@ -35,9 +21,11 @@ fn root_name(mut e: &ast::Expr) -> Option<&ast::Ident> {
 }
 
 /// The variables `e` changes: `x = …`, `x += …`, `x.f = …` or `x[i] = …`,
-/// `x.push(…)` and the other changing methods, and `f(x)` where `f`'s
-/// parameter is `inout`: `inout(def)` gives a function's `inout`
-/// parameters, by position and name.
+/// `x.push(…)` and the other methods that change their receiver (the
+/// checker's list, by name: a method of that name on another type costs
+/// only a copy), and `f(x)` where `f`'s parameter is `inout`:
+/// `inout(def)` gives a function's `inout` parameters, by position and
+/// name.
 pub(super) fn assigned(
     e: &ast::Expr,
     res: &kavach_resolver::Resolution,
@@ -67,7 +55,7 @@ pub(super) fn assigned(
         fn expr(&mut self, e: &mut ast::Expr) {
             if let ExprKind::Call { callee, .. } = &e.kind
                 && let ExprKind::Field { base, name, .. } = &callee.kind
-                && CHANGING.contains(&name.name.as_str())
+                && kavach_checker::changes_some_receiver(&name.name)
             {
                 self.note(base);
             }

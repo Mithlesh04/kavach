@@ -1,0 +1,22 @@
+// Rule: A method added to lists with `extend<T> [T]` is a method like any other, whatever its name: `clear` or `insert` on a `const` list gives a value and leaves the list as it was.
+// Spec: 2.5
+// expect output: []
+// expect output: [0, 1, 2, 3]
+// expect output: [1, 2, 3]
+
+extend<T> [T] {
+    fn clear(self) -> [T] {
+        self.filter(x => false)
+    }
+
+    fn insert(self, x: T) -> [T] {
+        [x] + self
+    }
+}
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.clear())
+    print(xs.insert(0))
+    print(xs)
+}

@@ -101,6 +101,7 @@ The tests are listed in two files, by section:
 | 2.5 | [extend-adds-methods.kav](extend-adds-methods.kav) | `extend` adds methods to an existing type. | runs |
 | 2.5 | [generic-types-are-extended-elsewhere/](generic-types-are-extended-elsewhere/src/main.kav) | `extend<S> Box<S>` adds methods to a generic type from another module, `S` standing for the type's own parameter. | runs |
 | 2.5 | [collections-take-added-methods.kav](collections-take-added-methods.kav) | `extend<T> [T]`, `[K: V]`, `Set<T>` and `Ring<T>` add methods for every item type; a range has a list's. | runs |
+| 2.5 | [a-lists-added-method-named-clear-changes-nothing.kav](a-lists-added-method-named-clear-changes-nothing.kav) | A method added to lists is a method like any other, whatever its name: `clear` or `insert` on a `const` list gives a value and leaves the list as it was. | runs |
 | 2.5 | [collection-extend-names-its-item-types.kav](collection-extend-names-its-item-types.kav) | An extend of a collection names each item type: `extend [Int]` is an error. | compile error |
 | 2.5 | [added-methods-keep-built-in-names.kav](added-methods-keep-built-in-names.kav) | A method added to a collection can't take the name of one it has. | compile error |
 | 2.5 | [added-methods-keep-grouping-names.kav](added-methods-keep-grouping-names.kav) | A method added to a list can't take the name of a grouping or statistics method (14.2), as it can't take `len`. | compile error |

@@ -1,0 +1,32 @@
+// Rule: A lambda that changes an outside `TextBuilder` with its methods, or `pop`s an outside list, changes its own copy, which each call starts from again; the outside values stay as they were.
+// Spec: 3.3
+// expect warning
+// expect output: [2, 2]
+// expect output: ["ab", "ab"]
+// expect output: [3, 3]
+// expect output: ab
+// expect output: [1, 2, 3]
+
+fn main() {
+    let out = TextBuilder("ab")
+    let stack = [1, 2, 3]
+    const lens = [1, 2].map(x => {
+        out.push("!")           // warning: `out` is a copy inside this lambda
+        out.insert(0, "<")      // warning: `out` is a copy inside this lambda
+        out.remove(0, 1)        // warning: `out` is a copy inside this lambda
+        out.replace(2, 3, "")   // warning: `out` is a copy inside this lambda
+        out.len()
+    })
+    print(lens)
+    const texts = [1, 2].map(x => {
+        out.push_char('?')      // warning: `out` is a copy inside this lambda
+        out.clear()             // warning: `out` is a copy inside this lambda
+        out.push("ab")          // warning: `out` is a copy inside this lambda
+        out.to_string()
+    })
+    print(texts)
+    const tops = [1, 2].map(x => stack.pop() ?? 0)  // warning: `stack` is a copy inside this lambda
+    print(tops)
+    print(out.to_string())
+    print(stack)
+}

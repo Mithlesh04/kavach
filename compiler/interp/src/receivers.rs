@@ -10,23 +10,8 @@ use crate::interp::Interp;
 use crate::places::Place;
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::{Expr, ExprKind, Ident, Span};
-use kavach_checker::Ty;
 use kavach_resolver::DefKind;
 use std::rc::Rc;
-
-/// Built-in methods that change their receiver, which must be a variable.
-/// Methods that change their receiver in place: a list's, map's, set's,
-/// ring's or `TextBuilder`'s (spec 2.18).
-const MUTATING: &[&str] = &[
-    "push",
-    "swap",
-    "remove",
-    "add",
-    "push_char",
-    "insert",
-    "replace",
-    "clear",
-];
 
 /// What a call worked out before its arguments.
 pub(crate) enum Receiver<'a> {
@@ -93,21 +78,13 @@ impl<'a> Interp<'a> {
     }
 
     /// Whether `base.name(…)` changes `base` in place: `xs.push(x)` and
-    /// `xs.pop()` on a list, map, set, ring or `TextBuilder`. A user
-    /// type's own `add` or `push` is a method like any other, and
-    /// `7.add(2)` is `7 + 2`.
+    /// `xs.pop()` on a list, and the other methods the checker's one list
+    /// names (`kavach_checker::changes_in_place`). A user type's own
+    /// `add` or `push`, or a method added to lists (spec 2.5), is a
+    /// method like any other, and `7.add(2)` is `7 + 2`.
     pub(crate) fn in_place(&self, base: &'a Expr, name: &'a Ident) -> bool {
-        let ty = self.c.expr_types.get(&(base.span.start, base.span.end));
-        if name.name == "pop" {
-            return matches!(ty, Some(Ty::List(_)));
-        }
-        MUTATING.contains(&name.name.as_str())
-            && matches!(
-                ty,
-                Some(
-                    Ty::List(_) | Ty::Map(..) | Ty::Set(_) | Ty::Builtin("Ring" | "TextBuilder", _)
-                )
-            )
+        (self.c.expr_types.get(&(base.span.start, base.span.end)))
+            .is_some_and(|ty| kavach_checker::changes_in_place(ty, &name.name))
     }
 
     /// `xs.push(x)`, `rows[i].push(x)`, `xs.pop()`: the place lets go of

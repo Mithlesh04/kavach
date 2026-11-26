@@ -124,6 +124,7 @@ use kavach_ast::{Expr, File, Span};
 pub use kavach_resolver::Diagnostic;
 use kavach_resolver::{DefId, Resolution};
 pub use literals::LiteralUse;
+pub use methods::{changes_in_place, changes_some_receiver};
 pub use size_calls::Settled;
 use std::collections::{HashMap, HashSet};
 pub use tagged_templates::{Hole, ParamConv};
