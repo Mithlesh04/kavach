@@ -26,6 +26,25 @@ pub fn with_bytes<R>(p: i64, f: impl FnOnce(&[u8]) -> R) -> R {
     }
 }
 
+/// The bytes `range(len)` of `p` as text, in an optional of type `ty`:
+/// 0 (`none`) when they aren't UTF-8. Copied once, straight from the
+/// bytes. A mapped file's bytes are copied first and the copy checked:
+/// another program can change them between two reads (spec 14.3), so
+/// bytes checked in place and then copied might not be the bytes checked.
+fn text_of(p: i64, ty: Type, range: impl FnOnce(usize) -> std::ops::Range<usize>) -> i64 {
+    let Shape::Optional(inner) = shape(ty) else {
+        return 0;
+    };
+    let mapped = matches!(&*crate::heap::data(p).borrow(), Data::Mapped(_));
+    with_bytes(p, |d| {
+        let d = &d[range(d.len())];
+        if mapped {
+            return String::from_utf8(d.to_vec()).map_or(0, |t| crate::shapes::new_str(t, *inner));
+        }
+        std::str::from_utf8(d).map_or(0, |t| crate::shapes::new_text(t, *inner))
+    })
+}
+
 /// A new `Bytes` object of type `ty` holding the mapped file `m`.
 pub fn new_mapped(m: std::sync::Arc<crate::rt_map::Mapping>, ty: Type) -> i64 {
     alloc(ty, Data::Mapped(m))
@@ -88,22 +107,12 @@ pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             });
             crate::rt_data::optional(at.map(|x| x as i64), code)
         }
-        RtOp::BytesTextRange => with_bytes(a, |d| {
-            let clamp = |n: i64| n.clamp(0, d.len() as i64) as usize;
+        RtOp::BytesTextRange => text_of(a, result, |len| {
+            let clamp = |n: i64| n.clamp(0, len as i64) as usize;
             let (start, end) = (clamp(b), clamp(c));
-            match (
-                std::str::from_utf8(&d[start..end.max(start)]),
-                shape(result),
-            ) {
-                (Ok(t), Shape::Optional(inner)) => crate::shapes::new_text(t, *inner),
-                _ => 0,
-            }
+            start..end.max(start)
         }),
-        // Copied once, straight from the bytes.
-        RtOp::BytesText => with_bytes(a, |d| match (std::str::from_utf8(d), shape(result)) {
-            (Ok(t), Shape::Optional(inner)) => crate::shapes::new_text(t, *inner),
-            _ => 0,
-        }),
+        RtOp::BytesText => text_of(a, result, |len| 0..len),
         RtOp::BytesCrc32c => {
             let crc = with_bytes(a, crc32c_fast);
             crate::heap::release(a);

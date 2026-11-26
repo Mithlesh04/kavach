@@ -171,6 +171,7 @@ The tests are listed in five files, by area:
 | 14.3 | [fs-list-gives-sorted-names.kav](fs-list-gives-sorted-names.kav) | `fs.list` gives the names in a folder, files and folders alike, sorted; a missing folder is `NotFound`. | runs |
 | 14.3, 2.13 | [fs-map-gives-the-file-as-bytes.kav](fs-map-gives-the-file-as-bytes.kav) | `fs.map(path)` gives the file's contents as ordinary `Bytes`, and an empty file gives empty `Bytes`. | runs |
 | 14.3 | [fs-map-of-a-missing-file-or-folder-fails.kav](fs-map-of-a-missing-file-or-folder-fails.kav) | `fs.map` of a missing file fails with `NotFound`, and of a folder with `IsFolder`. | runs |
+| 14.3, 2.13 | [fs-map-text-is-checked-utf8.kav](fs-map-text-is-checked-utf8.kav) | `text()` of mapped `Bytes` gives the text when the bytes are UTF-8, and `none` when they are not, for the whole and for a range. | runs |
 | 14.3 | [fs-missing-paths-are-not-found.kav](fs-missing-paths-are-not-found.kav) | a file operation on a path with nothing there fails with `NotFound(path)`, and `fs.exists` gives `false`. | runs |
 | 14.3 | [fs-read-text-refuses-text-that-is-not-utf8.kav](fs-read-text-refuses-text-that-is-not-utf8.kav) | `fs.read_text` reads only UTF-8: a file with other bytes is `FsError.NotText`, not text with holes; `fs.read_bytes` still reads it. | runs |
 | 14.3 | [fs-errors-name-folders.kav](fs-errors-name-folders.kav) | Reading a folder as a file is `FsError.IsFolder`; removing a folder that isn't empty is `FsError.NotEmpty`. | runs |

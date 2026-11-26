@@ -94,6 +94,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 
 ### 4. `fs.map` bytes are checked as UTF-8, then read a second time to copy
 
+- **Status:** Fixed 2026-11-26, "Copy mapped bytes before checking them as text", test `tests/conformance/14-standard-library/fs-map-text-is-checked-utf8.kav`. The race itself has no test; the test checks that mapped text is still checked. The other users of mapped slices were checked: the font, image, audio and texture decoders, `display`, equality, hashing, slicing, base64 and the copies (`to_vec`) are safe Rust that trusts no earlier check, and JSON never reads `Bytes` as text. A change in the middle can give them wrong data, not broken values.
 - **Where:** runtime/native/src/rt_bytes.rs:91-106 (`BytesTextRange`, `BytesText`), with rt_map.rs:29-36.
 - **What happens:** `std::str::from_utf8(d)` validates the mapped bytes, then `new_text(t)` reads them again to copy them. Spec 14.3 says another program's writes show through, so a write between the two reads puts invalid UTF-8 into a Kavach `String`.
 - **Why it matters:** downstream code assumes valid UTF-8. text.rs:26 and text_items.rs:85 use `from_utf8_unchecked`, and std's `chars()` uses unchecked reads, so a lead byte at the end reads past the buffer.

@@ -1,0 +1,26 @@
+// Rule: `text()` of mapped `Bytes` gives the text when the bytes are UTF-8, and `none` when they are not, for the whole and for a range.
+// Spec: 14.3, 2.13
+// expect output: héllo, mapped text longer than thirty bytes
+// expect output: héllo
+// expect output: none none
+
+use std.fs
+
+fn look(dir: String) -> String ! FsError uses Fs.read {
+    const good = try fs.map(`{dir}/good.txt`)
+    const bad = try fs.map(`{dir}/bad.txt`)
+    const whole = good.text() ?? "none"
+    const part = good.text(0, 6) ?? "none"
+    const broken = bad.text() ?? "none"
+    const broken_part = bad.text(1, 3) ?? "none"
+    `{whole}\n{part}\n{broken} {broken_part}`
+}
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-map-text"
+    try fs.create_dir(dir)
+    try fs.write_bytes(`{dir}/good.txt`, "héllo, mapped text longer than thirty bytes".bytes())
+    try fs.write_bytes(`{dir}/bad.txt`, Bytes([104, 105, 255, 254, 33]))
+    print(try look(dir))
+    try fs.remove_all(dir)
+}

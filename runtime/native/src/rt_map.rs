@@ -24,7 +24,10 @@ unsafe impl Send for Mapping {}
 unsafe impl Sync for Mapping {}
 
 impl Mapping {
-    /// The mapped bytes.
+    /// The mapped bytes. Another program can change them between two
+    /// reads, so a check of them holds only for a copy made first and then
+    /// checked (`rt_bytes::text_of`); no code may check them in place and
+    /// then trust a second read.
     pub fn bytes(&self) -> &[u8] {
         if self.len == 0 {
             return &[];
