@@ -293,17 +293,28 @@ pub fn users() -> Vec<Vec<String>> {
         FILTER_NORMAL_ACCOUNT, MAX_PREFERRED_LENGTH, NetApiBufferFree, NetUserEnum,
         UF_ACCOUNTDISABLE, USER_INFO_1, USER_INFO_20, USER_PRIV_ADMIN,
     };
-    /// Calls `f` with the `read` entries of `level`, then frees them.
-    fn each<T>(level: u32, mut f: impl FnMut(&T)) {
+    /// An account's details at one level of `NetUserEnum`: only the pairs
+    /// below, so `each` can't read one level's entries as another's.
+    trait Level {
+        const LEVEL: u32;
+    }
+    impl Level for USER_INFO_20 {
+        const LEVEL: u32 = 20;
+    }
+    impl Level for USER_INFO_1 {
+        const LEVEL: u32 = 1;
+    }
+    /// Calls `f` with the `read` entries of `T`'s level, then frees them.
+    fn each<T: Level>(mut f: impl FnMut(&T)) {
         let mut buffer: *mut u8 = std::ptr::null_mut();
         let (mut read, mut total, mut resume) = (0u32, 0u32, 0u32);
         // SAFETY: the call allocates `buffer` with `read` entries of
-        // `level`, which `T` is; they are read only before
-        // `NetApiBufferFree` frees it.
+        // `T::LEVEL`, which `T` is (`Level` ties the two); they are read
+        // only before `NetApiBufferFree` frees it, whatever the status.
         unsafe {
             let status = NetUserEnum(
                 std::ptr::null(),
-                level,
+                T::LEVEL,
                 FILTER_NORMAL_ACCOUNT,
                 &mut buffer,
                 MAX_PREFERRED_LENGTH,
@@ -311,24 +322,26 @@ pub fn users() -> Vec<Vec<String>> {
                 &mut total,
                 &mut resume,
             );
-            if status != 0 || buffer.is_null() {
+            if buffer.is_null() {
                 return;
             }
-            std::slice::from_raw_parts(buffer as *const T, read as usize)
-                .iter()
-                .for_each(&mut f);
+            if status == 0 {
+                std::slice::from_raw_parts(buffer as *const T, read as usize)
+                    .iter()
+                    .for_each(&mut f);
+            }
             NetApiBufferFree(buffer.cast());
         }
     }
     let mut rows = Vec::new();
-    each::<USER_INFO_20>(20, |u| {
+    each(|u: &USER_INFO_20| {
         if u.usri20_flags & UF_ACCOUNTDISABLE == 0 {
             // SAFETY: the names are zero-ended text inside the buffer.
             rows.push(unsafe { (text_at(u.usri20_name), text_at(u.usri20_full_name)) });
         }
     });
     let mut admins = Vec::new();
-    each::<USER_INFO_1>(1, |u| {
+    each(|u: &USER_INFO_1| {
         if u.usri1_priv == USER_PRIV_ADMIN {
             // SAFETY: as above.
             admins.push(unsafe { text_at(u.usri1_name) });

@@ -207,6 +207,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 - **windows.rs:50-61 (`Tree::query<T>`) and parts_windows_procs.rs:265-290 (`each<T>`):** safe generic functions that `mem::zeroed::<T>()` a struct and let the OS write bytes into it. They are sound only when `T` is the struct that `class` or `level` names, and nothing ties the two together.
   - Make them `unsafe fn`, or map each class to its struct with a private trait.
   - `each` also leaks the buffer when `status != 0`.
+  - Fixed 2026-11-26, "Tie each system query's class to its struct", test none: a wrong pairing no longer compiles, and the leak needs a failing `NetUserEnum`, which a test can't cause. A private trait gives each struct its class (`JobInfo`) or level (`Level`); `each` frees the buffer whatever the status.
 - **windows.rs:118-141 (`resume`):** if the thread snapshot or the open fails, the child stays suspended, and `wait` blocks forever. Kill the job and return an error.
 - **parts_windows_more.rs:139-140:** `*(geometry.as_ptr() as *const DISK_GEOMETRY_EX)` dereferences a `Vec<u8>` pointer, which only promises alignment 1, as a struct holding an `i64`. That is formally misaligned UB, and the returned byte count `got` is unchecked.
   - Read the 8 bytes at `offset_of!` with `from_le_bytes`, as the code just above does.

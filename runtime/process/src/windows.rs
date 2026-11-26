@@ -19,7 +19,7 @@ use windows_sys::Win32::System::Diagnostics::ToolHelp::{
 use windows_sys::Win32::System::JobObjects::{
     AssignProcessToJobObject, CreateJobObjectW, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
     JOBOBJECT_BASIC_ACCOUNTING_INFORMATION, JOBOBJECT_EXTENDED_LIMIT_INFORMATION,
-    JobObjectBasicAccountingInformation, JobObjectExtendedLimitInformation,
+    JOBOBJECTINFOCLASS, JobObjectBasicAccountingInformation, JobObjectExtendedLimitInformation,
     QueryInformationJobObject, SetInformationJobObject, TerminateJobObject,
 };
 use windows_sys::Win32::System::ProcessStatus::{GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS};
@@ -46,19 +46,35 @@ impl Tree {
         }
     }
 
-    /// One piece of the job's information, of type `T`.
-    fn query<T>(&self, class: i32) -> Option<T> {
-        // SAFETY: `T` is a plain C struct of the size given, which the
-        // system fills; a zeroed one is valid before it does.
+    /// The piece of the job's information that `T` holds.
+    fn query<T: JobInfo>(&self) -> Option<T> {
+        // SAFETY: `T` is the plain C struct the system fills for class
+        // `T::CLASS` (`JobInfo` ties the two), of the size given; a zeroed
+        // one is valid before it does.
         unsafe {
             let mut info: T = std::mem::zeroed();
             let size = std::mem::size_of::<T>() as u32;
             let ptr = std::ptr::from_mut(&mut info).cast();
             let ok =
-                QueryInformationJobObject(self.handle(), class, ptr, size, std::ptr::null_mut());
+                QueryInformationJobObject(self.handle(), T::CLASS, ptr, size, std::ptr::null_mut());
             (ok != 0).then_some(info)
         }
     }
+}
+
+/// A job's information class, and the struct the system fills for it.
+/// Only the pairs below implement it, so `query` can't ask for one class
+/// into another's struct.
+trait JobInfo {
+    const CLASS: JOBOBJECTINFOCLASS;
+}
+
+impl JobInfo for JOBOBJECT_BASIC_ACCOUNTING_INFORMATION {
+    const CLASS: JOBOBJECTINFOCLASS = JobObjectBasicAccountingInformation;
+}
+
+impl JobInfo for JOBOBJECT_EXTENDED_LIMIT_INFORMATION {
+    const CLASS: JOBOBJECTINFOCLASS = JobObjectExtendedLimitInformation;
 }
 
 impl Drop for Tree {
@@ -143,10 +159,8 @@ fn resume(pid: u32) {
 /// Waits for the program's end; the job gives what its tree cost.
 pub fn wait(mut child: Child, tree: &Tree) -> Exit {
     let code = child.wait().ok().and_then(|s| s.code()).unwrap_or(-1);
-    let basic: Option<JOBOBJECT_BASIC_ACCOUNTING_INFORMATION> =
-        tree.query(JobObjectBasicAccountingInformation);
-    let limits: Option<JOBOBJECT_EXTENDED_LIMIT_INFORMATION> =
-        tree.query(JobObjectExtendedLimitInformation);
+    let basic: Option<JOBOBJECT_BASIC_ACCOUNTING_INFORMATION> = tree.query();
+    let limits: Option<JOBOBJECT_EXTENDED_LIMIT_INFORMATION> = tree.query();
     Exit {
         code: i64::from(code),
         // In units of 100 nanoseconds.
