@@ -68,6 +68,24 @@ export const memoryStepsDoc: LessonDoc = {
         <Link href="/docs/memory/automatic-memory/how-it-stays-fast/#why-numbers-aren-t-shared">why numbers aren&apos;t shared</Link>.
       </P>
       <MemorySteps name="numbers" />
+      <H2>Records that never become objects</H2>
+      <P>
+        A record is one object with a count, like a list. But a record of numbers that a function only builds, copies
+        and reads or sets one field at a time never needs to be one: native code splits it into a local per field, as
+        if each field were a number of its own:
+      </P>
+      <MemorySteps name="record" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Every field must be a number, <C>Bool</C> or <C>Char</C>, and the type must have no <C>Drop</C>.</li>
+        <li>Any other use keeps it whole: passed to a function, returned, kept in a list, dict or record, captured by a lambda, sent to a task, or printed or compared whole.</li>
+        <li>Small functions are inlined first, so a record passed to one may still be split.</li>
+        <li>This is what the compiler does today, not a promise: the spec says such a record <em>may</em> never become an object. Either way, the program gives the same output.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/kir/src/sroa.rs" line={5} label="sroa.rs · when a record is split" />
+        <SrcRef file="compiler/kir/src/sroa.rs" line={39} symbol="field_types" />
+        <SrcRef file="compiler/kir/src/passes.rs" line={108} label="passes.rs · after inlining" />
+      </div>
       <H2>A change while shared: copied then</H2>
       <P>
         A value is copied only when it changes <em>while</em> something else still holds it. This is{" "}
@@ -110,6 +128,9 @@ export const memoryStepsDoc: LessonDoc = {
       </P>
       <MemorySteps name="shared" />
       <H2>Frozen values and freeing</H2>
+      <P>Freezing a value, and holding it in a <C>const</C>, allocate nothing and copy nothing:</P>
+      <MemorySteps name="freeze" />
+      <div><SrcRef file="compiler/driver/src/frozen.rs" line={7} label="frozen.rs · x.freeze() becomes x" /></div>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>x.freeze()</C> with no key is the same object, so freezing and unfreezing it costs nothing. A value sealed with <C>freeze(key: k)</C> is the pair <C>(value, key)</C> (<Link href="/docs/types/frozen-values/">frozen values</Link>).</li>
         <li>An object is freed the moment its count reaches 0, when its last use ends. There is no garbage collector and no pause later.</li>

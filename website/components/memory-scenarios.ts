@@ -101,6 +101,18 @@ export const SCENARIOS: Record<string, Frame[]> = {
     { line: 2, at: "seen.add(\"jam\")", names: [{ name: "seen", to: "#1" }], objs: [{ id: "#1", kind: "set", count: 1, cells: ["tea", "cake", "jam"], changed: true }], caption: "A new key goes at the end, in place: the runtime sees count 1 while running, so nobody else holds the set." },
     { line: 3, at: "print(seen)", names: [{ name: "seen", ended: true }], objs: [], freed: [{ id: "#1", kind: "set", count: 0, cells: ["tea", "cake", "jam"] }], caption: "The last use, marked by the compiler: the set is freed." },
   ],
+  record: [
+    { line: 6, at: "const p = Point(", names: [{ name: "p.x", value: "1" }, { name: "p.y", value: "2" }], objs: [], caption: "In native code, p is split into one local per field, in registers or on the stack, as LLVM chooses. No object, no count: every field is a number, and p is only built, copied, and read or set one field at a time." },
+    { line: 7, at: "let q = p", names: [{ name: "p.x", value: "1" }, { name: "p.y", value: "2" }, { name: "q.x", value: "1" }, { name: "q.y", value: "2" }], objs: [], caption: "let q = p is two moves, one per field. Nothing is allocated." },
+    { line: 8, at: "q.x = 5", names: [{ name: "p.x", value: "1" }, { name: "p.y", value: "2" }, { name: "q.x", value: "5" }, { name: "q.y", value: "2" }], objs: [], caption: "q.x changes q's own local; p.x keeps 1." },
+    { line: 9, at: "print(`p=", names: [{ name: "p.x", ended: true }, { name: "p.y", ended: true }, { name: "q.x", ended: true }, { name: "q.y", ended: true }], objs: [], caption: "The last use, and nothing to free: the record never became an object. Passing it to a function that isn't inlined, returning it, keeping it in a list or another record, printing it whole, or a field that is text or a list would make it one object with a count, as the spec allows." },
+  ],
+  freeze: [
+    { line: 0, at: "let a", names: [{ name: "a", to: "#1" }], objs: [list("#1", 1, A)], caption: "One list object, held by a: count 1." },
+    { line: 1, at: "a.push(6)", names: [{ name: "a", to: "#1" }], objs: [list("#1", 1, [...A, "6"], true)], caption: "Nobody else holds it, so 6 goes on in place." },
+    { line: 2, at: "const f = a.freeze()", names: [{ name: "a", ended: true }, { name: "f", to: "#1" }], objs: [list("#1", 1, [...A, "6"])], caption: "It was a's last use, so f takes the same object: count 1, nothing allocated, nothing copied. A value frozen without a key is the plain value while running; only the compiler keeps f from changing. A const costs nothing either: it is the same object, never a copy." },
+    { line: 3, at: "print(`f=", names: [{ name: "a", ended: true }, { name: "f", ended: true }], objs: [], freed: [list("#1", 0, [...A, "6"])], caption: "f's last use, marked by the compiler: the list is freed." },
+  ],
   shared: [
     { line: 0, at: "Shared(", names: [{ name: "a", to: "#1" }], objs: [{ id: "#1", kind: "shared", count: 1, cells: ["#2"] }, list("#2", 1, ["2", "3"])], caption: "A Shared is an object of its own, holding the list." },
     { line: 1, at: "const b = a", names: [{ name: "a", to: "#1" }, { name: "b", to: "#1" }], objs: [{ id: "#1", kind: "shared", count: 2, cells: ["#2"] }, list("#2", 1, ["2", "3"])], caption: "Copying a Shared copies the handle: a and b hold the one Shared, count 2. This is the one way two names see one changing value." },

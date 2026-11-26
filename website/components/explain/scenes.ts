@@ -56,6 +56,8 @@ const MEMORY: Record<string, { title: string; caveman: string }> = {
   dict: { title: "A dict keeps its entries in order, and an index past 8", caveman: "Dict keep order. Small dict: no index. Big dict: index. Find fast." },
   "dict-copy": { title: "A dict changed while shared is copied then", caveman: "Two name. One dict. Change dict? Copy first." },
   set: { title: "A set is a dict with keys only", caveman: "Set is dict, keys only. Same key again? Nothing happen." },
+  record: { title: "A record that never becomes an object", caveman: "Record of numbers. Only used here. No box. Each field own spot. Copy field. Done." },
+  freeze: { title: "Freezing costs nothing", caveman: "Freeze list. Same list. No copy. Compiler say: no change now." },
   shared: { title: "Shared: two names, one changing value", caveman: "Shared is one box. Two name hold box. One change, both see." },
 };
 

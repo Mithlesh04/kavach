@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { C } from "@/components/inline-code";
+import { MemorySteps } from "@/components/memory-steps";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { Ex, H2, P } from "./parts";
@@ -39,6 +40,8 @@ export const freedDoc: LessonDoc = {
         <li>Anything a function still holds when it returns is let go there.</li>
         <li>The compiler works out where values are handed over; the count, which decides the moment memory is freed, is kept while the program runs. That is why a copy costs nothing until one of them is changed.</li>
       </ul>
+      <P>Step by step: two names hold one list, and each last use lets go, until the count reaches zero and the list is freed:</P>
+      <MemorySteps name="share" />
       <H2>Cleanup of your own: Drop</H2>
       <P>
         A type that holds something to give back, such as a file, a connection or a lock, implements <C>Drop</C>.

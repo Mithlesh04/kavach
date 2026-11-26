@@ -42,9 +42,11 @@ export const valuesDoc: LessonDoc = {
       </Note>
       <P>
         Does <C>b = a</C> take new memory, then? No: inside, <C>b</C> shares <C>a</C>&apos;s object until one of
-        them changes, so nothing is copied until it must be. See it step by step:{" "}
-        <Link href="/docs/memory/automatic-memory/memory-step-by-step/">Memory, Step by Step</Link>.
+        them changes, so nothing is copied until it must be. Every case is on{" "}
+        <Link href="/docs/memory/automatic-memory/memory-step-by-step/">Memory, Step by Step</Link>; here is the
+        moment a copy is made:
       </P>
+      <MemorySteps name="copy" />
       <H2>Four levels of control</H2>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[15px]">
@@ -283,6 +285,8 @@ export const sharedDoc: LessonDoc = {
   body: (
     <>
       <Ex name="memory/shared" />
+      <P>In memory, a <C>Shared</C> is one object that both names hold, so a change through one is seen through the other:</P>
+      <MemorySteps name="shared" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>Shared(0)</C> makes a shared value. <C>update</C> changes it, <C>get</C> reads it.</li>
         <li><C>update</C> holds the value&apos;s lock while its function runs, so updates from many tasks, on any number of cores, never lose one.</li>

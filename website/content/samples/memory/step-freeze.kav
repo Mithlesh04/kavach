@@ -1,0 +1,6 @@
+fn main() {
+    let a = [2, 3, 4, 5]
+    a.push(6)
+    const f = a.freeze()
+    print(`f={f}`)
+}
