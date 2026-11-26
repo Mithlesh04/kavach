@@ -122,7 +122,9 @@ anywhere, so any static host works:
   `SITE_URL` to the address it serves.
 - **GitHub Pages:** `npm run deploy:pages` (after `npm run check`) builds
   the site to serve at the root of https://kavachlang.com, writes the
-  `CNAME` file that keeps that domain, commits `out/` to the `gh-pages`
+  `CNAME` file that keeps that domain, builds each older docs version in
+  `data/versions.json` from its tag into `out/<id>/`
+  (`scripts/build-versions.mjs`), commits `out/` to the `gh-pages`
   branch and pushes it; CI stays manual-only in this repository. Once, in
   the repository's Settings → Pages, choose "Deploy from a branch",
   `gh-pages`, `/ (root)`, and set the custom domain to `kavachlang.com`

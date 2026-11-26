@@ -1,8 +1,17 @@
 {
-  "_how": "One entry per published docs version. 'latest' builds from main; every other entry needs a real git tag whose tree contains website/. scripts/build-versions.mjs builds each into out/<id>/ with its links pinned to that tag, and writes a redirect stub for entries marked retired. Deleting a version: mark it retired (old links redirect to latest with a notice) or remove the entry entirely.",
+  "_how": "One entry per published docs version. 'latest' builds from main; every other entry needs a real git tag whose tree contains website/. scripts/build-versions.mjs builds each into out/<id>/ with its links pinned to that tag, gives it this file and today's version picker so it links to the others, marks its pages noindex with a banner naming the version, and writes a redirect stub for entries marked retired. Deleting a version: mark it retired (old links redirect to latest with a notice) or remove the entry entirely.",
   "latest": "v0.2",
   "versions": [
-    { "id": "v0.2", "tag": "main", "label": "v0.2 · latest" }
+    {
+      "id": "v0.2",
+      "tag": "main",
+      "label": "v0.2 · latest"
+    },
+    {
+      "id": "v0.1",
+      "tag": "v0.1.0",
+      "label": "v0.1"
+    }
   ],
   "repo": "https://github.com/Mithlesh04/kavach"
 }

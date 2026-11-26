@@ -32,6 +32,8 @@ execSync("npm run build", {
   stdio: "inherit",
   env: { ...process.env, SITE_BASE_PATH: "", SITE_URL: url },
 });
+// Each older docs version in data/versions.json, built from its tag into out/<id>/.
+execSync("node scripts/build-versions.mjs", { cwd: root, stdio: "inherit" });
 
 const out = path.join(root, "out");
 // Without it, GitHub's Jekyll step drops _next/, which holds every script and style.
