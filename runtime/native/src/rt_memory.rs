@@ -159,11 +159,15 @@ unsafe impl GlobalAlloc for Allocator {
             if p.is_null() {
                 out_of_memory(layout.size());
             }
+            #[cfg(test)]
+            watch::took(p, layout.size());
             return p;
         }
         if (BIG..=BIGGEST).contains(&layout.size())
             && let Some(p) = take_kept(layout)
         {
+            #[cfg(test)]
+            watch::took(p, layout.size());
             return p;
         }
         // SAFETY: as above.
@@ -175,6 +179,8 @@ unsafe impl GlobalAlloc for Allocator {
         if p.is_null() {
             out_of_memory(layout.size());
         }
+        #[cfg(test)]
+        watch::took(p, layout.size());
         p
     }
 
@@ -199,10 +205,14 @@ unsafe impl GlobalAlloc for Allocator {
         if (BIG..=BIGGEST).contains(&layout.size()) {
             note_zeroed(p);
         }
+        #[cfg(test)]
+        watch::took(p, layout.size());
         p
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        #[cfg(test)]
+        watch::gave(ptr, layout.size());
         if small_blocks::serves(layout) {
             // SAFETY: `alloc` took it there, with this size.
             unsafe { small_blocks::give(ptr, layout.size()) };
@@ -229,6 +239,8 @@ unsafe impl GlobalAlloc for Allocator {
             let same =
                 small_blocks::size_index(layout.size()) == small_blocks::size_index(new_size);
             if same {
+                #[cfg(test)]
+                watch::moved(ptr, layout.size(), ptr, new_size);
                 return ptr;
             }
         }
@@ -250,6 +262,72 @@ unsafe impl GlobalAlloc for Allocator {
         if p.is_null() {
             out_of_memory(new_size);
         }
+        #[cfg(test)]
+        watch::moved(ptr, layout.size(), p, new_size);
         p
+    }
+}
+
+/// Tests only: the blocks one thread takes while it watches, with their
+/// sizes, so a test can check that each goes back with the size it was
+/// taken with (the contract of `GlobalAlloc`) and that none is lost.
+/// Nothing here allocates, as it runs inside the allocator.
+#[cfg(test)]
+pub(crate) mod watch {
+    use std::cell::{Cell, RefCell};
+
+    /// The most blocks watched at once; more are not watched.
+    const MOST: usize = 1024;
+
+    thread_local! {
+        static ON: Cell<bool> = const { Cell::new(false) };
+        /// Address and size of each block held; address 0 is a free place.
+        static HELD: RefCell<[(usize, usize); MOST]> = const { RefCell::new([(0, 0); MOST]) };
+        /// Blocks given back with a size other than the one they were taken with.
+        static WRONG: Cell<usize> = const { Cell::new(0) };
+    }
+
+    fn on() -> bool {
+        ON.try_with(Cell::get).unwrap_or(false)
+    }
+
+    pub(super) fn took(p: *mut u8, size: usize) {
+        if on() {
+            let _ = HELD.try_with(|h| {
+                if let Some(e) = h.borrow_mut().iter_mut().find(|e| e.0 == 0) {
+                    *e = (p as usize, size);
+                }
+            });
+        }
+    }
+
+    pub(super) fn gave(p: *mut u8, size: usize) {
+        if on() {
+            let _ = HELD.try_with(|h| {
+                if let Some(e) = h.borrow_mut().iter_mut().find(|e| e.0 == p as usize) {
+                    if e.1 != size {
+                        let _ = WRONG.try_with(|w| w.set(w.get() + 1));
+                    }
+                    *e = (0, 0);
+                }
+            });
+        }
+    }
+
+    pub(super) fn moved(old: *mut u8, old_size: usize, new: *mut u8, new_size: usize) {
+        gave(old, old_size);
+        took(new, new_size);
+    }
+
+    /// Runs `f` watching this thread's blocks: how many it gave back with
+    /// the wrong size, and how many it took and still holds.
+    pub(crate) fn watch(f: impl FnOnce()) -> (usize, usize) {
+        HELD.with(|h| *h.borrow_mut() = [(0, 0); MOST]);
+        WRONG.with(|w| w.set(0));
+        ON.with(|on| on.set(true));
+        f();
+        ON.with(|on| on.set(false));
+        let held = HELD.with(|h| h.borrow().iter().filter(|e| e.0 != 0).count());
+        (WRONG.with(Cell::get), held)
     }
 }

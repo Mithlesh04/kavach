@@ -21,6 +21,8 @@ const CMDS: Type = Type::Ref(4);
 const INTS: Type = Type::Ref(5);
 const PAIR: Type = Type::Ref(6);
 const PAIRS: Type = Type::Ref(7);
+/// `[UInt8]`, a packed list (`lists.rs`'s tests).
+pub(crate) const BYTES: Type = Type::Ref(8);
 
 fn field(name: &str, ty: Type) -> FieldShape {
     FieldShape {
@@ -32,7 +34,9 @@ fn field(name: &str, ty: Type) -> FieldShape {
 
 /// The types of S16's probe: `Word = Text(text: String) | Items(items:
 /// [Word])`, `Cmd {name: String, words: [Word], line: Int}`, and lists.
-fn set_shapes() {
+/// The shape table is set once per process, so the crate's other tests
+/// that need shapes use this one too.
+pub(crate) fn set_shapes() {
     static ONCE: std::sync::Once = std::sync::Once::new();
     ONCE.call_once(|| {
         let variant = |name: &str, f: FieldShape| VariantShape {
@@ -67,6 +71,7 @@ fn set_shapes() {
             Shape::List(Type::I64),
             record("Pair", vec![field("a", Type::I64), field("b", Type::I64)]),
             Shape::List(PAIR),
+            Shape::List(Type::U8),
         ]);
     });
 }

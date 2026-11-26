@@ -391,4 +391,4 @@ fn copy_held(p: i64, own: Type, tag: u32, words: &mut [u64]) {
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

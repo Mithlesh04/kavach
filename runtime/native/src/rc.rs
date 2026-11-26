@@ -22,7 +22,8 @@ pub(crate) fn free(p: i64) {
         match o.kind {
             LIST if crate::flat::packed(o.ty()) => {
                 let l = Box::from_raw(p as *mut ListObj);
-                let cap = l.cap * crate::flat::item_size(o.ty()) / 8;
+                // Rounded up, as `lists::with_packed` keeps the buffer.
+                let cap = crate::flat::words_for(l.cap, crate::flat::item_size(o.ty()));
                 drop(Vec::from_raw_parts(l.ptr, cap, cap));
             }
             LIST => {

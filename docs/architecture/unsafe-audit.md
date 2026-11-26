@@ -37,10 +37,11 @@ Every `unsafe` block, function, `impl` and `extern` in the Rust code, read and c
 
 ## (a) Likely bugs
 
-Each is fixed with a test that fails before the fix. Status: all open (2026-11-26).
+Each is fixed with a test that fails before the fix. Each finding says when it was fixed; the others are open.
 
 ### 1. Packed lists with a limit: `Vec::from_raw_parts` and dealloc get the wrong capacity
 
+- **Status:** Fixed 2026-11-26, "Keep packed list buffers at their real capacity", test `runtime/native/src/lists.rs` (`packed_lists_with_a_limit_free_what_they_took`, which watches the allocator through `rt_memory::watch`). No conformance test: a program can't see the wrong size, as `KAVACH_CHECK_LEAKS` counts objects, not bytes.
 - **Where:** runtime/native/src/lists.rs:48-65 (`with_packed`) and rc.rs:23-27 (`free`).
 - **Two formulas disagree:**
   - `free` rebuilds the buffer with `cap = l.cap * size / 8`, which rounds down.
@@ -194,7 +195,7 @@ Each is fixed with a test that fails before the fix. Status: all open (2026-11-2
   - Add `assert!(sep.is_ascii())`, or make them `pub(crate)` and document the requirement.
 - **rt_json_tape.rs:92-97 (`Doc::str`):** its soundness rests on `Builder::string`'s pointer-range test (rt_json_build.rs:51) and on `finish` receiving a byte-identical `base`. `Doc`'s fields are `pub`.
   - Make the fields private, and `debug_assert` the base length in `finish`.
-- **lists.rs:104-127 (`room_for_limit`):** relies on `shrink_to` and `reserve_exact` giving exactly the capacity asked for. Std doesn't promise that. Rebuild the buffer exactly instead (part of (a) 1).
+- **lists.rs:104-127 (`room_for_limit`):** relies on `shrink_to` and `reserve_exact` giving exactly the capacity asked for. Std doesn't promise that. Rebuild the buffer exactly instead (part of (a) 1). Fixed 2026-11-26 with (a) 1: the buffer is made again with `Vec::with_capacity`, which std promises is exact.
 - **rt_bytes.rs:230-231:** `unsafe fn crc32c_sse` has no `# Safety` doc ("the caller checked sse4.2").
 
 ### runtime/process

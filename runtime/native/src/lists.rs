@@ -44,25 +44,44 @@ pub fn with_slots<R>(p: i64, f: impl FnOnce(&mut Vec<u64>) -> R) -> R {
 }
 
 /// A packed list's words and item count, the words as a `Vec`.
+///
+/// The buffer always holds exactly `words_for(l.cap, size)` words, the
+/// number `rc::free` gives back too: `size` divides 8, so without a limit
+/// that is the `Vec`'s capacity, and a buffer that grows past a limit is
+/// made again at exactly the limit's words.
 #[allow(unsafe_code)]
 fn with_packed<R>(p: i64, f: impl FnOnce(usize, &mut Vec<u64>) -> R) -> R {
     let size = crate::flat::item_size(obj(p).ty());
     let l = list_mut(p);
-    // Exact: `size` divides 8, and a list with a limit has room for it.
     let cap = crate::flat::words_for(l.cap, size);
     // SAFETY: a packed list's buffer is a `Vec<u64>` taken apart
-    // (`new_list_raw`), always zero-filled to its capacity, rebuilt
-    // here and taken apart the same way.
+    // (`new_list_raw`) with a capacity of `cap` words (above), always
+    // zero-filled to it, rebuilt here and taken apart the same way.
     let mut v = unsafe { Vec::from_raw_parts(l.ptr, cap, cap) };
     let result = f(l.len, &mut v);
-    v.resize(v.capacity(), 0);
-    let mut v = std::mem::ManuallyDrop::new(v);
-    (l.ptr, l.cap) = (v.as_mut_ptr(), v.capacity() * 8 / size);
+    let mut items = v.capacity() * 8 / size;
     // The room past a limit's last word is never used (spec 2.2).
-    if let Some(n) = crate::heap::limit_of(p) {
-        l.cap = l.cap.min(n);
+    if let Some(n) = crate::heap::limit_of(p).filter(|n| items > *n) {
+        items = n;
+        let want = crate::flat::words_for(n, size);
+        if v.capacity() != want {
+            v = exactly(&v[..want.min(v.len())], want);
+        }
     }
+    v.resize(v.capacity(), 0);
+    debug_assert_eq!(v.capacity(), crate::flat::words_for(items, size));
+    let mut v = std::mem::ManuallyDrop::new(v);
+    (l.ptr, l.cap) = (v.as_mut_ptr(), items);
     result
+}
+
+/// `words` in a new `Vec` whose capacity is exactly `room` words:
+/// `with_capacity` promises that, where `shrink_to` and `reserve_exact`
+/// don't.
+fn exactly(words: &[u64], room: usize) -> Vec<u64> {
+    let mut v = Vec::with_capacity(room);
+    v.extend_from_slice(words);
+    v
 }
 
 /// Changes a list's buffer as a `Vec`: its items, or a flat list's words.
@@ -103,25 +122,13 @@ pub extern "C-unwind" fn kv_list_reserve(p: i64, extra: i64) {
 /// limit `n` (spec 2.2), which it then keeps.
 pub fn room_for_limit(p: i64, n: usize) {
     if let size @ 1.. = crate::flat::item_size(obj(p).ty()) {
-        let len = list_mut(p).len;
-        with_packed(p, |_, w| {
-            let want = crate::flat::words_for(n, size);
-            w.truncate(crate::flat::words_for(len, size));
-            if w.capacity() > want {
-                w.shrink_to(want);
-            } else {
-                w.reserve_exact(want - w.len());
-            }
+        with_packed(p, |len, w| {
+            let used = crate::flat::words_for(len, size);
+            *w = exactly(&w[..used], crate::flat::words_for(n, size));
         });
     } else {
         let want = n * crate::flat::width(obj(p).ty()).max(1);
-        with_words(p, |w| {
-            if w.capacity() > want {
-                w.shrink_to(want);
-            } else {
-                w.reserve_exact(want - w.len());
-            }
-        });
+        with_words(p, |w| *w = exactly(w, want));
     }
     crate::heap::set_limit(p, n);
 }
@@ -234,4 +241,39 @@ pub fn truncate_list(p: i64, n: usize) {
         }
     }
     with_words(p, |w| w.truncate(n * width));
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::capacity::{capacity_op, push};
+    use crate::heap::{len_of, release};
+    use crate::send::tests::{BYTES, set_shapes};
+    use kavach_kir::{RtOp, Type};
+
+    /// `List<UInt8>.capacity(5)`, and `Ring<UInt8>.capacity(9)` with 20
+    /// pushes, each made and let go.
+    fn lists_with_a_limit() {
+        let Type::Ref(id) = BYTES else { unreachable!() };
+        let code = 100 + i64::from(id);
+        let list = capacity_op(RtOp::ListCapacity, 5, 0, code, 0);
+        release(list);
+        let mut ring = capacity_op(RtOp::RingCapacity, 9, 0, code, 0);
+        for i in 0..20 {
+            ring = push(ring, i, 0);
+        }
+        assert_eq!(len_of(ring), 9);
+        release(ring);
+    }
+
+    /// A packed list with a limit gives its buffer back with the size it
+    /// was taken with, and keeps none (unsafe audit (a) 1).
+    #[test]
+    fn packed_lists_with_a_limit_free_what_they_took() {
+        set_shapes();
+        // Once first, for what the runtime makes once per thread.
+        lists_with_a_limit();
+        let (wrong, held) = crate::rt_memory::watch::watch(lists_with_a_limit);
+        assert_eq!(wrong, 0, "blocks given back with the wrong size");
+        assert_eq!(held, 0, "blocks never given back");
+    }
 }
