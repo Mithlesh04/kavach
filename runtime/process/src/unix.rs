@@ -75,7 +75,8 @@ fn retried(mut call: impl FnMut() -> libc::c_int) -> libc::c_int {
 /// Waits for the program's end with `wait4`, which the standard library
 /// can't give: it reaps the program, so `child` is never waited for again.
 /// It first waits without reaping, so `kill` can end the group until the
-/// reap, which takes the lock `kill` takes.
+/// reap, which takes the lock `kill` takes. If the wait fails, the code
+/// is -1, never a success.
 pub fn wait(child: Child, tree: &Tree) -> Exit {
     let pid = child.id() as libc::pid_t;
     // SAFETY: `info` is a plain C value the call fills. `WNOWAIT` leaves
@@ -91,7 +92,7 @@ pub fn wait(child: Child, tree: &Tree) -> Exit {
     }) == 0;
     // SAFETY: `status` and `usage` are plain C values the call fills. The
     // program has ended, so `wait4` returns at once, with the lock held.
-    let (_, status, usage) = tree.leader.reap(|| unsafe {
+    let (r, status, usage) = tree.leader.reap(|| unsafe {
         let mut status: libc::c_int = 0;
         let mut usage: libc::rusage = std::mem::zeroed();
         let r = if ended {
@@ -102,7 +103,9 @@ pub fn wait(child: Child, tree: &Tree) -> Exit {
         (r, status, usage)
     });
     drop(child);
-    let code = if libc::WIFEXITED(status) {
+    let code = if r < 0 {
+        -1
+    } else if libc::WIFEXITED(status) {
         libc::WEXITSTATUS(status)
     } else if libc::WIFSIGNALED(status) {
         128 + libc::WTERMSIG(status)
@@ -178,6 +181,15 @@ mod tests {
         let exit = wait(child, &tree);
         assert_eq!(exit.code, 128 + i64::from(libc::SIGKILL));
         // Reaped: its id may be a stranger's group now.
+        assert!(!tree.leader.signal(|| panic!("signalled after the reap")));
+    }
+
+    #[test]
+    fn a_wait_that_fails_is_not_a_success() {
+        let (mut child, tree) = spawn(&mut Command::new("true")).unwrap();
+        // Reaped here first, so `wait` finds no program to wait for.
+        assert!(child.wait().unwrap().success());
+        assert_eq!(wait(child, &tree).code, -1);
         assert!(!tree.leader.signal(|| panic!("signalled after the reap")));
     }
 }

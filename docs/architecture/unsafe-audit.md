@@ -211,6 +211,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 - **parts_windows_more.rs:139-140:** `*(geometry.as_ptr() as *const DISK_GEOMETRY_EX)` dereferences a `Vec<u8>` pointer, which only promises alignment 1, as a struct holding an `i64`. That is formally misaligned UB, and the returned byte count `got` is unchecked.
   - Read the 8 bytes at `offset_of!` with `from_le_bytes`, as the code just above does.
 - **unix.rs:62-72 (`wait`):** if `wait4` fails with anything but EINTR, `status` stays 0, and the result is reported as exit 0 (a false success). Report -1.
+  - Fixed 2026-11-26, "Report a failed wait for a program as -1", test `runtime/process/src/unix.rs` (`a_wait_that_fails_is_not_a_success`, Linux and macOS only: before the fix it gives 0).
 - **acts_windows.rs:143-151 and registry.rs:178 (`wide`):** an interior NUL is not rejected, and act 3 (`remove_user`) skips the `user_name` check, so `remove_user("guest\0x")` deletes "guest".
   - Validate the name in act 3, or have `wide` reject NUL.
 - **parts_windows_net.rs:45-60:** `GetAdaptersAddresses` gets a fixed 32 KB buffer and no retry on ERROR_BUFFER_OVERFLOW (111). Hosts with many virtual adapters silently report none. Retry with the size the call returns.
