@@ -109,9 +109,9 @@ capability  catch       const       continue    deprecated  else
 ensure      example     extend      extern      fail        false
 fn          for         if          in          interface   invariant
 let         match       none        not         or          pub
-require     return      secret      self        spawn       true
-try         type        unsafe      use         uses        var
-while       with
+require     return      secret      self        spawn       test
+true        try         type        unsafe      use         uses
+var         while       with
 ```
 
 `var` is reserved so that writing it gives a clear error (1.4); it declares nothing. A keyword used as a name is one error that says so and suggests another name: `` `while` is a keyword, so it can't name a function: choose another name ``.
@@ -129,7 +129,7 @@ while       with
 | `per` | Inside a `limit` rule: the time window (8.3) |
 | `inout` | Before a parameter's name: the function changes the caller's variable (3.9) |
 | `is` | Between a value and a type: `x is Circle`, a type check that narrows `x` (2.15; *not built yet*) |
-| `test` | At the start of a line at a file's top level, followed by text in quotes: a test block, `test "adds two numbers" { … }` (11.8). Everywhere else it is an ordinary name: `fn test()`, `const test = …` (a maintainer, 2026-11-27; *not built yet*: today `test` is reserved everywhere) |
+| `test` | At the start of a line at a file's top level, followed by text in quotes: a test block, `test "adds two numbers" { … }` (11.8). Everywhere else it is an ordinary name: `fn test()`, `const test = …` (a maintainer, 2026-11-27; *not built yet*: today `test` is reserved everywhere, so it stays in the list above until the lexer changes) |
 
 ## 1.7 Literals
 

@@ -87,4 +87,5 @@ For work on the compiler (they print what a pass did, or turn one off):
 | `KAVACH_UNRECURSE_LOG` | Prints why a recursion did or didn't become a loop |
 | `KAVACH_FUZZ_CASES` | How many cases the fuzz tests try |
 | `KAVACH_ISOLATED` | `1` in a throwaway container: the runtime's tests may then free ports and add and remove users (14.25); they also need Docker's own `/.dockerenv`, so the setting alone changes nothing on a real machine |
+| `KAVACH_TEST_END_CHILD` | Set by a runtime test for the copy of itself it starts, which panics with a thread-local holding a value, to check that a panic ends without running thread-local destructors; not for setting by hand |
 | `KAVACH_COMMIT` | When the compiler is built: the commit `kavach --version` and built programs name (10.5), where git can't tell it |
