@@ -1,0 +1,17 @@
+// Rule: A type parameter meets an interface bound only when its own bounds include that interface.
+// Spec: 2.9
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+fn show<T: Describe>(x: T) -> String { x.describe() }
+
+fn outer<U>(x: U) -> String {
+    show(x)             // error: `U` does not implement `Describe`: write `U: Describe`
+}
+
+fn main() {
+    print(outer(5))
+}

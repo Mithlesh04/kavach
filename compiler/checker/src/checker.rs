@@ -151,6 +151,9 @@ pub(crate) struct Checker<'a> {
     /// Each type argument of a record made here, to check something
     /// filled it (2.9).
     pub(crate) filled_checks: Vec<(DefId, Ty, Span)>,
+    /// Interface bounds met by a type not known at the call (spec 2.9):
+    /// the bounds, the type given, and the call.
+    pub(crate) iface_checks: Vec<(Vec<DefId>, Ty, Span)>,
     /// Each method's `where` bounds (spec 2.9), by its type and name: the
     /// type parameter, and the bound.
     pub(crate) wheres: HashMap<(DefId, String), Vec<(DefId, crate::where_bounds::Bound)>>,
@@ -338,6 +341,7 @@ impl<'a> Checker<'a> {
             number_checks: Vec::new(),
             ptr_checks: Vec::new(),
             filled_checks: Vec::new(),
+            iface_checks: Vec::new(),
             wheres: HashMap::new(),
             where_checks: Vec::new(),
             param_ops: HashMap::new(),

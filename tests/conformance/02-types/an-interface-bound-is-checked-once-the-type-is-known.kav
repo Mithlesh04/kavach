@@ -1,0 +1,14 @@
+// Rule: An interface bound on a type not known yet is checked once the type is known: a lambda's parameter that turns out an `Int` doesn't meet `Describe`.
+// Spec: 2.9
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+fn show<T: Describe>(x: T) -> String { x.describe() }
+
+fn main() {
+    const f = x => show(x)      // error: `Int` does not implement `Describe`
+    print(f(5))
+}

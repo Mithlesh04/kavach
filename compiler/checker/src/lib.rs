@@ -52,6 +52,7 @@ mod gpu_draw;
 mod gpu_fit;
 mod gpu_walk;
 mod grouped_sums;
+mod iface_bounds;
 mod infer;
 mod inout;
 mod instances;
@@ -270,6 +271,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.no_distinct_methods(file);
     checker.check_frozen_passes(file);
     checker.check_numbers_later();
+    checker.iface_bounds_later();
     checker.check_tensor_items();
     checker.check_pointees();
     checker.check_float32_literals();

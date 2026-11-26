@@ -46,6 +46,7 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/exprs.rs` | Expressions: names, operators, lambdas |
 | `src/failures.rs` | `try`, `fail`, `return`, error compatibility, `unsafe` |
 | `src/calls.rs` | Calls, static calls, arguments |
+| `src/iface_bounds.rs` | Interface bounds at a call (spec 2.9): met by a type that implements the interface, or by a type parameter bounded by it; a type not known yet is checked once it is |
 | `src/construct.rs` | Making records and variants: named arguments, type arguments, number bounds (spec 2.4) |
 | `src/changes.rs` | What changes a value in place: `items.push(x)` needs `items` to be a `let` (spec 2.2) |
 | `src/numbers.rs` | Number bounds: `T: Number` and `T: Floating`, `T(x)`, literals of type `T`, and the check that each call and value gives a number type (spec 2.9) |

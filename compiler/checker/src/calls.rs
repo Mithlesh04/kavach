@@ -179,40 +179,7 @@ impl Checker<'_> {
         self.check_inout_args(sig, args);
         for (g, bounds) in &sig.generics {
             self.check_number_bound(*g, &subst[g], span);
-            let ty = self.inf.resolve(&subst[g]);
-            let has = match &ty {
-                Ty::Adt(def, _) => self.implements.get(def),
-                Ty::Prim(p) => self.ext_implements.get(p.name()),
-                // Not known yet, or bounded where it was declared.
-                Ty::Var(_) | Ty::Param(_) | Ty::Error | Ty::Never => continue,
-                _ => None,
-            };
-            let missing: Vec<_> = bounds
-                .iter()
-                .filter(|b| !has.is_some_and(|s| s.contains(b)))
-                .copied()
-                .collect();
-            for b in missing {
-                let i = self.def_name(b).to_string();
-                let (t, fix) = match &ty {
-                    Ty::Adt(def, _) => {
-                        let t = self.def_name(*def).to_string();
-                        let fix = format!(": write `type {t}: {i}` or `extend {t}: {i}`");
-                        (t, fix)
-                    }
-                    // `log.info("order placed")`: events are records (14.12).
-                    Ty::Prim(_) if i == "LogEvent" => (
-                        self.show(&ty),
-                        ": log events are records, so a log line can be searched by its fields. Declare one, as `type OrderPlaced: LogEvent { order_id: Int }`, and log that: `log.info(OrderPlaced(order_id: 7))` (spec 14.12)".to_string(),
-                    ),
-                    Ty::Prim(_) => (
-                        self.show(&ty),
-                        format!(": write `extend {}: {i}`", self.show(&ty)),
-                    ),
-                    _ => (self.show(&ty), String::new()),
-                };
-                self.error(span, format!("`{t}` does not implement `{i}`{fix}"));
-            }
+            self.iface_bounds(bounds, &subst[g], span);
         }
         if let Some(def) = sig.def {
             self.note_fn(def, span);
