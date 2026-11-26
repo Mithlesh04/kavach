@@ -61,3 +61,34 @@ print(home)                               // UnitedKingdom
 - A text value is written in quotes, exactly as it is: spaces, dots, any script (`Hindi = "हिन्दी"`), and empty text too. Text with a `"` in it is written in backticks with nothing filled in: `` Inch = `"` ``. A value is fixed when compiling, so a `{…}` to fill in is a compile error.
 - A variant's name is one name, with no dots or spaces; the text other systems use goes in the value. `type Country = India | U.S` is a compile error that says to write `US = "U.S"`, and so is a variant written as text, as TypeScript writes a union, `type Lang = "en" | "hi"`, which says to write `En = "en"`.
 - A function or method the type declares itself with one of these names (`all`, `name`, `parse`, `value`, `from`) is used instead.
+
+**Inline unions** (a maintainer, 2026-11-27; *not built yet*). A value that is one of a few types needs no declaration: write the types joined by `|` wherever a type goes. A value of any of them fits as it is, with no wrapping, as anonymous records (2.14) need no `type` either:
+
+```kavach
+const a: [String | Int] = ["2", "3", 2]
+print(a)                                    // ["2", "3", 2]
+
+for x in a {
+    match x {
+        s: String => print(`text {s}`),
+        n: Int => print(`number {n + 1}`),
+    }
+}
+
+type Item = String | Int                    // a name for it, once it's shared
+```
+
+- **Members** are types, at least two, each different; their order doesn't matter, so `String | Int` and `Int | String` are one type. A member that is itself an inline union is flattened.
+- **Any type can be a member:** text, every number type (`Int`, `Float`, `Int32`, `Decimal`, `Int<bits: 8>` …), `Bool`, `Char`, `Bytes`, lists, dicts, sets, tuples, records (named or anonymous), declared unions and enums, `Json`, and functions:
+
+  ```kavach
+  const settings: {String: String | Int | Bool} = {"name": "shop", "port": 8080, "debug": false}
+  const cell: [Int] | {String: Int} | Json = json.parse(text)
+  ```
+
+- **No value:** `none` may be a member, meaning the whole is optional: `String | Int | none` is `(String | Int)?`, written either way, and is used with `match` or `??` as any optional is (2.7). JavaScript's `null` and `undefined` are both `none` here.
+- **Which member a value is** is fixed where it fits, from its type when compiling, and kept with it, so `match` never has to guess: in `[Int] | [String]`, a list made as `[1]` is the `[Int]` one. A value whose member can't be told, such as `[]` for `[Int] | [String]`, is a compile error that asks for its type (`[]: [Int]`).
+- **Fitting:** a value of a member type fits where the inline union is expected, and an inline union fits where one with more members is expected: `String | Int` fits `String | Int | Bool`. A number literal takes its own default type, so `2` is an `Int` there, and `Int | Float` takes `2` as an `Int` and `2.0` as a `Float`.
+- **Using one:** `match` on its type, with a name for each member, `s: String =>`, covering every member (4.3). No other method can be called on it directly. `print`, interpolation and `==` (same member type and equal values) work.
+- **JSON** writes the value as it is (`none` as `null`). `json.decode` takes the first member, in the order written, that the JSON fits, and a `Json` member takes whatever the others don't, wherever it is written; two members whose JSON looks the same (`Int | Int32`, `[Int] | [Int32]`) are a compile error there.
+- **Names:** `type Item = String | Int` is a name for the inline union, as an alias is for an anonymous record (2.14), because every member is a type. When any member is not a type, the line declares variants, as before: `type Kind = List | Other` (for a maintainer's review).
