@@ -109,7 +109,7 @@ fn port_of(n: Int) -> Int<range: 1..=65535> {
 }
 ```
 
-- Arithmetic of two values of one range type gives that type; a result out of the range panics, as overflow does (5.6): `integer overflow: 65535 + 1 doesn't fit in Int<range: 1..=65535>`. `checked_add` gives `none`. Wrapping has no meaning for a range: `wrapping_add` on one is a compile error.
+- Arithmetic of two values of one range type gives that type; a result out of the range panics, as overflow does (5.6): `integer overflow: 65535 + 1 doesn't fit in Int<range: 1..=65535>`. `checked_add` gives `none`. Wrapping has no meaning for a range: `wrapping_add` on one is a compile error. `sum` adds with `+`, so a sum of range values is that range type too, and a total past the range panics; to add up counts that are each in a range, widen each one: `sales.sum(s => Int(s.units))`.
 - A literal given as a range value must be in the range: `const none_yet` above is an error. A literal on the right of an operator or a comparison need only be an `Int`, as the result is what is checked: `p - 1` and `p > 0` are allowed when `1` and `0` are not in the range.
 - The bit operators `& | ^ << >> ~` work on bits, not on values in a range: they are compile errors on a range. `Int(p) & 1` converts first.
 - Two ranges are two types, and a range is not a `bits` type: `Int<range: 0..=255>` is not `UInt8`. `Int(port)` always converts back. `Int<range: 1..=65535>(n)` converts, and panics when `n` is out of the range; under `try` or `catch` it fails with a `SizeError`, as above.
