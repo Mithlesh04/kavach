@@ -22,7 +22,8 @@
 | 16 | [architecture/windows-setup.md](architecture/windows-setup.md) | How to set up a Windows machine to run the tests and benchmarks |
 | 17 | [architecture/tasks-on-all-cores.md](architecture/tasks-on-all-cores.md) | The proposal for running tasks on all cores: what stays in order, and how to build it |
 | 18 | [architecture/crashes-and-restarts.md](architecture/crashes-and-restarts.md) | What happens when a program crashes or is killed, the machine restarts or sleeps, or the clock or time zone changes: every case and its status |
-| 19 | [decisions/](decisions/README.md) | Why big decisions were made |
+| 19 | [architecture/unsafe-audit.md](architecture/unsafe-audit.md) | Every `unsafe` block in the Rust code checked: likely bugs, weak safety arguments, and what is fixed |
+| 20 | [decisions/](decisions/README.md) | Why big decisions were made |
 
 ## Folders
 
