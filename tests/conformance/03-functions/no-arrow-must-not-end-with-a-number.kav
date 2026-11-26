@@ -1,0 +1,12 @@
+// Rule: A function without `->` must not end with a number either: a number literal is a value.
+// Spec: 3.1
+// expect compile error
+
+fn yes() {
+    print("t")
+    1                   // error: yes has no `->`, so its last line can't be a value
+}
+
+fn main() {
+    yes()
+}

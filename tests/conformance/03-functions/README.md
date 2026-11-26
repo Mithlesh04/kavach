@@ -7,6 +7,7 @@ Conformance tests for spec chapter [3. Functions](../../../docs/spec/03-function
 | 3.1 | [last-expression-is-returned.kav](last-expression-is-returned.kav) | A function returns its last expression. | runs |
 | 3.1 | [no-arrow-call-has-no-value.kav](no-arrow-call-has-no-value.kav) | A call to a function without `->` can't be used as a value. | compile error |
 | 3.1 | [no-arrow-must-not-end-with-a-value.kav](no-arrow-must-not-end-with-a-value.kav) | A function without `->` returns nothing, so its body must not end with a value. | compile error |
+| 3.1 | [no-arrow-must-not-end-with-a-number.kav](no-arrow-must-not-end-with-a-number.kav) | A function without `->` must not end with a number either: a number literal is a value. | compile error |
 | 3.1 | [parameters-cannot-be-reassigned.kav](parameters-cannot-be-reassigned.kav) | Parameters can't be reassigned. | compile error |
 | 3.1 | [return-exits-early.kav](return-exits-early.kav) | `return` exits a function early. | runs |
 | 3.1 | [no-rest-parameters.kav](no-rest-parameters.kav) | Separate values for a function's one list parameter are a compile error: put them in a list. | compile error |
@@ -25,6 +26,7 @@ Conformance tests for spec chapter [3. Functions](../../../docs/spec/03-function
 | 3.5 | [signature-order-is-fixed.kav](signature-order-is-fixed.kav) | The parts of a signature always come in the same order: ->, !, uses, require, ensure, example. | compile error |
 | 3.7 | [discard-with-underscore.kav](discard-with-underscore.kav) | `const _ =` throws a value away on purpose. | runs |
 | 3.7 | [unused-result-is-an-error.kav](unused-result-is-an-error.kav) | A call's value must be used or discarded with `const _ =`. | compile error |
+| 3.7 | [a-number-on-its-own-line-is-unused.kav](a-number-on-its-own-line-is-unused.kav) | A number literal on a line of its own is a value that is not used. | compile error |
 | 3.8, 5.6 | [stack-overflow-panics.kav](stack-overflow-panics.kav) | Running out of stack is a panic, at the line of the call that went too deep. | panic |
 | 3.8, 5.6 | [stack-overflow-through-failing-calls-panics.kav](stack-overflow-through-failing-calls-panics.kav) | Running out of stack through calls to a function that can fail is the same panic, at the line of the call that went too deep. | panic |
 | 3.8 | [deep-recursion-runs.kav](deep-recursion-runs.kav) | Recursion runs as deep as the stack allows: 4,000 calls deep, in every build. | runs |

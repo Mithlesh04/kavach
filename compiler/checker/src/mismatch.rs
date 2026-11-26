@@ -48,12 +48,15 @@ impl Checker<'_> {
         self.error(e.span, message);
     }
 
-    /// Whether `ty` carries no value worth keeping.
+    /// Whether `ty` carries no value worth keeping. A number literal's
+    /// type, still open, is a value (spec 3.1, 3.7); only a type nothing
+    /// has said anything about yet is not.
     pub(crate) fn is_nothing(&self, ty: &Ty) -> bool {
-        matches!(
-            self.inf.shallow(ty),
-            Ty::Unit | Ty::Never | Ty::Error | Ty::Var(_)
-        )
+        match self.inf.shallow(ty) {
+            Ty::Unit | Ty::Never | Ty::Error => true,
+            Ty::Var(v) => self.inf.kind(v) == crate::infer::VarKind::Any,
+            _ => false,
+        }
     }
 
     /// `the call to add`-style description of an expression, for messages.

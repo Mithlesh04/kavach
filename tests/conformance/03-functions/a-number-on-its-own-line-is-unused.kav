@@ -1,0 +1,8 @@
+// Rule: A number literal on a line of its own is a value that is not used.
+// Spec: 3.7
+// expect compile error
+
+fn main() {
+    1.5                 // error: this value is unused
+    print("done")
+}

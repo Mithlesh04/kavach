@@ -38,7 +38,7 @@ fn main() {
     const total = Shared(0)
     const add = k => total.update(n => n + k)
     for k in 1..=5 {
-        add(k)
+        const _ = add(k)
     }
     print(total.get())
 }
