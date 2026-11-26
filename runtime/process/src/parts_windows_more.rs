@@ -35,7 +35,7 @@ fn disks() -> Vec<Vec<String>> {
     };
     use windows_sys::Win32::System::IO::DeviceIoControl;
     use windows_sys::Win32::System::Ioctl::{
-        DEVICE_SEEK_PENALTY_DESCRIPTOR, DISK_GEOMETRY_EX, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
+        DEVICE_SEEK_PENALTY_DESCRIPTOR, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX,
         IOCTL_STORAGE_QUERY_PROPERTY, PropertyStandardQuery, STORAGE_DEVICE_DESCRIPTOR,
         STORAGE_PROPERTY_QUERY, StorageDeviceProperty, StorageDeviceSeekPenaltyProperty,
     };
@@ -135,12 +135,7 @@ fn disks() -> Vec<Vec<String>> {
                 std::ptr::null_mut(),
             ) != 0
         };
-        // SAFETY: when the call worked it wrote a DISK_GEOMETRY_EX there.
-        let size = if sized {
-            unsafe { (*(geometry.as_ptr() as *const DISK_GEOMETRY_EX)).DiskSize }
-        } else {
-            0
-        };
+        let size = if sized { disk_size(&geometry, got) } else { 0 };
         // SAFETY: `h` was opened above and is closed once.
         unsafe { CloseHandle(h) };
         let kind = match (usb, rotates) {
@@ -160,4 +155,37 @@ fn disks() -> Vec<Vec<String>> {
     out
 }
 
+/// A disk's size from the bytes of a `DISK_GEOMETRY_EX`, `got` of them
+/// written: read as bytes at its place, since a byte buffer isn't aligned
+/// for the struct's 64-bit fields. 0 when the bytes don't reach it.
+fn disk_size(bytes: &[u8], got: u32) -> i64 {
+    use windows_sys::Win32::System::Ioctl::DISK_GEOMETRY_EX;
+    let at = std::mem::offset_of!(DISK_GEOMETRY_EX, DiskSize);
+    let written = &bytes[..(got as usize).min(bytes.len())];
+    (written.get(at..at + 8))
+        .and_then(|b| <[u8; 8]>::try_from(b).ok())
+        .map_or(0, i64::from_le_bytes)
+}
+
 use super::windows_net::{devices, displays, network, sensors};
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_disks_size_is_read_from_bytes_at_any_alignment() {
+        let at = std::mem::offset_of!(
+            windows_sys::Win32::System::Ioctl::DISK_GEOMETRY_EX,
+            DiskSize
+        );
+        // One byte in, so the size isn't aligned in memory.
+        let mut bytes = vec![0u8; 1 + at + 8];
+        bytes[1 + at..].copy_from_slice(&512_110_190_592i64.to_le_bytes());
+        let got = (at + 8) as u32;
+        assert_eq!(disk_size(&bytes[1..], got), 512_110_190_592);
+        // Fewer bytes written than reach the size: no size.
+        assert_eq!(disk_size(&bytes[1..], got - 1), 0);
+        assert_eq!(disk_size(&[], 0), 0);
+    }
+}
