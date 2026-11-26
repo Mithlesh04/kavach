@@ -276,6 +276,7 @@ The tests are listed in two files, by section:
 | 2.9 | [a-number-bound-is-floating-not-float.kav](a-number-bound-is-floating-not-float.kav) | A bound is an interface: `Float` is a type, so `<T: Float>` is an error, and the bound for floating-point numbers is `Floating`. | compile error |
 | 2.9 | [a-where-bound-is-a-number-bound.kav](a-where-bound-is-a-number-bound.kav) | A method's `where` bound is `Number`, `Floating` or an operator's interface; another interface there is an error. | compile error |
 | 2.9 | [one-type-parameter-is-one-type.kav](one-type-parameter-is-one-type.kav) | Every use of a type parameter in one call is the same type: `same(1, "one")` finds no `T`. | compile error |
+| 2.9 | [a-type-parameter-is-not-a-value.kav](a-type-parameter-is-not-a-value.kav) | A type parameter names a type, not a value: using it as a value is a compile error. | compile error |
 | 2.9 | [where-is-a-name-elsewhere.kav](where-is-a-name-elsewhere.kav) | `where` is a keyword only after a method's result type: elsewhere it may be a name. | runs |
 | 2.9 | [whole-number-overflow-panics-in-generic-code.kav](whole-number-overflow-panics-in-generic-code.kav) | Whole-number overflow panics in generic code as it does elsewhere. | panic |
 | 2.10, 3.1 | [a-value-return-needs-an-arrow.kav](a-value-return-needs-an-arrow.kav) | A function that returns a value must write its return type; with no `->` it returns nothing. | compile error |

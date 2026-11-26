@@ -1,0 +1,11 @@
+// Rule: A type parameter names a type, not a value: using it as a value is a compile error.
+// Spec: 2.9
+// expect compile error
+
+fn twice<T>(x: T) -> [T] {
+    [x, T]              // error: `T` is a type parameter, not a value
+}
+
+fn main() {
+    print(twice(1))
+}

@@ -130,7 +130,33 @@ impl Checker<'_> {
             DefKind::Builtin if self.res.defs[def].name == "cost" => Ty::Prim(Prim::Decimal),
             // A number parameter is a constant `Int` (spec 2.9).
             DefKind::GenericParam if self.is_num_param(def) => Ty::Prim(Prim::Int),
-            DefKind::Builtin | DefKind::Import | DefKind::GenericParam => Ty::Error,
+            DefKind::GenericParam => {
+                self.error(
+                    id.span,
+                    format!(
+                        "`{}` is a type parameter, not a value: it names the type a call gives it (spec 2.9)",
+                        id.name
+                    ),
+                );
+                Ty::Error
+            }
+            // `use std.json`: the module, not a value (spec 10.2).
+            DefKind::Import
+                if self.std_modules.contains_key(&def)
+                    || self.res.module_defs.contains_key(&def) =>
+            {
+                self.error(
+                    id.span,
+                    format!(
+                        "`{0}` is a module, not a value: use one of its names, like `{0}.name`",
+                        id.name
+                    ),
+                );
+                Ty::Error
+            }
+            // A function a `use std.fs.{read_text}` names was refused at
+            // its `use` (spec 14.1).
+            DefKind::Builtin | DefKind::Import => Ty::Error,
             // A tag goes right before its text (spec 10.15).
             DefKind::Literal => {
                 self.error(id.span, format!("`{0}` is a tag for literals: write the text right after it, `{0}\"…\"` (spec 10.15)", id.name));

@@ -1,0 +1,11 @@
+// Rule: A module brought in with `use` is not a value: use one of its names, as `json.stringify(x)`.
+// Spec: 10.2
+// expect compile error
+
+use std.json
+
+fn main() {
+    print(json.stringify(json.of([1, 2])))
+    const n: Int = json         // error: `json` is a module, not a value
+    print(n)
+}

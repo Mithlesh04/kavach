@@ -8,6 +8,7 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.2 | [re-exports-show-names-from-other-files/](re-exports-show-names-from-other-files/src/main.kav) | `pub use` makes names declared in another module part of this one, the same declarations, also when re-exported again. | runs |
 | 10.2 | [re-exports-name-items.kav](re-exports-name-items.kav) | `pub use` re-exports names, not a whole module. | compile error |
 | 10.2 | [types-named-through-a-standard-module.kav](types-named-through-a-standard-module.kav) | A type written through the standard module that holds it (`regex.Regex`, `fs.FsError`, `wire.Credit`) works in parameters, results and errors, natively too. | runs |
+| 10.2 | [a-standard-module-is-not-a-value.kav](a-standard-module-is-not-a-value.kav) | A module brought in with `use` is not a value: use one of its names. | compile error |
 | 10.1 | [private-names-stay-private/](private-names-stay-private/src/main.kav) | A name without `pub` can't be used from another module. | compile error |
 | 10.1 | [pub-agents-start-from-other-modules/](pub-agents-start-from-other-modules/src/main.kav) | An agent marked `pub` can be started from another module, and its handlers called there. | runs |
 | 10.1 | [private-agents-stay-private/](private-agents-stay-private/src/main.kav) | An agent without `pub` can't be started from another module. | compile error |
