@@ -1,0 +1,11 @@
+fn area(r: (w: Int, h: Int)) -> Int {
+    r.w * r.h
+}
+
+fn main() {
+    const size = (w: 2, h: 3)
+    const taller = size with { h: 5 }
+    print(`taller: {taller.w} x {taller.h}`)
+    print(`size: {size.w} x {size.h}`)
+    print(area(taller))
+}

@@ -73,13 +73,19 @@ export const genericsDoc: LessonDoc = {
       </P>
       <Ex name="types/method-bound" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>A <C>where</C> bound is <C>Number</C> or <C>Floating</C>, and names the type&apos;s own parameters.</li>
+        <li>A <C>where</C> bound is <C>Number</C>, <C>Floating</C>, or an operator&apos;s interface with no type arguments, as <C>BitAnd</C> (below). It names the type&apos;s own parameters.</li>
         <li>In the method&apos;s body the parameter has the bound, so <C>2.0</C> and <C>std.math</C> may be used on a <C>T</C>.</li>
         <li>A literal with no type of its own becomes a <C>Float</C> there: <C>Pair(a: 1, b: 2).mean()</C> is <C>1.5</C>.</li>
         <li>A function writes its bounds in <C>&lt;T: …&gt;</C>. <C>where</C> is a keyword only on a method&apos;s line; elsewhere it may be a name.</li>
       </ul>
       <P>Calling the method on a type that doesn&apos;t meet the bound is an error that names the bound:</P>
       <Ex name="types/method-bound.fails" />
+      <P>
+        With an operator&apos;s <Link href="/docs/types/operators-for-your-types/">interface</Link> as the bound, the method may use
+        that operator on a <C>T</C>. <C>where T: BitAnd</C> is met by the whole-number types and <C>Bool</C>, so{" "}
+        <C>both</C> is there for an <C>Int</C> pair and a <C>Bool</C> pair, and not for a <C>Float</C> pair:
+      </P>
+      <Ex name="types/method-bound-operator" />
       <H2>Numbers in types</H2>
       <P>
         A generic type may take numbers as well as types: a grid&apos;s width, a buffer&apos;s size. Types are
@@ -142,6 +148,7 @@ export const genericsDoc: LessonDoc = {
         <SrcRef file="tests/conformance/02-types/number-bounds-do-arithmetic.kav" label="number bounds, tested" />
         <SrcRef file="docs/decisions/0115-generic-math-and-std-vec.md" label="decision 0115" />
         <SrcRef file="tests/conformance/02-types/a-method-can-add-a-bound.kav" label="where, tested" />
+        <SrcRef file="tests/conformance/02-types/a-where-bound-may-be-an-operator.kav" label="where T: BitAnd, tested" />
         <SrcRef file="docs/decisions/0119-bounds-on-one-method.md" label="decision 0119" />
       </div>
     </>

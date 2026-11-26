@@ -1,0 +1,11 @@
+type Pair<T> {
+    a: T
+    b: T
+
+    fn both(self) -> T where T: BitAnd { self.a & self.b }
+}
+
+fn main() {
+    print(Pair(a: 12, b: 10).both())
+    print(Pair(a: true, b: false).both())
+}

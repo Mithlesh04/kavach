@@ -9,8 +9,7 @@ import { Ex, H2, P } from "./parts";
 // Spec 2.4 "Updating a record": `value with { field: new }` makes a copy
 // with some fields changed. Also spec 2.20 (with on a frozen value gives
 // one that isn't) and 10.1 (pub(read) fields can't be set with with outside
-// their module). On an anonymous record it isn't built yet (to-do 30), so no
-// sample runs it there.
+// their module), and 2.14 (with on an anonymous record).
 
 const SPEC = "docs/spec/02-types/04-records.md";
 
@@ -79,8 +78,18 @@ export const withDoc: LessonDoc = {
         <li>On a <Link href="/docs/types/frozen-values/">frozen</Link> value, <C>with</C> gives a value that isn&apos;t frozen, since it is a new value.</li>
         <li>A <Link href="/docs/tools/modules/pub/#fields-others-only-read-pub-read">pub(read)</Link> field can&apos;t be set with <C>with</C> outside the module that declares its type, as it can&apos;t be assigned there.</li>
       </ul>
+      <H2>On anonymous records</H2>
+      <P>
+        <C>with</C> copies an <Link href="/docs/types/anonymous-records/">anonymous record</Link> too. The copy has
+        the same type, so it goes wherever the original goes:
+      </P>
+      <Ex name="records/with-anonymous" />
+      <P>The same checks hold: a field the record doesn&apos;t have, or a value of another type, is a compile error:</P>
+      <Ex name="records/with-anonymous-field.fails" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 2.4 · updating a record" />
+        <SrcRef file="docs/spec/02-types/14-anonymous-records.md" label="spec 2.14 · anonymous records" />
+        <SrcRef file="tests/conformance/02-types/anonymous-records-copy-with-with.kav" label="anonymous, tested" />
         <SrcRef file="docs/spec/02-types/20-frozen-values.md" label="spec 2.20 · with on a frozen value" />
       </div>
     </>

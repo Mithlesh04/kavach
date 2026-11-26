@@ -295,6 +295,10 @@ export const anonDoc: LessonDoc = {
         use it often:
       </P>
       <Ex name="records/alias" />
+      <P>
+        Its fields are read and, through a <C>let</C>, set like any record&apos;s, and{" "}
+        <Link href="/docs/types/records/updating-with-with/">with</Link> copies one with some fields changed.
+      </P>
       <Note>
         Start with an anonymous record while a design settles; turn it into a <C>type</C> when it needs methods.
       </Note>

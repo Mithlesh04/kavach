@@ -1,0 +1,5 @@
+fn main() {
+    const size = (w: 2, h: 3)
+    const deeper = size with { depth: 4 }
+    print(deeper)
+}
