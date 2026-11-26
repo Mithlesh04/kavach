@@ -104,7 +104,7 @@ npm run check      # BEFORE finishing any change: types + lint + static build
   smart things (automatic), "Go deeper", a quiz. Show samples with `<Ex>`
   from `content/lessons/parts.tsx`.
 - A project sample of several `.kav` files goes in `<Files>`, one window with a tab per file. The build fails if a page shows a project's `src/` and leaves a file out.
-- Every width counts, from a 320 px phone to a 2560 px screen: nothing may widen the page. A long line scrolls inside its own box, and lines of text stop at about 72 characters while code and tables take the page's width.
+- Every width counts, from a 320 px phone to a 2560 px screen: nothing may widen the page. A long line scrolls inside its own box, and lines of text stop at about 72 characters while code and tables take the page's width. After a build, `node scripts/check-widths.mjs` checks every page with an explainer scene at 320 and 2560 px in headless Chrome or Edge; it needs a browser, so it runs by hand, not in `npm run check`.
 - In an old chapter, a construct with several forms gets a `TopicTabs` switcher on its Code tab,
   one verified sample per form; one form visible at a time.
 
