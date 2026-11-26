@@ -106,6 +106,9 @@ const requirements: [string, React.ReactNode][] = [
   ],
 ];
 
+// The install scripts as GitHub serves them, from main.
+const rawScripts = `${versions.repo.replace("github.com", "raw.githubusercontent.com")}/main/scripts`;
+
 export const installDoc: LessonDoc = {
   lead: "Download a ready-made Kavach from its latest release, or build it from source in a few minutes.",
   simple: <>Installing puts Kavach on your computer so you can use it. The quickest way is to download a ready-made copy and unpack it. If there isn&apos;t one for your computer yet, you build it from its source code instead, a bit like putting together a flat-pack table. You do it once.</>,
@@ -134,6 +137,26 @@ export const installDoc: LessonDoc = {
         <li>No file for your system? Build Kavach from source, <Link href="#build-it">below</Link>. On macOS that is the way today.</li>
       </ul>
       <Terminal commands session={"kavach --version   # says which Kavach you have"} />
+      <H2>Or install with a script</H2>
+      <P>
+        An install script downloads the newest release, unpacks it, puts <C>kavach</C> on your PATH, and checks for
+        what <C>kavach build</C> needs to link programs. On Linux:
+      </P>
+      <Terminal commands session={`curl -fsSL ${rawScripts}/install-kavach.sh | sh`} />
+      <P>On Windows, in PowerShell:</P>
+      <Terminal
+        commands
+        session={`irm ${rawScripts}/install-kavach.ps1 -OutFile install-kavach.ps1\npowershell -ExecutionPolicy Bypass -File install-kavach.ps1`}
+      />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>On Linux, Kavach goes in <C>~/.kavach</C>, with <C>kavach</C> linked into <C>~/.local/bin</C>. That folder is added to the PATH once, in <C>.profile</C>, in <C>.bashrc</C> and <C>.zshrc</C>, and in fish&apos;s settings when you use fish. Open a new terminal, or run the <C>export</C> line the script prints.</li>
+        <li>On Windows, Kavach goes in <C>%LOCALAPPDATA%\Kavach</C>. Its <C>bin</C> folder goes first on your user PATH, so an older <C>kavach</C> elsewhere doesn&apos;t win, and on the PATH of the window you ran it in, so <C>kavach</C> works there at once. Other open terminals and editors see it once restarted.</li>
+        <li>To keep your PATH as it is, set <C>KAVACH_NO_MODIFY_PATH=1</C> before running the script.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="scripts/install-kavach.sh" label="install-kavach.sh" />
+        <SrcRef file="scripts/install-kavach.ps1" label="install-kavach.ps1" />
+      </div>
       <Note>
         These docs follow Kavach&apos;s newest source. A release can be older than a page, so if an example here
         doesn&apos;t work in your download, build from source, or wait for the next release.

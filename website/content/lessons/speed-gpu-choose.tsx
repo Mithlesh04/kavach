@@ -81,7 +81,8 @@ export const gpuChooseDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The code chose no device: no <C>on:</C>, <C>gpu.on</C>, <C>on gpu(n)</C> or <C>gpu(n) fn</C>, and none named by <C>KAVACH_GPU</C> or <C>[run] gpu</C>. A choice sends the work there whole.</li>
         <li>The list is in main memory. A list already in one GPU&apos;s memory is worked on there.</li>
-        <li>Two or more GPUs can take the work.</li>
+        <li>Two or more GPUs can take the work. A GPU still opening doesn&apos;t hold it up: it opens meanwhile and takes parts of later work.</li>
+        <li>A program ends only once no GPU is still opening, waiting at most 10 seconds. Ending while a GPU driver is still opening a device could leave the program hanging. So a short program may end up to one GPU&apos;s opening time later.</li>
         <li>The work is big enough to pay for moving the data: about a second of the CPU&apos;s time, with enough work for each item moved. Once each GPU has done some work, its measured speed decides whether a split ends sooner.</li>
       </ul>
       <P>

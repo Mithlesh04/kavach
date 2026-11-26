@@ -11,6 +11,7 @@ extern c "m" {
 fn below(x: Float) -> Float
     require x >= -40.0 and x <= 40.0
     ensure result >= 0.0 and result <= 1.0
+    example below(0.0) == 0.5
 {
     unsafe { 0.5 * (1.0 + erf(x / math.sqrt(2.0))) }
 }

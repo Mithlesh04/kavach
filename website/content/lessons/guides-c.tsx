@@ -68,9 +68,9 @@ export const guideCDoc: LessonDoc = {
       <Terminal session={grades.said("test --seed 7")} />
       <Note>
         <C>kavach test</C> runs in the interpreter, which can&apos;t call C, so it says it doesn&apos;t generate cases
-        for <C>erf</C> or <C>below</C>, with the reason. For now <C>below</C> carries no <C>example</C>: one would run
-        in the interpreter and fail. Spec 11.2 says such examples will be listed as not run instead, and checked once
-        tests run in native code.
+        for <C>erf</C> or <C>below</C>, with the reason. The <C>example</C> on <C>below</C> reaches C too, so it is
+        listed as not run, and the summary counts it, rather than failing (spec 11.2). The example on{" "}
+        <C>percent</C> calls no C, so it runs and passes.
       </Note>
       <H2>The whole program</H2>
       <CodeBlock code={grades.file(main)} file={main} />
