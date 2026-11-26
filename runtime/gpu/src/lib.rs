@@ -12,6 +12,8 @@
 use std::sync::{Arc, Mutex};
 use wgpu::util::DeviceExt;
 
+mod background;
+pub use background::{in_background, settle};
 mod choice;
 mod device;
 mod devices;

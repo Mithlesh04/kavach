@@ -7,7 +7,12 @@
 //! a kernel's multiply at the limits of its check. Without a GPU the
 //! runtime uses the CPU, so these pass either way.
 
-use std::process::Command;
+use std::io::Read;
+use std::process::{Command, Stdio};
+use std::time::{Duration, Instant};
+
+/// The longest one run may take: one that hangs fails instead.
+const LIMIT: Duration = Duration::from_secs(120);
 
 fn run(src: &str, name: &str, native: bool, mode: &str) -> (String, String) {
     let dir = std::env::temp_dir().join(format!("kavach-streams-{name}-{}", std::process::id()));
@@ -19,15 +24,34 @@ fn run(src: &str, name: &str, native: bool, mode: &str) -> (String, String) {
     if native {
         cmd.arg("--native");
     }
-    let out = cmd
+    let mut child = cmd
         .arg(&file)
         .env("KAVACH_GPU", mode)
         .env("KAVACH_CHECK_LEAKS", "1")
-        .output()
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
         .unwrap();
+    let read = |mut from: Box<dyn Read + Send>| {
+        std::thread::spawn(move || {
+            let mut text = Vec::new();
+            let _ = from.read_to_end(&mut text);
+            String::from_utf8_lossy(&text).to_string()
+        })
+    };
+    let out = read(Box::new(child.stdout.take().unwrap()));
+    let err = read(Box::new(child.stderr.take().unwrap()));
+    let started = Instant::now();
+    while child.try_wait().unwrap().is_none() {
+        if started.elapsed() > LIMIT {
+            let _ = child.kill();
+            panic!("`{name}` (KAVACH_GPU={mode}) still running after {LIMIT:?}");
+        }
+        std::thread::sleep(Duration::from_millis(20));
+    }
     std::fs::remove_dir_all(&dir).unwrap();
-    let text = |b: &[u8]| String::from_utf8_lossy(b).to_string();
-    (text(&out.stdout), text(&out.stderr))
+    (out.join().unwrap(), err.join().unwrap())
 }
 
 /// The panic message and line, without the file's path.
@@ -248,6 +272,18 @@ fn main() {
 #[test]
 fn tasks_keep_their_own_sums() {
     same_everywhere(TASKS, "tasks");
+}
+
+/// A program that ends soon after its tasks start a second GPU opening
+/// in the background ends all the same: its end waits for the driver,
+/// as one ended in the middle hung about once in twenty runs.
+#[test]
+fn a_short_program_ends_while_a_gpu_opens() {
+    let short = TASKS.replace("0..6", "0..1");
+    for n in 0..8 {
+        let (out, err) = run(&short, &format!("short-{n}"), true, "on");
+        assert_eq!(out, "125250 625250\n", "{err}");
+    }
 }
 
 /// `kavach check` says which loops wait for the GPU, and why (spec 15.2).

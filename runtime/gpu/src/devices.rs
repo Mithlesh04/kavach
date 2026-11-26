@@ -179,10 +179,11 @@ pub(crate) fn pick(kernel: &str, holder: Option<usize>) -> Option<&'static Gpu> 
 }
 
 /// Opens device `i` on a thread of its own, once: work goes to it when
-/// it is ready, and doesn't wait for it.
+/// it is ready, and doesn't wait for it. The program's end does
+/// (`background.rs`).
 fn open_later(i: usize) {
     if !table()[i].opening.swap(true, Ordering::Relaxed) {
-        std::thread::spawn(move || {
+        crate::in_background(move || {
             device(i);
         });
     }

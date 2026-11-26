@@ -134,12 +134,26 @@ fn warm(kernels: i64) -> i64 {
     // `KAVACH_GPU` naming a device that isn't there stops the program
     // now (spec 15.6).
     choice::check_launch();
-    std::thread::spawn(move || {
+    static SETTLE: std::sync::Once = std::sync::Once::new();
+    SETTLE.call_once(|| crate::rt_end::at_exit(settle));
+    kavach_runtime_gpu::in_background(move || {
         for kernel in text.split('\0') {
             kavach_runtime_gpu::prepare(kernel);
         }
     });
     0
+}
+
+/// The program ends: first the GPU's driver finishes what threads of
+/// ours do in it (compiling kernels, opening a device for later), as a
+/// process ended in the middle can hang there. A driver that doesn't
+/// return in 10 s is left as it is.
+fn settle() {
+    if !kavach_runtime_gpu::settle(std::time::Duration::from_secs(10))
+        && std::env::var_os("KAVACH_PAR_LOG").is_some()
+    {
+        eprintln!("kavach: a GPU's driver was still busy after 10 s; the program ends anyway");
+    }
 }
 
 /// The values the kernel's closures captured, as `info` holds them after
