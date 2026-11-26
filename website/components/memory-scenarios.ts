@@ -107,6 +107,13 @@ export const SCENARIOS: Record<string, Frame[]> = {
     { line: 8, at: "q.x = 5", names: [{ name: "p.x", value: "1" }, { name: "p.y", value: "2" }, { name: "q.x", value: "5" }, { name: "q.y", value: "2" }], objs: [], caption: "q.x changes q's own local; p.x keeps 1." },
     { line: 9, at: "print(`p=", names: [{ name: "p.x", ended: true }, { name: "p.y", ended: true }, { name: "q.x", ended: true }, { name: "q.y", ended: true }], objs: [], caption: "The last use, and nothing to free: the record never became an object. Passing it to a function that isn't inlined, returning it, keeping it in a list or another record, printing it whole, or a field that is text or a list would make it one object with a count, as the spec allows." },
   ],
+  fused: [
+    { line: 0, at: "let xs", names: [{ name: "xs", to: "#1" }], objs: [list("#1", 1, ["1", "2", "3"])], caption: "One list object, held by xs: count 1." },
+    { line: 1, at: "const ys = xs.map", names: [{ name: "xs", to: "#1" }], objs: [list("#1", 2, ["1", "2", "3"]), list("#2", 1, ["4", "6"], true)], caption: "In native code the chain is one loop over xs's items: no list is built between map and filter. The chain holds xs too while it runs, one +1 for the whole chain, so count 2. The only new object is the result, [4, 6]. If a check in the fast loop failed, the code would run as written instead and fail where the program says, so fusing changes nothing a program sees." },
+    { line: 1, at: "const ys = xs.map", names: [{ name: "xs", to: "#1" }, { name: "ys", to: "#2" }], objs: [list("#1", 1, ["1", "2", "3"]), list("#2", 1, ["4", "6"])], caption: "The chain ends and lets go of xs: count back to 1. ys holds the result, a list of its own." },
+    { line: 2, at: "xs.push(10)", names: [{ name: "xs", to: "#1" }, { name: "ys", to: "#2" }], objs: [list("#1", 1, ["1", "2", "3", "10"], true), list("#2", 1, ["4", "6"])], caption: "Nobody else holds xs, so 10 goes on in place. ys keeps [4, 6]: it was worked out from the list as it was when the chain ran." },
+    { line: 3, at: "print(`xs=", names: [{ name: "xs", ended: true }, { name: "ys", ended: true }], objs: [], freed: [list("#1", 0, ["1", "2", "3", "10"]), list("#2", 0, ["4", "6"])], caption: "The last use of both, marked by the compiler: both lists are freed." },
+  ],
   freeze: [
     { line: 0, at: "let a", names: [{ name: "a", to: "#1" }], objs: [list("#1", 1, A)], caption: "One list object, held by a: count 1." },
     { line: 1, at: "a.push(6)", names: [{ name: "a", to: "#1" }], objs: [list("#1", 1, [...A, "6"], true)], caption: "Nobody else holds it, so 6 goes on in place." },

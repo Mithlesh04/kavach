@@ -74,6 +74,7 @@ its position, so it can't move.
 | `scene-spawn-kinds.ts` | `spawn`, `spawn cores`, `spawn thread`: which thread runs each, in an LLVM build on 4 cores (Concurrency › How Tasks Run) |
 | `scene-call.ts` | One call: arguments in registers, the return address and frame, the result in `rax` (Functions › Returning a value) |
 | `scene-compiler.ts` | From a `.kav` file to a running program: `kavach run`, `run --native` and `build` (Projects & Tools › The kavach Command) |
+| `scene-https.ts` | One HTTPS request through a session: the name looked up and TCP and TLS on a helper thread, the request as text, the task waiting in the readiness queue, the reply read in pieces (Networks › HTTP) |
 | `scene-print.ts` | `print`: a line built whole, then written in one go through the OS to the terminal (Basics › Output › print) |
 | `explainer.tsx` | `Explainer` and `SceneShell`: caveman line, the animation, every step as text; checks the sample |
 | `scene-text.ts` | A scene as text: the step list, Markdown for `/explainers.txt`, schema.org data; `sceneCode` checks each step's line |

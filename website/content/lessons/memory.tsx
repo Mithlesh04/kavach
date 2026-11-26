@@ -120,6 +120,8 @@ export const fastDoc: LessonDoc = {
         would. Here a fused chain&apos;s value stays as it was after the list changes:
       </P>
       <Ex name="memory/fused-chain" />
+      <P>In memory, step by step:</P>
+      <MemorySteps name="fused" />
       <P>
         This is checked, not hoped for: native code and the interpreter run every conformance test and must agree, and
         the memory tests change one copy through each optimized path, then check the others.

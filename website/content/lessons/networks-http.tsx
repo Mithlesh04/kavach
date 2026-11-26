@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
@@ -324,6 +325,19 @@ export const httpSessionDoc: LessonDoc = {
         Requests on a session go one after another, each waiting for its answer. A session is for one task at a time:
         give each task its own, so no task reads another&apos;s answer.
       </P>
+      <H2>What the machine does</H2>
+      <P>
+        One HTTPS request through a session, step by step: from the name looked up, through the handshakes, to the
+        reply read in pieces. It reaches a real server, so it is shown, not run; the compiler checked it:
+      </P>
+      <Explainer id="https-get" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="stdlib/http/http.kav" line={362} symbol="open" />
+        <SrcRef file="stdlib/http/http.kav" line={324} label="http.kav:324 · the request as text" />
+        <SrcRef file="runtime/net/src/net/connect.rs" line={49} label="connect.rs:49 · lookup and connect" />
+        <SrcRef file="runtime/net/src/net/tls.rs" line={84} label="tls.rs:84 · rustls, Mozilla's roots" />
+        <SrcRef file="runtime/net/src/net/poller.rs" line={5} label="poller.rs · the readiness queue" />
+      </div>
       <H2>One HTTP/2 connection for many tasks</H2>
       <P>
         A service that speaks HTTP/2 itself, as gRPC does, connects once with <C>h2.connect</C> from{" "}

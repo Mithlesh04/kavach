@@ -11,6 +11,7 @@ import { gpuDrawScene } from "./scene-gpu-draw";
 import { gpuMapScene } from "./scene-gpu-map";
 import { listBufferScene } from "./scene-list-buffer";
 import { printScene } from "./scene-print";
+import { httpsScene } from "./scene-https";
 import { sortingScene } from "./scene-sorting";
 import { spawnScene } from "./scene-spawn";
 import { spawnKindsScene } from "./scene-spawn-kinds";
@@ -43,6 +44,7 @@ export const KIT_SCENES: Record<string, Scene> = {
   [callScene.id]: callScene,
   [compilerScene.id]: compilerScene,
   [printScene.id]: printScene,
+  [httpsScene.id]: httpsScene,
 };
 
 /** Each memory step-through's title and caveman summary, by scenario name. */
@@ -56,6 +58,7 @@ const MEMORY: Record<string, { title: string; caveman: string }> = {
   dict: { title: "A dict keeps its entries in order, and an index past 8", caveman: "Dict keep order. Small dict: no index. Big dict: index. Find fast." },
   "dict-copy": { title: "A dict changed while shared is copied then", caveman: "Two name. One dict. Change dict? Copy first." },
   set: { title: "A set is a dict with keys only", caveman: "Set is dict, keys only. Same key again? Nothing happen." },
+  fused: { title: "A fused chain reads the list as it was", caveman: "Map then filter. One loop, no list between. Change list after? Answer stay same." },
   record: { title: "A record that never becomes an object", caveman: "Record of numbers. Only used here. No box. Each field own spot. Copy field. Done." },
   freeze: { title: "Freezing costs nothing", caveman: "Freeze list. Same list. No copy. Compiler say: no change now." },
   shared: { title: "Shared: two names, one changing value", caveman: "Shared is one box. Two name hold box. One change, both see." },

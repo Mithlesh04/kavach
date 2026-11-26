@@ -1,0 +1,6 @@
+fn main() {
+    let xs = [1, 2, 3]
+    const ys = xs.map(x => x * 2).filter(x => x > 2)
+    xs.push(10)
+    print(`xs={xs} ys={ys}`)
+}

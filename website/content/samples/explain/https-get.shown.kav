@@ -1,0 +1,8 @@
+use std.http
+
+fn main() ! Error {
+    const session = try http.open("https://example.com")
+    const page = try session.get("/")
+    print(page.status)
+    session.close()
+}
