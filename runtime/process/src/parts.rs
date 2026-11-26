@@ -107,8 +107,13 @@ pub fn rows(which: i64) -> Vec<String> {
     let Some(&(kind, width)) = KINDS.get(which.max(0) as usize).filter(|_| which >= 0) else {
         return Vec::new();
     };
+    flat(facts::rows(kind), width)
+}
+
+/// `rows`, field after field, each row padded or cut to `width`.
+fn flat(rows: Vec<Vec<String>>, width: usize) -> Vec<String> {
     let mut out = Vec::new();
-    for mut row in facts::rows(kind) {
+    for mut row in rows {
         row.resize(width, String::new());
         out.extend(
             row.into_iter()
@@ -116,6 +121,17 @@ pub fn rows(which: i64) -> Vec<String> {
         );
     }
     out
+}
+
+/// The ports' rows, as `rows(15)` gives them, or why they couldn't be
+/// read: `free_port` mustn't take a table it couldn't read for one where
+/// nothing holds the port.
+pub(crate) fn port_rows() -> Result<Vec<String>, String> {
+    #[cfg(windows)]
+    let ports = windows_procs::ports()?;
+    #[cfg(not(windows))]
+    let ports = facts::rows(Kind::Ports);
+    Ok(flat(ports, 6))
 }
 
 /// A yes or no as a row's field.

@@ -131,6 +131,7 @@ Each is fixed with a test that fails before the fix. Each finding says when it w
 
 ### 7. runtime/process (Windows): the IP-helper table has no retry, so `free_port` falsely succeeds
 
+- **Status:** Fixed 2026-11-26, "Ask again for IP helper tables that grew", test `runtime/process/src/parts_windows_procs.rs` (`a_table_that_grows_between_the_calls_is_asked_for_again`, `a_table_that_never_fits_is_an_error_not_an_empty_table`, with a fake IP helper). Before the fix they failed with `left: Ok(None) right: Ok(Some(30))` and `left: Ok([]) right: Err(122)`. A table that can't be read now makes `free_port` fail with `Failed`; `system.ports()` still lists nothing then.
 - **Where:** runtime/process/src/parts_windows_procs.rs:82-104 (`table`).
 - **What happens:**
   - The size comes from the first call, with one spare word.

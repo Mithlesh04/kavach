@@ -78,13 +78,14 @@ pub fn running() -> Vec<Vec<String>> {
         .collect()
 }
 
-/// A table of the IP helper, as 32-bit words: its count, then its rows.
-fn table(tcp: bool, family: u32) -> Vec<u32> {
+/// A table of the IP helper, as 32-bit words: its count, then its rows;
+/// or the error that kept it from being read.
+fn table(tcp: bool, family: u32) -> Result<Vec<u32>, u32> {
     use windows_sys::Win32::NetworkManagement::IpHelper::{
         GetExtendedTcpTable, GetExtendedUdpTable, TCP_TABLE_OWNER_PID_ALL, UDP_TABLE_OWNER_PID,
     };
-    let mut size = 0u32;
-    let call = |buffer: *mut std::ffi::c_void, size: &mut u32| {
+    filled(TOO_SMALL, |words: Option<&mut [u32]>, size: &mut u32| {
+        let buffer = words.map_or(std::ptr::null_mut(), |w| w.as_mut_ptr().cast());
         // SAFETY: `buffer` is null or has room for `size` bytes.
         unsafe {
             if tcp {
@@ -93,14 +94,41 @@ fn table(tcp: bool, family: u32) -> Vec<u32> {
                 GetExtendedUdpTable(buffer, size, 0, family, UDP_TABLE_OWNER_PID, 0)
             }
         }
-    };
-    call(std::ptr::null_mut(), &mut size);
-    let mut words = vec![0u32; (size as usize).div_ceil(4) + 1];
-    let mut room = (words.len() * 4) as u32;
-    if call(words.as_mut_ptr().cast(), &mut room) != 0 {
-        return Vec::new();
+    })
+}
+
+/// ERROR_INSUFFICIENT_BUFFER: the buffer given was too small.
+const TOO_SMALL: u32 = 122;
+
+/// What `call` fills, as the IP helper fills a table: first with no
+/// buffer, to learn the size in bytes, then with a buffer of that size.
+/// The table can grow between the calls, as connections open, so while
+/// the call says `too_small`, it is asked again with the size it gives
+/// and some room to spare, a few times. Then, or on any other error, the
+/// error: never an empty table, which would say nothing is there.
+pub(super) fn filled<W: Copy + Default>(
+    too_small: u32,
+    mut call: impl FnMut(Option<&mut [W]>, &mut u32) -> u32,
+) -> Result<Vec<W>, u32> {
+    let word = std::mem::size_of::<W>();
+    let mut size = 0u32;
+    match call(None, &mut size) {
+        0 => return Ok(Vec::new()),
+        e if e != too_small => return Err(e),
+        _ => {}
     }
-    words
+    for _ in 0..4 {
+        let bytes = size as usize + size as usize / 8 + 256;
+        let mut words = vec![W::default(); bytes.div_ceil(word)];
+        let mut room = (words.len() * word) as u32;
+        match call(Some(&mut words), &mut room) {
+            0 => return Ok(words),
+            e if e != too_small => return Err(e),
+            // The call wrote the size it needs now.
+            _ => size = room.max(size),
+        }
+    }
+    Err(too_small)
 }
 
 fn tcp_state(s: u32) -> &'static str {
@@ -134,7 +162,8 @@ fn v6(w: &[u32]) -> std::net::Ipv6Addr {
     std::net::Ipv6Addr::from(b)
 }
 
-pub fn ports() -> Vec<Vec<String>> {
+/// The ports' rows, or why a table couldn't be read.
+pub fn ports() -> Result<Vec<Vec<String>>, String> {
     use windows_sys::Win32::Networking::WinSock::{AF_INET, AF_INET6};
     let names: HashMap<u32, String> = processes().into_iter().collect();
     let mut out = Vec::new();
@@ -156,7 +185,10 @@ pub fn ports() -> Vec<Vec<String>> {
         (false, AF_INET, 3),
         (false, AF_INET6, 7),
     ] {
-        let t = table(tcp, family as u32);
+        let t = table(tcp, family as u32).map_err(|e| {
+            let e = std::io::Error::from_raw_os_error(e as i32);
+            format!("the table of ports couldn't be read: {e}")
+        })?;
         let count = t.first().copied().unwrap_or(0) as usize;
         for r in (0..count).filter_map(|i| t.get(1 + i * width..1 + (i + 1) * width)) {
             match (tcp, family == AF_INET) {
@@ -185,7 +217,7 @@ pub fn ports() -> Vec<Vec<String>> {
             }
         }
     }
-    out
+    Ok(out)
 }
 
 /// Whether this process runs elevated: with administrator rights now.
@@ -308,4 +340,61 @@ pub fn users() -> Vec<Vec<String>> {
             vec![name, full, yes(admin)]
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A fake IP helper: its table has `rows` one-word rows after the
+    /// count. Each time it says the buffer is too small, the next number
+    /// of `opened` rows arrive, as connections open between the calls.
+    fn helper(
+        mut rows: u32,
+        opened: &[u32],
+    ) -> impl FnMut(Option<&mut [u32]>, &mut u32) -> u32 + '_ {
+        let mut opened = opened.iter();
+        move |words, size| {
+            let need = (rows + 1) * 4;
+            match words {
+                Some(w) if *size >= need => {
+                    w[0] = rows;
+                    0
+                }
+                _ => {
+                    *size = need;
+                    rows += opened.next().copied().unwrap_or(0);
+                    TOO_SMALL
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn a_table_that_grows_between_the_calls_is_asked_for_again() {
+        let count = |opened| filled(TOO_SMALL, helper(10, opened)).map(|t| t.first().copied());
+        assert_eq!(count(&[]), Ok(Some(10)));
+        // A few connections open after the size is asked for.
+        assert_eq!(count(&[20]), Ok(Some(30)));
+        // Many open: the call says the size it needs, and is asked again.
+        assert_eq!(count(&[1000]), Ok(Some(1010)));
+        assert_eq!(count(&[1000, 2000]), Ok(Some(3010)));
+    }
+
+    #[test]
+    fn a_table_that_never_fits_is_an_error_not_an_empty_table() {
+        // Each try finds many more rows: the tries run out.
+        assert_eq!(
+            filled(TOO_SMALL, helper(10, &[100_000; 16])),
+            Err(TOO_SMALL)
+        );
+        // Any other error is given at once.
+        assert_eq!(filled::<u32>(TOO_SMALL, |_, _| 50), Err(50));
+    }
+
+    #[test]
+    fn this_machines_ports_are_read() {
+        let ports = ports().expect("every table read");
+        assert!(ports.iter().all(|r| r.len() == 6));
+    }
 }

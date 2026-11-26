@@ -71,7 +71,7 @@ pub fn act(which: i64, text: &str, number: i64) -> String {
 
 /// Ends every program listening on `port`; gives their pids.
 fn free_port(port: i64, force: bool) -> Result<String, Refused> {
-    let rows = crate::parts::rows(15);
+    let rows = crate::parts::port_rows().map_err(Refused::Failed)?;
     let holders: Vec<&[String]> = (rows.chunks(6))
         .filter(|r| r[2] == port.to_string() && (r[3] == "listen" || r[0] == "udp"))
         .collect();
