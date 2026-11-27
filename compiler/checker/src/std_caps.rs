@@ -19,9 +19,10 @@ impl Checker<'_> {
         let reads_clock =
             module == "time" && matches!(name, "now_ms" | "monotonic_ms" | "monotonic_ns");
         // Nor does reading a zone's rules, or freezing a test's clock (spec
-        // 14.4), which only a `test` block may do.
+        // 14.4), which only a `test` block may do: its context has a name
+        // no function can have, as `fn test()` is no test block (1.6).
         let reads_zone = module == "time" && matches!(name, "zone_offset" | "freeze");
-        let in_test = self.ctx.as_ref().is_some_and(|c| c.name == "test");
+        let in_test = self.ctx.as_ref().is_some_and(|c| c.name == "a test block");
         if module == "time" && name == "freeze" && !in_test {
             self.error(
                 span,

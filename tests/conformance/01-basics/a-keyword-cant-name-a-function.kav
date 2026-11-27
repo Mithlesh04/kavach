@@ -1,0 +1,13 @@
+// Rule: A keyword used as a function's name is one error, at the name: the rest of the function is still read.
+// Spec: 1.6
+// expect compile error
+
+fn while(n: Int) -> Int    // error: `while` is a keyword, so it can't name a function
+    require n > 0
+{
+    n + 1
+}
+
+fn main() {
+    print(1)
+}

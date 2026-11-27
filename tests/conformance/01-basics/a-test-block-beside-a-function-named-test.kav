@@ -1,0 +1,11 @@
+// Rule: A test block still starts with `test` when a function is named `test` too.
+// Spec: 1.6, 11.8
+// expect test pass
+
+fn test() -> Int {
+    2
+}
+
+test "a function named test is called" {
+    assert test() == 2
+}

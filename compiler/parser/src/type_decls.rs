@@ -5,7 +5,7 @@
 //! `type` declarations: unions (`type Status = Pending | Paid`) and records
 //! with fields, invariants and methods (spec 2.4-2.6, 7.3).
 
-use crate::parser::Parser;
+use crate::parser::{Parser, keyword_as_name};
 use kavach_ast::*;
 use kavach_lexer::{Keyword, TokenKind};
 
@@ -283,9 +283,7 @@ impl Parser<'_> {
                         _ => None,
                     };
                     match keyword {
-                        Some(k) => p.error_here(format!(
-                            "`{k}` is a keyword, so it can't name a field: pick another name"
-                        )),
+                        Some(k) => p.error_here(keyword_as_name(k, "a field name")),
                         None => p.error_here("expected a field, a method or an invariant"),
                     }
                     p.recover_line();

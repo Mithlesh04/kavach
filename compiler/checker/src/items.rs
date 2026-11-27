@@ -54,7 +54,7 @@ impl Checker<'_> {
                         needs: Vec::new(),
                     });
                     self.current_test = Some(self.test_needs.len() - 1);
-                    self.with_ctx("test", Ty::Unit, Some(error_ty()), None, |c| {
+                    self.with_ctx("a test block", Ty::Unit, Some(error_ty()), None, |c| {
                         c.block_stmt(&t.body, None)
                     });
                     self.current_test = None;

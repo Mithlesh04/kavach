@@ -141,6 +141,32 @@ fn messages_point_at_the_problem() {
             "type Status = Paid = `{x}`",
             &["1: a variant's text is fixed when compiling: write it without `{…}` (spec 2.6)"],
         ),
+        // A keyword used as a name: one error at the name (spec 1.6).
+        (
+            "fn while(n: Int) -> Int {\n    n + 1\n}\nfn main() {\n    print(1)\n}",
+            &["1: `while` is a keyword, so it can't name a function: choose another name"],
+        ),
+        (
+            "fn area(type: Int) -> Int {\n    2\n}",
+            &["1: `type` is a keyword, so it can't name a parameter: choose another name"],
+        ),
+        (
+            "fn main() {\n    const if = 1\n    print(2)\n}",
+            &["2: `if` is a keyword, so it can't name a variable: choose another name"],
+        ),
+        (
+            "type Order {\n    agent: String\n}",
+            &["2: `agent` is a keyword, so it can't name a field: choose another name"],
+        ),
+        (
+            "type match {\n    id: Int\n}",
+            &["1: `match` is a keyword, so it can't name a type: choose another name"],
+        ),
+        // `test` is a keyword only where a test block starts (spec 1.6).
+        (
+            "fn test() -> Int {\n    1\n}\nfn main() {\n    const test = test()\n    print(test)\n}\ntest \"one\" {\n    assert test() == 1\n}",
+            &[],
+        ),
     ];
     let failures: Vec<String> = cases
         .iter()

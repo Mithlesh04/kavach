@@ -26,7 +26,7 @@ fn habits_from_other_languages_get_clear_errors() {
             "type Animal {\n    name: String\n}\n\ntype Dog: Animal {\n    bark: Bool\n}\n\nfn main() {}\n".into(),
             "5: `Dog` can't extend `Animal`: `Animal` is a type, not an interface, and Kavach has no inheritance",
         ),
-        (main("const match = 3"), "2: `match` is a keyword, so it can't be a name"),
+        (main("const match = 3"), "2: `match` is a keyword, so it can't name a variable: choose another name"),
         (main("const 2nd_place = \"Ravi\""), "2: a name can't start with a digit (spec 1.5): start it with a letter, as `place_2nd`"),
         (main("const f = (inout n: Int) => n + 1"), "2: a lambda can't have `inout` parameters (spec 3.9)"),
         (main("let x: String? = null\nprint(x ?? \"a\")"), "2: Kavach has no `null`: a value that may be missing has an optional type"),

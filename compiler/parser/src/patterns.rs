@@ -4,7 +4,7 @@
 
 //! Patterns for `match`, `let` and `for` (spec 4.3).
 
-use crate::parser::Parser;
+use crate::parser::{Parser, keyword_as_name};
 use kavach_ast::{FieldPattern, ListItem, MapKey, Pattern, PatternKind, RecordFieldPattern};
 use kavach_lexer::{Keyword, TokenKind};
 
@@ -47,12 +47,9 @@ impl Parser<'_> {
                     PatternKind::Literal(lo)
                 }
             }
-            // `const match = 3`: a keyword where a name goes (spec 1.5).
+            // `const match = 3`: a keyword where a name goes (spec 1.6).
             TokenKind::Keyword(k) => {
-                let word = k.as_str();
-                self.error_here(format!(
-                    "`{word}` is a keyword, so it can't be a name (spec 1.5): choose another, such as `{word}_value`"
-                ));
+                self.error_here(keyword_as_name(k.as_str(), "a variable name"));
                 self.bump();
                 PatternKind::Wildcard
             }

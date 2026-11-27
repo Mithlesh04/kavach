@@ -127,7 +127,11 @@ impl Parser<'_> {
             }
             TokenKind::Keyword(Keyword::Agent) => ItemKind::Agent(self.agent()),
             TokenKind::Keyword(Keyword::Use) => ItemKind::Use(self.use_decl()),
-            TokenKind::Keyword(Keyword::Test) => ItemKind::Test(self.test_decl()),
+            // `test "name" { … }` (spec 11.8): `test` is a keyword only at
+            // the start of a top-level line, before text in quotes (1.6).
+            TokenKind::Ident if self.at_word("test") && *self.nth(1) == TokenKind::StrStart => {
+                ItemKind::Test(self.test_decl())
+            }
             _ => {
                 // `pub const name = …`: a module constant others read (1.13).
                 let constant = self.at_kw(Keyword::Const);

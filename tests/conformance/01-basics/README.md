@@ -140,6 +140,10 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.5 | [short-names-with-digits-and-underscores.kav](short-names-with-digits-and-underscores.kav) | One-letter names, names with digits after the first character, and names with `_` anywhere are names for `const` and `let`. | runs |
 | 1.6 | [a-keyword-is-not-a-name.kav](a-keyword-is-not-a-name.kav) | A keyword can't be used as a name. | compile error |
 | 1.6, 1.4 | [contextual-keywords-are-names-elsewhere.kav](contextual-keywords-are-names-elsewhere.kav) | Contextual keywords are ordinary names outside their place: `const` and `let` may use them and change them. | runs |
+| 1.6 | [a-keyword-cant-name-a-function.kav](a-keyword-cant-name-a-function.kav) | A keyword used as a function's name is one error, at the name. | compile error |
+| 1.6 | [a-keyword-cant-name-a-parameter.kav](a-keyword-cant-name-a-parameter.kav) | A keyword used as a parameter's name is one error, at the name. | compile error |
+| 1.6 | [test-is-a-name-outside-a-test-block.kav](test-is-a-name-outside-a-test-block.kav) | `test` is a keyword only where a test block starts: elsewhere it names a function, a constant, a parameter or a field. | runs |
+| 1.6, 11.8 | [a-test-block-beside-a-function-named-test.kav](a-test-block-beside-a-function-named-test.kav) | A test block still starts with `test` when a function is named `test` too. | tests pass |
 | 1.8 | [long-expressions-compile.kav](long-expressions-compile.kav) | An expression has no length limit: a chain of 300 `+` terms compiles and runs. | runs |
 | 1.12 | [a-name-with-a-default-is-never-none.kav](a-name-with-a-default-is-never-none.kav) | A pattern name with a default has the plain type `T`, so a `let` made that way can't be set to `none`. | compile error |
 | 1.12 | [a-short-list-literal-leaves-names-optional.kav](a-short-list-literal-leaves-names-optional.kav) | A list literal with fewer items than the pattern has names leaves the names without an item `none`. | runs |

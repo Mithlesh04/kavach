@@ -1,0 +1,13 @@
+// Rule: A keyword used as a parameter's name is one error, at the name: the rest of the function is still read.
+// Spec: 1.6
+// expect compile error
+
+fn area(type: Int, side: Int) -> Int    // error: `type` is a keyword, so it can't name a parameter
+    require side > 0
+{
+    side * side
+}
+
+fn main() {
+    print(area(1, 2))
+}

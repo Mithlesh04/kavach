@@ -235,7 +235,8 @@ pub(crate) fn continues_line(kind: &TokenKind) -> bool {
 macro_rules! keywords {
     ($($name:ident = $text:literal,)*) => {
         /// The reserved words of spec 1.6. Contextual keywords (`result`,
-        /// `fails`, `context`, the agent words…) are ordinary names to the lexer.
+        /// `fails`, `context`, `test`, the agent words…) are ordinary names
+        /// to the lexer.
         #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
         pub enum Keyword { $($name,)* }
 
@@ -267,7 +268,7 @@ keywords! {
     Interface = "interface", Invariant = "invariant", Let = "let",
     Match = "match", None = "none", Not = "not", Or = "or",
     Pub = "pub", Require = "require", Return = "return", Secret = "secret",
-    SelfValue = "self", Spawn = "spawn", Test = "test", True = "true", Try = "try",
+    SelfValue = "self", Spawn = "spawn", True = "true", Try = "try",
     Type = "type", Unsafe = "unsafe", Use = "use", Uses = "uses", Var = "var",
     While = "while", With = "with",
 }

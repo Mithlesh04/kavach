@@ -228,6 +228,15 @@ impl<'a> Parser<'a> {
             let name = self.text().to_string();
             self.bump();
             Ident { name, span }
+        } else if let TokenKind::Keyword(k) = *self.kind() {
+            // `fn while()`: one error at the name, then read on as if it
+            // were one, so nothing further on fails because of it (1.6).
+            self.error_here(keyword_as_name(k.as_str(), what));
+            self.bump();
+            Ident {
+                name: String::new(),
+                span,
+            }
         } else {
             self.error_here(format!("expected {what}"));
             Ident {
@@ -309,5 +318,18 @@ impl<'a> Parser<'a> {
             }
             _ => self.error_here("expected `>`"),
         }
+    }
+}
+
+/// The error for a keyword where a name goes (spec 1.6), with what the
+/// name was for when `what` says it: "expected a function name" becomes
+/// "`while` is a keyword, so it can't name a function".
+pub(crate) fn keyword_as_name(word: &str, what: &str) -> String {
+    let thing = what.strip_suffix(" after `.`").unwrap_or(what);
+    match thing.strip_suffix(" name") {
+        Some(thing) if !thing.ends_with("'s") && !matches!(thing, "a" | "a new") => {
+            format!("`{word}` is a keyword, so it can't name {thing}: choose another name")
+        }
+        _ => format!("`{word}` is a keyword, so it can't be a name: choose another name"),
     }
 }

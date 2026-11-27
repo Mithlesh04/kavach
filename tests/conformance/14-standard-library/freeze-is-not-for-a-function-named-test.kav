@@ -1,0 +1,14 @@
+// Rule: `time.freeze` is only directly in a `test` block: in a function named `test`, it is a compile error.
+// Spec: 14.4, 1.6
+// expect compile error
+
+use std.time
+
+fn test() {
+    time.freeze(1_767_225_600_000)  // error: `time.freeze` is only for tests
+}
+
+test "the year starts" {
+    test()
+    assert time.now_ms() == 1_767_225_600_000
+}

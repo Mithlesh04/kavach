@@ -1,0 +1,25 @@
+// Rule: `test` is a keyword only where a test block starts: elsewhere it names a function, a constant, a parameter or a field.
+// Spec: 1.6
+// expect output: 3
+// expect output: 10
+// expect output: 7
+
+type Run {
+    test: Int
+}
+
+fn test() -> Int {
+    3
+}
+
+fn twice(test: Int) -> Int {
+    test * 2
+}
+
+fn main() {
+    print(test())
+    const test = 5
+    print(twice(test))
+    const run = Run(test: 7)
+    print(run.test)
+}
