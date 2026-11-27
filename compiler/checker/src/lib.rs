@@ -83,6 +83,7 @@ mod processes;
 mod read_only;
 mod reflect;
 mod scoped;
+mod secret_flow;
 mod secrets;
 mod show;
 mod size_calls;
@@ -292,6 +293,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_always_panics(file);
     checker.check_deprecated(file);
     checker.check_unwraps(file);
+    checker.check_secrets_later();
     let models = checker.ai_models(file);
     let agent_settings = checker.agent_settings(file);
     let param_literals = (checker.literals.iter())

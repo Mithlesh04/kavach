@@ -244,6 +244,8 @@ pub(crate) struct Checker<'a> {
     /// Parameters marked `secret`, and variables set from a secret: their
     /// values are secrets too (spec 8.7).
     pub(crate) secret_defs: HashSet<DefId>,
+    /// Which variables are given a secret, settled at the end (`secret_flow.rs`).
+    pub(crate) secret_flow: crate::secret_flow::Flow,
     /// Every number literal and its (possibly still unknown) type.
     pub(crate) literals: Vec<(u32, Ty)>,
     /// Each float literal's span and text, to check it fits its type.
@@ -381,6 +383,7 @@ impl<'a> Checker<'a> {
             record: None,
             secret: HashSet::new(),
             secret_defs: HashSet::new(),
+            secret_flow: Default::default(),
             literals: Vec::new(),
             float_texts: Vec::new(),
             big_constants: HashMap::new(),

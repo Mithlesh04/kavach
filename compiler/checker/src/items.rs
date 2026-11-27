@@ -147,6 +147,9 @@ impl Checker<'_> {
                 if p.is_secret {
                     self.secret_defs.insert(def);
                 }
+                if info.inout {
+                    self.secret_flow.inout.insert(def);
+                }
             }
         }
         let name = f.name.name.clone();
@@ -288,16 +291,12 @@ impl Checker<'_> {
                 if !self.destructure(pattern, &ty, value) {
                     self.bind(pattern, &ty);
                 }
-                if let PatternKind::Binding(id) = &pattern.kind
-                    && self.is_secret(value)
-                    && let Some(&def) = self.decl.get(&id.span.start)
-                {
-                    self.secret_defs.insert(def);
-                }
+                self.flow_pattern(pattern, value);
             }
             StmtKind::Assign { target, op, value } => {
                 if matches!(target.kind, ExprKind::Tuple(_)) {
-                    return self.assign_tuple(target, value);
+                    self.assign_tuple(target, value);
+                    return self.flow_assign(target, value);
                 }
                 let t = self.value(target, None);
                 self.check_frozen_assign(target, *op);
@@ -326,6 +325,7 @@ impl Checker<'_> {
                     self.check_assigned(value, &slot, *op);
                 }
                 self.check_arena_store(target, value);
+                self.flow_assign(target, value);
             }
             StmtKind::For {
                 label,
@@ -337,6 +337,7 @@ impl Checker<'_> {
                 let t = self.value(iter, None);
                 let item = self.item_type(&t, iter);
                 self.bind(pattern, &item);
+                self.flow_pattern(pattern, iter);
                 match place {
                     Some(p) => {
                         self.in_round(p, (pattern, iter), body, |c| c.loop_body(label, body))

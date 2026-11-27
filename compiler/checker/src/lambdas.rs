@@ -109,6 +109,10 @@ impl Checker<'_> {
             }
             types.push(t);
         }
+        let own = params
+            .iter()
+            .filter_map(|p| self.decl.get(&p.name.span.start));
+        self.secret_flow.own.push(own.copied().collect());
         self.copies.push((body.span.start, "lambda"));
         self.lambdas.push(body.span);
         let outer_loops = std::mem::take(&mut self.loops);
@@ -137,6 +141,7 @@ impl Checker<'_> {
             }
         };
         self.check_secret_return(body, "this lambda");
+        self.secret_flow.own.pop();
         self.loops = outer_loops;
         self.copies.pop();
         self.lambdas.pop();

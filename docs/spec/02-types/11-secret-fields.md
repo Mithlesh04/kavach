@@ -9,4 +9,4 @@ type Customer {
 }
 ```
 
-Secret values must not flow into `print`, `debug`, logs, AI prompts or error messages. The compiler rejects code that tries. Details are in [8.7](../08-capabilities-and-agents/07-secrets.md#87-secrets).
+Secret values must not flow into `print`, `debug`, logs, AI prompts or error messages, and anything made from one, such as `card_number.upper()` or a list holding it, is a secret too. The compiler rejects code that tries. Details are in [8.7](../08-capabilities-and-agents/07-secrets.md#87-secrets).

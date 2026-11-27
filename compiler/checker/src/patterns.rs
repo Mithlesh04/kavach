@@ -278,6 +278,7 @@ impl Checker<'_> {
             }
             _ => {
                 self.branches(e, None, false);
+                self.flow_branches(e);
             }
         }
     }

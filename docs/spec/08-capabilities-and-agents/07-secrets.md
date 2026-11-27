@@ -13,15 +13,22 @@ const prompt = `Card ends with {customer.card_number}`   // compile error E0302
 
 A secret can only be passed to code that is allowed to receive it: a parameter or field that is itself marked `secret`, such as `StripePayments.api_key`. To deliberately reveal one, write `reveal(value)`. This is visible in code review and listed by `kavach audit`.
 
-**Anything made from a secret is secret** (a maintainer, 2026-11-26; *not built yet*: today only a secret field, a name declared from one and a few expressions are tracked). An expression with a secret part is secret, whatever it computes: a method's result (`card.upper()`, `card.len()`, `card == other`), a list, tuple, dict or record holding it, an `if` or `match` whose branch gives it, and text built from it. A variable or field given a secret, when it is made or later (`=` and `+=`), is secret from then on. Only `reveal(…)` makes a value public, so even a secret's length or a comparison with it is written out where it happens:
+**Anything made from a secret is secret** (a maintainer, 2026-11-26). An expression with a secret part is secret, whatever it computes: a method's result (`card.upper()`, `card.len()`, `card == other`), a list, tuple, dict or record holding it, an `if` or `match` whose branch gives it, and text built from it. A variable given a secret, when it is made or later (`=`, `+=`, or into a part of it, `xs[0] = …`), is secret everywhere in its function, even above that line, as a loop may come back to it. So are the names a `for`, `match`, `if let` or destructuring takes from a secret. Only `reveal(…)` makes a value public, so even a secret's length or a comparison with it is written out where it happens:
 
 ```kavach
 print(customer.card.upper())                 // compile error: a secret
 print([customer.card])                       // compile error: a list holding a secret
 let last = ""
-last = customer.card                         // `last` is secret from here
+last = customer.card                         // `last` is secret, above this line too
 print(reveal(customer.card.len()))           // allowed, and visible in review
 ```
+
+A few cases follow from these rules (for a maintainer's review):
+
+- **Calls.** A call gives a secret only when its result is `-> secret` (below), or when it is a method of a secret: a secret argument is refused unless its parameter is `secret`, so it can't come back another way. The parameters of built-in methods aren't, so `name.contains(card)` and `cards.push(card)` are refused too.
+- **Parts.** Storing a secret in a part of a variable makes the variable secret: after `xs[0] = card`, `xs` is. A field that isn't `secret` can't take one, later as when the record is made. Nor can a part of `self` or of an `inout` parameter (3.9): the caller would get the secret unseen.
+- **Lambdas.** A lambda given to a method of a secret takes secrets as its parameters, and may return what they hold: in `cards.map(c => c.upper())` the result is secret anyway.
+- **Conditions.** The condition of an `if`, or the value a `match` looks at, doesn't make the result secret: `if card == "" { "none" } else { "some" }` is not.
 
 Encoding is covered too: `json.of` and `json.stringify` write a `secret` field as `"<secret>"`, as `print` does (2.12, [decision 0132](../../decisions/0132-json-for-every-value.md)), and so does `grpc.encode<T>`, which builds JSON before its Protocol Buffers. The secret's value never leaves this way; to send it, pass it to a `secret` parameter or `reveal` it. The agent journal (8.5) is the one deliberate exception: it holds secrets as state, not as a log.
 

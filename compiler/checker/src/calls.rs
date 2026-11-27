@@ -272,6 +272,7 @@ impl Checker<'_> {
             }
             return;
         }
+        self.secret_flow.checked.insert((span.start, span.end));
         let callee = std::mem::take(&mut self.frozen.callee);
         let mut filled = vec![false; params.len()];
         let mut next = 0;

@@ -189,7 +189,11 @@ impl Checker<'_> {
                 callee,
                 generics,
                 args,
-            } => self.call(e, callee, generics, args, expected),
+            } => {
+                let t = self.call(e, callee, generics, args, expected);
+                self.flow_call(callee, args);
+                t
+            }
             ExprKind::Field {
                 base,
                 name,
@@ -216,7 +220,9 @@ impl Checker<'_> {
             ExprKind::FromEnd(_) | ExprKind::Part { .. } | ExprKind::Dims(_) => Ty::Error,
             ExprKind::With { base, fields } => self.with(base, fields),
             ExprKind::If { .. } | ExprKind::IfLet { .. } | ExprKind::Match { .. } => {
-                self.branching(e, expected)
+                let t = self.branching(e, expected);
+                self.flow_branches(e);
+                t
             }
             ExprKind::Block(b) => self.block_value(b, expected),
             ExprKind::Lambda { params, body } => self.lambda(params, body, expected),

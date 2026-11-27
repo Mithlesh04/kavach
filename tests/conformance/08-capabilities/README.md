@@ -37,6 +37,17 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.7 | [secret-results-pass-where-secrets-may-go.kav](secret-results-pass-where-secrets-may-go.kav) | A secret result goes on to `secret` parameters, other `-> secret` functions and `reveal`. | runs |
 | 8.7, 3.3 | [lambdas-return-no-secrets.kav](lambdas-return-no-secrets.kav) | A lambda can't return a secret. | compile error |
 | 8.7, 14.10 | [tls-keys-take-secrets.kav](tls-keys-take-secrets.kav) | The private `key` of `net.listen_tls` and `net.connect_tls` takes a secret. | runs |
+| 8.7, 2.11 | [secret-method-results-are-secret.kav](secret-method-results-are-secret.kav) | A method's result is secret when its receiver is. | compile error |
+| 8.7 | [values-holding-a-secret-are-secret.kav](values-holding-a-secret-are-secret.kav) | A list, tuple, dict or record holding a secret is secret. | compile error |
+| 8.7 | [branches-giving-a-secret-are-secret.kav](branches-giving-a-secret-are-secret.kav) | An `if` or `match` whose branch gives a secret is secret. | compile error |
+| 8.7 | [assigning-a-secret-makes-a-variable-secret.kav](assigning-a-secret-makes-a-variable-secret.kav) | A variable given a secret later, with `=`, is secret. | compile error |
+| 8.7 | [adding-a-secret-makes-a-variable-secret.kav](adding-a-secret-makes-a-variable-secret.kav) | A variable given a secret with `+=` is secret. | compile error |
+| 8.7 | [variables-are-secret-above-the-assignment.kav](variables-are-secret-above-the-assignment.kav) | A variable given a secret anywhere in its function is secret everywhere in it. | compile error |
+| 8.7 | [storing-a-secret-in-a-list-makes-it-secret.kav](storing-a-secret-in-a-list-makes-it-secret.kav) | A list a secret is stored in, with `xs[i] = …`, is secret. | compile error |
+| 8.7 | [loops-over-a-secret-take-secrets.kav](loops-over-a-secret-take-secrets.kav) | The names a `for` takes from a secret are secret. | compile error |
+| 8.7 | [names-taken-from-a-secret-are-secret.kav](names-taken-from-a-secret-are-secret.kav) | The names an `if let` or `match` takes from a secret are secret. | compile error |
+| 8.7 | [fields-take-a-secret-only-when-secret.kav](fields-take-a-secret-only-when-secret.kav) | A field that isn't `secret` can't be given a secret, later as when the record is made. | compile error |
+| 8.7 | [secret-values-go-where-secrets-may.kav](secret-values-go-where-secrets-may.kav) | Values made from a secret still go to `secret` parameters, `reveal(…)`, and lambdas given to a method of a secret. | runs |
 | 8.4 | [ask-fails-with-ai-error.kav](ask-fails-with-ai-error.kav) | `ask` fails with an `AiError`, so a function failing with `AiError` passes it on with `try`, and a `match` names its variants. | runs |
 | 8.3, 8.4 | [agents-choose-their-model.kav](agents-choose-their-model.kav) | An agent's `model` and a call's `model:` are `Model` values known when the program is built: written there, or from a function with no parameters. | runs |
 | 8.4 | [a-model-must-be-known-when-built.kav](a-model-must-be-known-when-built.kav) | A `Model` made from a value known only at run time is a compile error. | compile error |
