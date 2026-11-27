@@ -4,4 +4,3 @@ pub type Account {
 
     invariant balance >= 0
 }
-
