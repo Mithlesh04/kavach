@@ -276,6 +276,8 @@ impl Checker<'_> {
             let fty = self.inf.subst(&f.ty, &subst);
             if let Ty::Fn(ps, ret, _) = self.inf.resolve(&fty) {
                 self.check_field_access(*def, f, name);
+                let fty = self.inf.resolve(&fty);
+                self.fn_value_in_contract(&fty, &format!("`{}`", name.name), e.span);
                 let params: Vec<_> = ps
                     .iter()
                     .enumerate()
@@ -295,6 +297,8 @@ impl Checker<'_> {
             && let Some((_, fty)) = fs.iter().find(|(n, _)| *n == name.name)
             && let Ty::Fn(ps, ret, _) = self.inf.resolve(fty)
         {
+            let fty = self.inf.resolve(fty);
+            self.fn_value_in_contract(&fty, &format!("`{}`", name.name), e.span);
             let params: Vec<_> = ps
                 .iter()
                 .enumerate()

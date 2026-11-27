@@ -15,6 +15,7 @@
 //! - contracts stay pure, also through functions that infer `uses`;
 //! - logging (`std.log`) needs no capability.
 
+use crate::cap_parts::caps_of;
 use crate::checker::Checker;
 use kavach_ast::{AgentMember, File, FnDecl, ItemKind, Span, TypeBody};
 use kavach_resolver::DefId;
@@ -24,6 +25,8 @@ use std::collections::{BTreeSet, HashMap};
 pub(crate) enum Need {
     Cap(String),
     Fn(DefId),
+    /// A field's default, made where a value leaves the field out.
+    Default(DefId, String),
 }
 
 #[derive(Clone, Debug)]
@@ -78,14 +81,21 @@ impl Checker<'_> {
         self.note(Need::Fn(def), span);
     }
 
-    fn note(&mut self, need: Need, span: Span) {
+    pub(crate) fn note(&mut self, need: Need, span: Span) {
         // Each lambda around the code needs it too (spec 3.4).
         for l in &self.lambdas {
             let at = self.lambda_needs.entry((l.start, l.end)).or_default();
             at.push(need.clone());
         }
-        if let Some(f) = self.current_fn {
-            let in_contract = self.in_contract;
+        let in_contract = self.in_contract;
+        if let Some(key) = self.caps.outside.clone() {
+            let at = self.caps.outside_needs.entry(key).or_default();
+            at.push(NeedAt {
+                need,
+                span,
+                in_contract,
+            });
+        } else if let Some(f) = self.current_fn {
             self.needs.entry(f).or_default().push(NeedAt {
                 need,
                 span,
@@ -230,17 +240,11 @@ impl Checker<'_> {
                 self.res.modules[m].name != "std.log"
             })
         });
+        let outside = std::mem::take(&mut self.caps.outside_needs);
         let needed = |f: DefId, eff: &HashMap<DefId, BTreeSet<String>>| -> BTreeSet<String> {
-            let mut out = BTreeSet::new();
-            for n in needs.get(&f).into_iter().flatten() {
-                match &n.need {
-                    Need::Cap(c) => {
-                        out.insert(c.clone());
-                    }
-                    Need::Fn(d) => out.extend(eff.get(d).cloned().unwrap_or_default()),
-                }
-            }
-            out
+            (needs.get(&f).into_iter().flatten())
+                .flat_map(|n| caps_of(&n.need, eff, &outside, 0))
+                .collect()
         };
         // Inferred functions, and the defaults a function with `uses`
         // uses besides what it lists: grow until nothing changes.
@@ -280,6 +284,43 @@ impl Checker<'_> {
         let caps = |d: DefId| needed(d, &effective).first().cloned();
         self.settle_module_consts(file, &caps);
         let mut errors = Vec::new();
+        // A contract uses nothing, also through what it calls: direct and
+        // written uses are reported where the call is checked; here what a
+        // function or field default uses without writing it (spec 7.5).
+        let contract_error = |n: &NeedAt| -> Option<(Span, String)> {
+            let cap = caps_of(&n.need, &effective, &outside, 0)
+                .into_iter()
+                .next()?;
+            let text = match &n.need {
+                Need::Cap(_) => return None,
+                Need::Default(_, f) => format!(
+                    "a contract can't leave out `{f}`: its default uses {cap}, and contracts must be pure (spec 7.5)"
+                ),
+                Need::Fn(f) => {
+                    let i = infos.get(f).filter(|i| i.decl.uses.is_empty())?;
+                    let callee = &i.decl.name.name;
+                    match i.iface {
+                        Some(iface) => format!(
+                            "a contract can't call `{callee}`: an implementation of `{iface}.{callee}` may use {cap}, a default capability of its package, and contracts must be pure (spec 7.5, 8.1)"
+                        ),
+                        None => format!(
+                            "a contract can't call `{callee}`: it uses {cap}, and contracts must be pure (spec 7.5)"
+                        ),
+                    }
+                }
+            };
+            Some((n.span, text))
+        };
+        // An invariant's needs, kept under its type.
+        for ((_, field), at) in &outside {
+            if field.is_none() {
+                errors.extend(
+                    at.iter()
+                        .filter(|n| n.in_contract)
+                        .filter_map(contract_error),
+                );
+            }
+        }
         for (d, info) in &infos {
             let name = &info.decl.name.name;
             if name == "main" {
@@ -290,26 +331,9 @@ impl Checker<'_> {
             allowed.extend(info.defaults.iter().cloned());
             let mut reported = BTreeSet::new();
             for n in needs.get(d).into_iter().flatten() {
-                let (what, caps) = match &n.need {
-                    Need::Cap(c) => (None, BTreeSet::from([c.clone()])),
-                    Need::Fn(f) => (
-                        infos.get(f).map(|i| &i.decl.name.name),
-                        effective.get(f).cloned().unwrap_or_default(),
-                    ),
-                };
+                let caps = caps_of(&n.need, &effective, &outside, 0);
                 if n.in_contract {
-                    // Direct and written uses are reported where the call is
-                    // checked; here only uses a function doesn't write.
-                    let unwritten = matches!(&n.need, Need::Fn(f) if infos.get(f).is_some_and(|i| i.decl.uses.is_empty()));
-                    let iface = match &n.need {
-                        Need::Fn(f) => infos.get(f).and_then(|i| i.iface),
-                        Need::Cap(_) => None,
-                    };
-                    match (unwritten, what, caps.iter().next(), iface) {
-                        (true, Some(callee), Some(cap), Some(i)) => errors.push((n.span, format!("a contract can't call `{callee}`: an implementation of `{i}.{callee}` may use {cap}, a default capability of its package, and contracts must be pure (spec 7.5, 8.1)"))),
-                        (true, Some(callee), Some(cap), None) => errors.push((n.span, format!("a contract can't call `{callee}`: it uses {cap}, and contracts must be pure (spec 7.5)"))),
-                        _ => {}
-                    }
+                    errors.extend(contract_error(n));
                     continue;
                 }
                 if !checks_uses {
@@ -319,7 +343,13 @@ impl Checker<'_> {
                     if !reported.insert(cap.clone()) {
                         continue;
                     }
-                    let via = what.map_or(String::new(), |c| format!(" (through `{c}`)"));
+                    let via = match &n.need {
+                        Need::Cap(_) => String::new(),
+                        Need::Fn(f) => (infos.get(f)).map_or(String::new(), |i| {
+                            format!(" (through `{}`)", i.decl.name.name)
+                        }),
+                        Need::Default(_, f) => format!(" (through the default of `{f}`)"),
+                    };
                     let text = if let Some(agent) = info.agent {
                         format!(
                             "the handler `{name}` uses {cap}{via}, but the agent `{agent}` can't: add `{cap}` to its `can` (spec 8.3)"
@@ -380,11 +410,7 @@ impl Checker<'_> {
         for t in std::mem::take(&mut self.test_needs) {
             let mut reported = BTreeSet::new();
             for n in &t.needs {
-                let caps = match &n.need {
-                    Need::Cap(c) => BTreeSet::from([c.clone()]),
-                    Need::Fn(f) => effective.get(f).cloned().unwrap_or_default(),
-                };
-                for cap in caps {
+                for cap in caps_of(&n.need, &effective, &outside, 0) {
                     let base = cap.split_once('.').map_or(cap.as_str(), |(c, _)| c);
                     if TEST_ALWAYS.contains(&base)
                         || covers(&t.allowed, &cap)
@@ -404,7 +430,7 @@ impl Checker<'_> {
             .collect();
         errors.extend(self.implementations_overreach(&effective, &allowed));
         let lambdas = std::mem::take(&mut self.lambda_needs);
-        errors.extend(self.limits_broken(&effective, &lambdas));
+        errors.extend(self.limits_broken(&effective, &outside, &lambdas));
         errors.sort_by_key(|(s, _)| s.start);
         for (span, text) in errors {
             self.error(span, text);

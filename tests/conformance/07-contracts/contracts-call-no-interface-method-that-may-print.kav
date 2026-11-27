@@ -1,0 +1,26 @@
+// Rule: A contract may not call an interface's method that may use a capability, a default one included, since any implementation may use it.
+// Spec: 7.5, 2.8
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String {
+        print("printed by a require")
+        self.name
+    }
+}
+
+fn f(d: Describe) -> Int
+    require d.describe() != ""  // error: `Describe.describe` may use Console, a default capability
+{
+    1
+}
+
+fn main() {
+    print(f(User(name: "a")))
+}

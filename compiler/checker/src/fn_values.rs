@@ -112,11 +112,16 @@ impl Checker<'_> {
     pub(crate) fn limits_broken(
         &mut self,
         effective: &HashMap<DefId, BTreeSet<String>>,
+        outside: &HashMap<crate::cap_parts::Outside, Vec<crate::capabilities::NeedAt>>,
         lambdas: &HashMap<(u32, u32), Vec<Need>>,
     ) -> Vec<(Span, String)> {
         let mut errors = Vec::new();
         for (made, limit) in std::mem::take(&mut self.uses_limits) {
-            let shown = limit.join(", ");
+            // `uses ()` allows nothing, not even the defaults (spec 3.4).
+            let shown = match limit.is_empty() {
+                true => "nothing".to_string(),
+                false => format!("only {}", limit.join(", ")),
+            };
             let (what, used, at) = match &made {
                 Made::Named(d, name, at) => (
                     format!("`{name}`"),
@@ -126,20 +131,13 @@ impl Checker<'_> {
                 Made::Lambda(body) => {
                     let mut used = BTreeSet::new();
                     for n in lambdas.get(&(body.start, body.end)).into_iter().flatten() {
-                        match n {
-                            Need::Cap(c) => {
-                                used.insert(c.clone());
-                            }
-                            Need::Fn(f) => {
-                                used.extend(effective.get(f).cloned().unwrap_or_default())
-                            }
-                        }
+                        used.extend(crate::cap_parts::caps_of(n, effective, outside, 0));
                     }
                     ("this lambda".to_string(), used, *body)
                 }
                 // Its type sets no limit, so it may use anything.
                 Made::Other(at) => {
-                    errors.push((*at, format!("this function value's type sets no `uses` limit, so it can't be given where only {shown} is allowed: write `uses` in its type (spec 3.4)")));
+                    errors.push((*at, format!("this function value's type sets no `uses` limit, so it can't be given where {shown} is allowed: write `uses` in its type (spec 3.4)")));
                     continue;
                 }
             };
@@ -152,7 +150,7 @@ impl Checker<'_> {
                 covers(&limit, c) || defaults.iter().any(|d| kavach_resolver::cap_covers(d, c))
             };
             for cap in used.iter().filter(|c| !allowed(c)) {
-                errors.push((at, format!("{what} uses {cap}, but the function type it is given as allows only {shown} (spec 3.4)")));
+                errors.push((at, format!("{what} uses {cap}, but the function type it is given as allows {shown} (spec 3.4)")));
             }
         }
         errors

@@ -133,7 +133,7 @@ A function type says what its functions can fail with and what they may use, in 
 - A function that can fail fits only a function type that says so, with an error its own fits (5.2). A function that can't fail fits any.
 - Calling a function value that can fail is a call that can fail: handle it with `try`, `catch` or `match` (chapter 5).
 - The error can be a type parameter, so generic code keeps the error type of the function it is given, and a `match` on it stays exhaustive.
-- With `uses`, a function value may use only what its type lists. Without it, the type sets no limit. *Not built yet:* `uses ()` lists nothing: such a function value may use no capability at all, not even the package's defaults (8.1), so a contract may call it (7.5). Either way, the code that makes the value, by naming a function or writing a lambda, must have what the function uses (8.1).
+- With `uses`, a function value may use only what its type lists. Without it, the type sets no limit. `uses ()` lists nothing: such a function value may use no capability at all, not even the package's defaults (8.1), so a contract may call it (7.5). Either way, the code that makes the value, by naming a function or writing a lambda, must have what the function uses (8.1).
 
 ```kavach
 type ApiError = OutOfStock(item: String) | Bad(reason: String)

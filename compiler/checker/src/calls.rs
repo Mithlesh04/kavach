@@ -72,7 +72,13 @@ impl Checker<'_> {
         }
         let f = self.value(callee, None);
         match self.inf.resolve(&f) {
-            Ty::Fn(params, ret, _) => {
+            Ty::Fn(params, ret, limit) => {
+                let callee_name = match &callee.kind {
+                    ExprKind::Name(id) => format!("`{}`", id.name),
+                    _ => "this function value".to_string(),
+                };
+                let fty = Ty::Fn(params.clone(), ret.clone(), limit);
+                self.fn_value_in_contract(&fty, &callee_name, e.span);
                 let params: Vec<_> = params
                     .into_iter()
                     .enumerate()

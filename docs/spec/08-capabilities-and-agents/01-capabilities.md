@@ -45,6 +45,18 @@ Rules:
 
 A function value carries the rights of the code that made it: naming a function as a value, or writing a lambda, needs what that function uses, as calling it would. Calling a function value needs nothing more, so a library can call the functions it is given (a web framework its handlers) without being granted what they use (10.12). A function type can limit what its functions may use with `uses` (3.4, [decision 0085](../../decisions/0085-function-types-with-errors-and-uses.md)).
 
+A field's default value is worked out where a value is made without that field, so the code that makes it needs what the default uses (rule 2):
+
+```kavach
+type Report {
+    size: Int = disk_size()    // disk_size() uses Fs.read
+}
+
+pub fn empty() -> Report uses Fs.read {   // `Report()` runs disk_size()
+    Report()
+}
+```
+
 ```kavach
 fn twice(f: fn(Int) -> Int, n: Int) -> Int {     // pure: it only calls what it is given
     f(f(n))

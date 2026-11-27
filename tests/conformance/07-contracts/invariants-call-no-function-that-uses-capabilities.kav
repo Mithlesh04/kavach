@@ -1,0 +1,19 @@
+// Rule: An invariant may not call a function that uses a capability, even one whose `uses` is inferred or a package default.
+// Spec: 7.5
+// expect compile error
+
+fn positive(n: Int) -> Bool {
+    print("printed by an invariant")
+    n > 0
+}
+
+type Count {
+    n: Int
+
+    invariant positive(n)       // error: `positive` uses Console, and contracts must be pure
+}
+
+fn main() {
+    const c = Count(n: 3)
+    print(c.n)
+}

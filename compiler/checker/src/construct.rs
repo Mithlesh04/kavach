@@ -72,6 +72,7 @@ impl Checker<'_> {
             .collect();
         let secret: Vec<bool> = fields.iter().map(|f| f.secret).collect();
         self.args_with(args, &params, &secret, span, &format!("`{name}`"), "field");
+        self.defaults_filled(variant.unwrap_or(def), &fields, args, span);
         // A type's number bounds (spec 2.9), now its fields are known.
         for (g, t) in &subst {
             self.check_number_bound(*g, t, span);

@@ -4,7 +4,7 @@
 
 //! Declarations, function bodies, blocks and statements.
 
-use crate::checker::{Checker, Ctx, FieldInfo, Shape};
+use crate::checker::{Checker, Ctx, Shape};
 use crate::ty::{Prim, Ty};
 use kavach_ast::*;
 
@@ -108,32 +108,17 @@ impl Checker<'_> {
         let shape = self.types.get(&def).map(|i| i.shape.clone());
         if let (TypeBody::Union(variants), Some(Shape::Union(infos))) = (&t.body, &shape) {
             for (v, info) in variants.iter().zip(infos) {
-                self.field_defaults(&v.fields, &info.fields);
+                self.field_defaults(info.def, &v.fields, &info.fields);
             }
         }
         let TypeBody::Record(r) = &t.body else { return };
         if let Some(Shape::Record(fields)) = &shape {
-            self.field_defaults(&r.fields, fields);
+            self.field_defaults(def, &r.fields, fields);
         }
-        self.record = Some(def);
-        self.in_contract = true;
-        for inv in &r.invariants {
-            self.check_expect(inv, &BOOL);
-        }
-        self.in_contract = false;
-        self.record = None;
+        self.invariants(def, &r.invariants);
         for m in &r.methods {
             if let ItemKind::Fn(f) = &m.kind {
                 self.function(f, Some(self_ty.clone()));
-            }
-        }
-    }
-
-    /// Each default must have its field's type.
-    fn field_defaults(&mut self, fields: &[Field], infos: &[FieldInfo]) {
-        for (field, info) in fields.iter().zip(infos) {
-            if let Some(default) = &field.default {
-                self.check_expect(default, &info.ty);
             }
         }
     }

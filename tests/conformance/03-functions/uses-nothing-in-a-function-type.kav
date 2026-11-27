@@ -1,0 +1,16 @@
+// Rule: `uses ()` in a function type lists nothing: its function values may use no capability, not even the package's defaults.
+// Spec: 3.4
+// expect compile error
+
+fn apply(f: fn(Int) -> Int uses (), n: Int) -> Int {
+    f(n)
+}
+
+fn loud(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() {
+    print(apply(loud, 1))       // error: `loud` uses Console, but the function type allows nothing
+}

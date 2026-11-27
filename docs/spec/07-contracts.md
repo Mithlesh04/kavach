@@ -133,7 +133,7 @@ Contracts written today keep working unchanged as checking gets stronger.
 
 ## 7.5 Contracts must be pure
 
-A contract must not change anything or use any capability. It can only read values and call functions that have no `uses` clause. *Not built yet:* a function value may be called in a contract only when its type says it uses nothing (today any function value may be called), `fn(Int) -> Int uses ()`, as calling an unknown function value could do anything its maker could (8.1):
+A contract must not change anything or use any capability. It can only read values and call functions that have no `uses` clause. A function value may be called in a contract only when its type says it uses nothing, `fn(Int) -> Int uses ()`, as calling an unknown function value could do anything its maker could (8.1):
 
 ```kavach
 fn check(f: fn(Int) -> Int, x: Int) -> Int
@@ -207,3 +207,4 @@ A value the compiler can't know (read from input, worked out in a loop) is still
 ## Open questions
 
 - Loop invariants for the static checker (Phase 3).
+- **For a maintainer's review** (2026-11-27): a function value is checked where a contract calls it, `f(x)` or `self.f(x)`. One a contract gives to a built-in method, `require xs.all(f)`, is not checked yet: should it need `uses ()` too?

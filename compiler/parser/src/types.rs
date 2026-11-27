@@ -130,6 +130,7 @@ impl Parser<'_> {
 
     /// What follows `uses` in a function type (spec 3.4): one capability,
     /// or several in parentheses, so a `,` after the type still ends it.
+    /// `uses ()` lists none: its functions may use nothing at all.
     fn fn_type_uses(&mut self) -> Vec<Path> {
         if !self.eat(&TokenKind::LParen) {
             return vec![self.path("a capability")];
@@ -142,9 +143,6 @@ impl Parser<'_> {
             }
         }
         self.expect(&TokenKind::RParen, "`)` after the capabilities");
-        if caps.is_empty() {
-            self.error_here("name a capability, or leave `uses` out");
-        }
         caps
     }
 

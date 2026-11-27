@@ -1,0 +1,13 @@
+// Rule: A contract may call a function value whose type says it uses nothing (`uses ()`).
+// Spec: 7.5, 3.4
+// expect output: 3
+
+fn checked(f: fn(Int) -> Int uses (), x: Int) -> Int
+    require f(x) > 0
+{
+    x
+}
+
+fn main() {
+    print(checked(n => n * 2, 3))
+}

@@ -1,0 +1,21 @@
+// Rule: A field's default value is worked out where a value is made without that field, so making it needs what the default uses.
+// Spec: 8.1, 2.4
+// expect compile error
+
+use std.fs
+
+fn probe() -> Int uses Fs.read {
+    if fs.exists("no-such-file.txt") { 1 } else { 2 }
+}
+
+type Holder {
+    n: Int = probe()
+}
+
+pub fn make() -> Int {
+    Holder().n                  // error: the default of `n` uses Fs.read, which `make` doesn't list
+}
+
+fn main() {
+    print(make())
+}
