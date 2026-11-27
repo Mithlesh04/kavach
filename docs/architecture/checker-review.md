@@ -63,6 +63,8 @@ pub fn pure_len() -> Int { make().describe().len() }   // no `uses`, yet prints
 
 ### 2. `json.decode` makes values only their module may make (critical)
 
+**Fixed 2026-11-27** (spec 2.12 and 10.1; `json.decode`, `cli.parse` and `ask` of such a type are compile errors outside its module, with conformance tests from this review's probes; this also closes S2).
+
 ```kavach
 // session.kav
 pub type SessionKey {
@@ -86,6 +88,8 @@ opened.roles.push("admin")       // runs: ["reader", "admin"]
 - **Fix direction:** decoding into a type with a private or `pub(read)` field is a compile error outside its module (or its package's `extend`), with a message naming the field.
 
 ### 3. Secrets leak through ordinary expressions (critical)
+
+**Fixed 2026-11-27** (spec 8.7: anything made from a secret is secret, and a variable given one is secret in its whole function; with conformance tests from this review's probes).
 
 ```kavach
 const c = Customer(name: "a", card: "4111")
@@ -275,7 +279,7 @@ print(zero())                             // accepted: nothing says what T is
 ## Suspected (from reading, not run)
 
 - **S1. Polymorphic recursion never ends in native code.** `fn depth<T>(x: T, n: Int) -> Int { … depth([x], n - 1) }` is accepted and runs in the interpreter (`polyrec.kav`). KIR makes one instance per type argument list (`kir/src/lower_generic.rs:306`, the worklist at `lower.rs:247`) with no limit, so `kavach build` should loop until memory runs out. The spec says nothing; the checker should refuse a recursive call whose type arguments grow.
-- **S2. `cli.parse<T>` and `ask<T>`** make records the way `json.decode` does, so they likely share finding 2.
+- **S2 (fixed 2026-11-27, with finding 2). `cli.parse<T>` and `ask<T>`** make records the way `json.decode` does, so they likely share finding 2.
 - **S3. `ExprKind` on an unknown base gives `Ty::Error` silently:** `exprs.rs:202` (tuple field), `fields.rs:192` (index), `items.rs:461` (`for` item) and `patterns.rs:336` map `Ty::Var(_)` to `Ty::Error` with no message. Lambda bodies seem to be checked again once their parameter types are known (`var-error.kav` was refused), so no probe reached them; any other path where a base is still unknown would pass anything.
 - **S4. `==` on function values** is accepted and gives `false` (`fneq.kav`). Spec 1.8 says `==` "compares contents" and says nothing of functions. An open question for the spec.
 - **S5. No way to name an `inout` parameter's value before the call** in an `ensure` (spec 7.2: it sees the new value). `old(n)` is "not defined; did you mean `Add`?" (`contract4.kav`). An open question for chapter 7.
