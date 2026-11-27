@@ -293,7 +293,12 @@
         },
         {
           "name": "storage.type.kavach",
-          "match": "\\b(fn|type|interface|extend|agent|capability|let|test)\\b"
+          "match": "\\b(fn|type|interface|extend|agent|capability|let)\\b"
+        },
+        {
+          "comment": "`test` is a keyword only at the start of a top-level line, before its name in quotes: `test \"adds two numbers\" {` (spec 1.6, 11.8); elsewhere it is an ordinary name",
+          "name": "storage.type.kavach",
+          "match": "^test\\b(?=\\s+\")"
         },
         {
           "comment": "`pub(out)`: a name a library offers to other packages (spec 10.1), coloured apart from plain `pub`",

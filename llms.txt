@@ -171,7 +171,7 @@ function says what it may touch (files, network, AI, payments), and the
 compiler checks it, so AI agents written in it stay within their limits.
 Open source under the MIT and Apache 2.0 licenses.
 
-The course teaches one idea per page, in 16 parts. A page with several
+The course teaches one idea per page, in 18 parts. A page with several
 forms has sub-pages under it. Source references are pinned to the docs
 version's git tag; benchmarks carry one command to reproduce them.
 
@@ -184,6 +184,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Classic Mistakes, Fixed](https://kavachlang.com/docs/start/classic-mistakes-fixed/): 0.1 + 0.2 is 0.3, a NaN can't break a sort, "😀" is one character long: the everyday traps of other languages, fixed.
 - [Mistakes Caught Before a Run](https://kavachlang.com/docs/start/mistakes-caught-before-a-run/): Everyday mistakes, each one a small program, and the step that catches it before the program runs, with the message it gives.
 - [Who Kavach Is For](https://kavachlang.com/docs/start/who-kavach-is-for/): Kavach is for teams that need AI agents they can trust, developers who want speed without memory bugs, and anyone learning to program.
+- [Learning Paths](https://kavachlang.com/docs/start/learning-paths/): Six routes through one course, for six kinds of reader. A path is an ordered list of pages that already exist. Follow one, and every page shows your step and the next page on your path.
 - [FAQ](https://kavachlang.com/docs/start/faq/): Straight answers to what developers ask first: why a new language, why learn one when AI writes the code, whether AI can write it, and whether to trust it yet.
 - [Coming From Another Language](https://kavachlang.com/docs/start/coming-from-another-language/): Coming from Python, JavaScript, C++, Rust or Go: the same small program in each language and in Kavach, and what changes.
 - [Coming From Another Language: Python](https://kavachlang.com/docs/start/coming-from-another-language/python/): From Python: records instead of classes, errors in the signature instead of exceptions, and none only where a type allows it.
@@ -348,7 +349,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Frozen Values](https://kavachlang.com/docs/types/frozen-values/): x.freeze() gives a Frozen<T>: a value whose fields and items never change, even in a let, all the way down. unfreeze() gives a copy that can change.
 - [Frozen Values: Sealed with a Key](https://kavachlang.com/docs/types/frozen-values/sealed-with-a-key/): x.freeze(key: k) seals a value: only unfreeze(key: k), with an equal key, opens it. A library makes the key a type of its own, so only the library unfreezes what it froze.
 - [Distinct Types](https://kavachlang.com/docs/types/distinct-types/): type NetId = distinct Int makes a new type that holds an Int but is never mixed with an Int or with another distinct type, so ids of different things can't be swapped by mistake.
-- [Matrices](https://kavachlang.com/docs/types/matrices/): A matrix is a tensor of two dimensions, Tensor<T, dims: 2>, from std.tensor. a @ b is the matrix product, and + - * work item by item.
+- [Matrices](https://kavachlang.com/docs/types/matrices/): A matrix is a tensor of two dimensions from std.tensor, written Tensor<T> in a program. a @ b is the matrix product, and + - * work item by item.
 - [Classes and Inheritance](https://kavachlang.com/docs/types/classes-and-inheritance/): Kavach has no classes and no inheritance. Records, methods, interfaces and composition do the same jobs, with fewer surprises.
 - [Writing Types](https://kavachlang.com/docs/types/writing-types/): Types are written where people read them: parameters, results and record fields. Everywhere else they are worked out.
 
@@ -588,7 +589,31 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [A Library for Any Language](https://kavachlang.com/docs/other-languages/a-library-for-any-language/): kavach build --lib turns Kavach code into a shared library with a C header, which Python, Node.js, Java, Go and C# can load like any other.
 - [kavach audit](https://kavachlang.com/docs/other-languages/kavach-audit/): kavach audit lists the places a reviewer must look first: unsafe code, revealed secrets, and what each function can touch.
 
-## Part 14: Reference
+## Part 14: Guides
+
+- [Build a Command-Line Tool](https://kavachlang.com/docs/guides/build-a-command-line-tool/): One task from start to finish: a command-line tool that reads a text file and prints its most common words, with options, clear mistakes, tests and a program to ship.
+- [Write an HTTP Service](https://kavachlang.com/docs/guides/write-an-http-service/): One task from start to finish: a small JSON service that keeps a shop's stock. It answers GET and POST, says clearly what is wrong, shares one value between requests, and is tested without a network.
+- [Read and Write Data Files](https://kavachlang.com/docs/guides/read-and-write-data-files/): One task from start to finish: read sales from a CSV file into typed rows, total them per item, write a JSON report and read it back. Bad data is refused with the line and the column, and the tests find a bug before any user does.
+- [Build an Agent with Limits and Approvals](https://kavachlang.com/docs/guides/build-an-agent-with-limits-and-approvals/): One task from start to finish: an agent that refunds orders. It may only refund, never more than a limit a person set, and it asks finance before a large refund. Every call it makes is in an audit log.
+- [Test with Contracts and Generated Tests](https://kavachlang.com/docs/guides/test-with-contracts-and-generated-tests/): One task from start to finish: split a bill between people so no cent is lost. Say what must be true as contracts, and kavach test checks them against hundreds of generated bills, finds the smallest that breaks one, and keeps it as an example once it is fixed.
+- [Data Work with Tensors](https://kavachlang.com/docs/guides/data-work-with-tensors/): One task from start to finish: read hourly temperatures from three sensors into a matrix, find and repair a broken reading, and work out how fast each sensor warms, with masks, broadcasting and least squares, as NumPy users would.
+- [Use Every Core and the GPU](https://kavachlang.com/docs/guides/use-every-core-and-the-gpu/): One task from start to finish: find the number below 100,000 whose Collatz chain is longest, running one function on one core, on every core with on cores, and on the GPU with a map, and check that all three agree.
+- [Call a C Library Safely](https://kavachlang.com/docs/guides/call-a-c-library-safely/): One task from start to finish: use a function from a C library that Kavach doesn't have, behind one small, safe Kavach function with contracts, so the rest of the program never touches unsafe code, and kavach audit shows exactly where it is.
+
+## Part 15: Concepts
+
+- [Values, Not Shared References](https://kavachlang.com/docs/concepts/values-not-shared-references/): In Kavach, b = a gives b its own value. Two names never share one changing value by accident, and sharing underneath makes it cost nothing until one of them changes.
+- [Errors as Values](https://kavachlang.com/docs/concepts/errors-as-values/): A function that can fail says so in its type, and the caller must handle it. A bug, such as an index out of range, is a panic instead: it stops the task where the bug is.
+- [Capabilities in Types](https://kavachlang.com/docs/concepts/capabilities-in-types/): A function's type says what it may touch: files, the network, the clock, a payment API. A function that says nothing touches nothing, and the compiler holds every function to what it says.
+- [Memory without a Garbage Collector](https://kavachlang.com/docs/concepts/memory-without-a-garbage-collector/): Kavach frees memory without a garbage collector and without a borrow checker: the compiler finds each value's last use, a count kept while running frees it at that moment, and values with one holder change in place.
+- [Tests from Contracts](https://kavachlang.com/docs/concepts/tests-from-contracts/): In Kavach you write the rules a function follows, as contracts, and kavach test writes the tests: it generates inputs from the types, checks every rule, and shrinks a failure to the smallest case.
+- [The One-Core Answer](https://kavachlang.com/docs/concepts/the-one-core-answer/): A loop runs on one core unless it says on cores. Then its rounds run on every core, and the compiler checks that the answer is exactly the one-core answer, so using more cores never changes what a program does.
+- [No Silent Number Surprises](https://kavachlang.com/docs/concepts/no-silent-number-surprises/): A number in Kavach never changes kind on its own, and never wraps around silently. Every conversion is written, and a result that doesn't fit is a panic at the line that made it.
+- [Small Files, Enforced](https://kavachlang.com/docs/concepts/small-files-enforced/): Kavach holds every file to 500 lines and every function to 80 by default, and checks a project's architecture in kavach.toml, so a codebase can't decay slowly while nobody looks.
+- [Built for AI to Read and Write](https://kavachlang.com/docs/concepts/built-for-ai-to-read-and-write/): Kavach is built for AI to write and read: signatures say everything a caller needs, and the tools answer questions about code exactly, so an assistant reads a few lines instead of whole files.
+- [Agents with Limits](https://kavachlang.com/docs/concepts/agents-with-limits/): An AI agent in Kavach can do only what its code grants, within limits written beside the grant, and asks a person before what needs one. The runtime checks every call, and an audit log records it.
+
+## Part 16: Reference
 
 - [Keywords](https://kavachlang.com/docs/reference/keywords/): Every keyword of Kavach, and the words that are keywords in one place only.
 - [Operators](https://kavachlang.com/docs/reference/operators/): Every operator, by group, as the spec lists them.
@@ -613,7 +638,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [What Is Tested: Standard Library](https://kavachlang.com/docs/reference/what-is-tested/standard-library/): The conformance tests of spec chapter 14, Standard Library, by section.
 - [What Is Tested: GPU](https://kavachlang.com/docs/reference/what-is-tested/gpu/): The conformance tests of spec chapter 15, GPU, by section.
 
-## Part 15: Standard Library Reference
+## Part 17: Standard Library Reference
 
 - [All Modules](https://kavachlang.com/docs/std/all-modules/): Every standard-library module, with a page each: its types, methods and functions, their definitions and examples, and the files that declare them.
 - [std.fs](https://kavachlang.com/docs/std/std-fs/): Every type, method and function of std.fs: what the spec lists, then each declaration in its source, with its examples and the line that declares it.

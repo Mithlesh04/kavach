@@ -284,6 +284,31 @@ It prints, checked against a real run:
 
 ## Part 6: Memory
 
+### [A list changed while shared is copied then](https://kavachlang.com/docs/memory/values-not-references/#scene-memory-copy)
+
+Caveman says: Two name. One list. Change list? Copy first. Now two list.
+
+```kavach
+const a = [2, 3, 4, 5]
+let b = a
+b.push(6)
+print(`a={a}`)
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=[2, 3, 4, 5]
+b=[2, 3, 4, 5, 6]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object, held by a.
+2. Line 2, `let b = a`: b holds the same object: count 2, nothing copied yet.
+3. Line 3, `b.push(6)`: b changes while a still holds the object. The runtime sees count 2 while running, so now, and only now, it copies: b gets its own object with 6 added, and a keeps the original.
+4. Line 4, `print(`a={a}`)`: a's last use, marked by the compiler: count 1 → 0, and its object is freed.
+5. Line 5, `print(`b={b}`)`: b's last use, marked by the compiler: its object is freed too.
+
 ### [Does b = a take new memory?](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-share)
 
 Caveman says: Two name. One list. No copy. Count go up. Compiler look ahead. Know last use. Let go there.
@@ -348,6 +373,35 @@ a=7 b=8
 2. Line 2, `let b = a`: b = a copies the 8 bytes. Copying a number costs no more than pointing at it would.
 3. Line 3, `b += 1`: b changes its own 8 bytes; a keeps 7.
 4. Line 4, `print(`a={a} b={b}`)`: The last use of a and b, but nothing to free: numbers were never objects. Bool and Char work the same way.
+
+### [A record that never becomes an object](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-record)
+
+Caveman says: Record of numbers. Only used here. No box. Each field own spot. Copy field. Done.
+
+```kavach
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const p = Point(x: 1, y: 2)
+    let q = p
+    q.x = 5
+    print(`p={p.x} q={q.x}`)
+}
+```
+
+It prints, checked against a real run:
+
+```
+p=1 q=5
+```
+
+1. Line 7, `const p = Point(x: 1, y: 2)`: In native code, p is split into one local per field, in registers or on the stack, as LLVM chooses. No object, no count: every field is a number, and p is only built, copied, and read or set one field at a time.
+2. Line 8, `let q = p`: let q = p is two moves, one per field. Nothing is allocated.
+3. Line 9, `q.x = 5`: q.x changes q's own local; p.x keeps 1.
+4. Line 10, `print(`p={p.x} q={q.x}`)`: The last use, and nothing to free: the record never became an object. Passing it to a function that isn't inlined, returning it, keeping it in a list or another record, printing it whole, or a field that is text or a list would make it one object with a count, as the spec allows.
 
 ### [A list changed while shared is copied then](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-copy)
 
@@ -518,6 +572,51 @@ It prints, checked against a real run:
 3. Line 3, `b.update(list => list + [4])`: After update, the Shared holds [2, 3, 4], so a sees it too: both names hold the one Shared. It was b's last use, marked by the compiler, so b lets go: count 2 → 1.
 4. Line 4, `print(a.get())`: a's last use, marked by the compiler: the Shared is freed, and with it the list it held.
 
+### [Freezing costs nothing](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-freeze)
+
+Caveman says: Freeze list. Same list. No copy. Compiler say: no change now.
+
+```kavach
+let a = [2, 3, 4, 5]
+a.push(6)
+const f = a.freeze()
+print(`f={f}`)
+```
+
+It prints, checked against a real run:
+
+```
+f=[2, 3, 4, 5, 6]
+```
+
+1. Line 1, `let a = [2, 3, 4, 5]`: One list object, held by a: count 1.
+2. Line 2, `a.push(6)`: Nobody else holds it, so 6 goes on in place.
+3. Line 3, `const f = a.freeze()`: It was a's last use, so f takes the same object: count 1, nothing allocated, nothing copied. A value frozen without a key is the plain value while running; only the compiler keeps f from changing. A const costs nothing either: it is the same object, never a copy.
+4. Line 4, `print(`f={f}`)`: f's last use, marked by the compiler: the list is freed.
+
+### [A fused chain reads the list as it was](https://kavachlang.com/docs/memory/automatic-memory/how-it-stays-fast/#scene-memory-fused)
+
+Caveman says: Map then filter. One loop, no list between. Change list after? Answer stay same.
+
+```kavach
+let xs = [1, 2, 3]
+const ys = xs.map(x => x * 2).filter(x => x > 2)
+xs.push(10)
+print(`xs={xs} ys={ys}`)
+```
+
+It prints, checked against a real run:
+
+```
+xs=[1, 2, 3, 10] ys=[4, 6]
+```
+
+1. Line 1, `let xs = [1, 2, 3]`: One list object, held by xs: count 1.
+2. Line 2, `const ys = xs.map(x => x * 2).filter(x => x > 2)`: In native code the chain is one loop over xs's items: no list is built between map and filter. The chain holds xs too while it runs, one +1 for the whole chain, so count 2. The only new object is the result, [4, 6]. If a check in the fast loop failed, the code would run as written instead and fail where the program says, so fusing changes nothing a program sees.
+3. Line 2, `const ys = xs.map(x => x * 2).filter(x => x > 2)`: The chain ends and lets go of xs: count back to 1. ys holds the result, a list of its own.
+4. Line 3, `xs.push(10)`: Nobody else holds xs, so 10 goes on in place. ys keeps [4, 6]: it was worked out from the list as it was when the chain ran.
+5. Line 4, `print(`xs={xs} ys={ys}`)`: The last use of both, marked by the compiler: both lists are freed.
+
 ### [A list changed while shared is copied then](https://kavachlang.com/docs/memory/automatic-memory/how-it-stays-fast/#scene-memory-copy)
 
 Caveman says: Two name. One list. Change list? Copy first. Now two list.
@@ -542,6 +641,51 @@ b=[2, 3, 4, 5, 6]
 3. Line 3, `b.push(6)`: b changes while a still holds the object. The runtime sees count 2 while running, so now, and only now, it copies: b gets its own object with 6 added, and a keeps the original.
 4. Line 4, `print(`a={a}`)`: a's last use, marked by the compiler: count 1 → 0, and its object is freed.
 5. Line 5, `print(`b={b}`)`: b's last use, marked by the compiler: its object is freed too.
+
+### [Does b = a take new memory?](https://kavachlang.com/docs/memory/automatic-memory/freed-immediately/#scene-memory-share)
+
+Caveman says: Two name. One list. No copy. Count go up. Compiler look ahead. Know last use. Let go there.
+
+```kavach
+const a = [2, 3, 4, 5]
+const b = a
+print(`a={a}`)
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=[2, 3, 4, 5]
+b=[2, 3, 4, 5]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object: a header holding the count, then the four numbers side by side. The numbers are not objects of their own.
+2. Line 2, `const b = a`: Nothing is allocated and nothing is copied. b holds the same object, and its count goes from 1 to 2.
+3. Line 3, `print(`a={a}`)`: The compiler marked this as a's last use while compiling, so a lets go here: count 2 → 1.
+4. Line 4, `print(`b={b}`)`: b's last use, marked by the compiler: count 1 → 0, and the object is freed at once.
+
+### [Shared: two names, one changing value](https://kavachlang.com/docs/memory/shared-state/#scene-memory-shared)
+
+Caveman says: Shared is one box. Two name hold box. One change, both see.
+
+```kavach
+const a = Shared([2, 3])
+const b = a
+b.update(list => list + [4])
+print(a.get())
+```
+
+It prints, checked against a real run:
+
+```
+[2, 3, 4]
+```
+
+1. Line 1, `const a = Shared([2, 3])`: A Shared is an object of its own, holding the list.
+2. Line 2, `const b = a`: Copying a Shared copies the handle: a and b hold the one Shared, count 2. This is the one way two names see one changing value.
+3. Line 3, `b.update(list => list + [4])`: After update, the Shared holds [2, 3, 4], so a sees it too: both names hold the one Shared. It was b's last use, marked by the compiler, so b lets go: count 2 → 1.
+4. Line 4, `print(a.get())`: a's last use, marked by the compiler: the Shared is freed, and with it the list it held.
 
 ## Part 7: Standard Library
 
@@ -656,6 +800,42 @@ gpu-draw.kav: no errors
 8. Line 25, `Lit(position: ((c.x + d.x) * cam.zoom, (c.y + d.y) * cam.zoom, 0.0, 1.0), heat: d.heat)`: The GPU runs place on its many small cores, for each corner of each dot: 4 corners × 2 dots. Corner (-0.1, -0.1) of dot 0 lands at (-0.6, -0.1). heat goes on to glow. An overflow here gives a wrong value, not a panic: the GPU can't stop in the middle of a frame.
 9. Line 29, `(l.heat, 0.2, 1.0 - l.heat, 1.0)`: The GPU joins the corners into triangles, finds the pixels inside each, and runs glow once for each of them: dot 0's pixels get (0.2, 0.2, 0.8), blue; dot 1's (0.9, 0.2, about 0.1), red. Each lands in the picture.
 10. Line 43, `frame.show()`: At the screen's next refresh the picture is shown: Fifo, vsync. Then the loop draws the next frame, 600 in all, with new buffers each time.
+
+## Part 8: Networks
+
+### [One HTTPS request: from your code to a server and back](https://kavachlang.com/docs/networks/http/sessions/#scene-https-get)
+
+Caveman says: Ask OS: where server? Shake hands. Make secret talk. Send few lines of text. Wait, not hold core. Answer come in pieces. Put together. Done? Say bye.
+
+```kavach
+use std.http
+
+fn main() ! Error {
+    const session = try http.open("https://example.com")
+    const page = try session.get("/")
+    print(page.status)
+    session.close()
+}
+```
+
+It prints, checked against a real run:
+
+```
+https-get.kav: no errors
+```
+
+1. Line 4, `const session = try http.open("https://example.com")`: std.http, which is Kavach code, splits the URL: host example.com, port 443 added for https, and the path /. A session connects at once, not at its first request.
+2. Line 4, `const session = try http.open("https://example.com")`: The runtime, while running, starts one OS thread just for this connect, and parks the task: other tasks keep running. The thread asks the OS to turn example.com into an address, through the system's resolver.
+3. Line 4, `const session = try http.open("https://example.com")`: The thread connects to the first address the resolver gives, and today only that one, on port 443. The OS's TCP does the three-way handshake through the network card. The thread waits for it, up to 30 seconds.
+4. Line 4, `const session = try http.open("https://example.com")`: Then TLS, by rustls inside the program, not the OS: the thread offers HTTP/1.1, the server sends its certificate, and rustls checks it against Mozilla's list of roots built into the program, plus any roots the program's own settings add, never the OS's store. Both sides agree on keys, so from now on every byte is encrypted.
+5. Line 4, `const session = try http.open("https://example.com")`: The socket is ready. The runtime makes it non-blocking and adds it to the OS's readiness queue, the thread ends, and the task is woken with its session: one TLS connection, kept for the requests that follow.
+6. Line 5, `const page = try session.get("/")`: session.get builds the request as text in memory: the request line, the host, and content-length: 0. Nothing else is added: no user-agent, no compression asked for.
+7. Line 5, `const page = try session.get("/")`: It goes out in one write: rustls encrypts it, the OS's network stack sends it through the network card, and the internet carries it to the server.
+8. Line 5, `const page = try session.get("/")`: Now the task waits for the reply and gives up its turn. When no task is ready, the scheduler's thread sleeps in the OS's readiness queue. There is no network thread: the OS wakes the thread when bytes arrive.
+9. Line 5, `const page = try session.get("/")`: The server's answer reaches the network card, the OS keeps it in the socket's buffer and wakes the thread. Each read takes up to 64 KB, and rustls decrypts it. std.http adds each piece until the head is whole.
+10. Line 5, `const page = try session.get("/")`: The head says the status, 200, and how many bytes the body has (content-length). Reading goes on until they are all there; then the task gets a Response: status, headers, and the body as Bytes.
+11. Line 6, `print(page.status)`: page.status is a plain Int, and print writes it: 200 for this page.
+12. Line 7, `session.close()`: close tells the server the encrypted talk is over (TLS close_notify), then the OS closes the connection. A session never closed is closed when its last holder lets go, without that goodbye.
 
 ## Part 9: Concurrency
 
@@ -965,3 +1145,53 @@ true
 7. Line 17, `print(lit.all(v => 24.9 < v < 25.1))`: The first CPU read of lit. The compiler put a fetch before it, while compiling. The runtime waits for the GPU and reads the stop flag: 20 bytes back over PCIe. Had an item failed, its panic would show here, with glow's line, after line 16 had run. Another GPU wait, or the program's end, reads the flag too.
 8. Line 17, `print(lit.all(v => 24.9 < v < 25.1))`: The flag is clear, so the runtime copies lit's 4 MB back over PCIe into its list in RAM, once. A map whose result is read at once, not kept in a local, waits for the GPU and copies it back by itself.
 9. Line 17, `print(lit.all(v => 24.9 < v < 25.1))`: all runs on the CPU over lit's items: each is near 25, so it prints true. pixels and lit stay in GPU memory too: pixels went up in one piece, so it is kept. The runtime keeps up to 4 lists a map read or made, 512 MB at most, so a later map of either copies nothing over.
+
+## Part 15: Concepts
+
+### [A list changed while shared is copied then](https://kavachlang.com/docs/concepts/values-not-shared-references/#scene-memory-copy)
+
+Caveman says: Two name. One list. Change list? Copy first. Now two list.
+
+```kavach
+const a = [2, 3, 4, 5]
+let b = a
+b.push(6)
+print(`a={a}`)
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=[2, 3, 4, 5]
+b=[2, 3, 4, 5, 6]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object, held by a.
+2. Line 2, `let b = a`: b holds the same object: count 2, nothing copied yet.
+3. Line 3, `b.push(6)`: b changes while a still holds the object. The runtime sees count 2 while running, so now, and only now, it copies: b gets its own object with 6 added, and a keeps the original.
+4. Line 4, `print(`a={a}`)`: a's last use, marked by the compiler: count 1 → 0, and its object is freed.
+5. Line 5, `print(`b={b}`)`: b's last use, marked by the compiler: its object is freed too.
+
+### [Does b = a take new memory?](https://kavachlang.com/docs/concepts/memory-without-a-garbage-collector/#scene-memory-share)
+
+Caveman says: Two name. One list. No copy. Count go up. Compiler look ahead. Know last use. Let go there.
+
+```kavach
+const a = [2, 3, 4, 5]
+const b = a
+print(`a={a}`)
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=[2, 3, 4, 5]
+b=[2, 3, 4, 5]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object: a header holding the count, then the four numbers side by side. The numbers are not objects of their own.
+2. Line 2, `const b = a`: Nothing is allocated and nothing is copied. b holds the same object, and its count goes from 1 to 2.
+3. Line 3, `print(`a={a}`)`: The compiler marked this as a's last use while compiling, so a lets go here: count 2 → 1.
+4. Line 4, `print(`b={b}`)`: b's last use, marked by the compiler: count 1 → 0, and the object is freed at once.
