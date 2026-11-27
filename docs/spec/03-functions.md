@@ -131,6 +131,7 @@ A generic function (2.9) used as a value takes its types from where it is used: 
 A function type says what its functions can fail with and what they may use, in the order of a signature (3.5): `fn(NewOrder) -> Order ! ApiError uses Db`. Several capabilities go in parentheses, `uses (Net, Db)`, so that a `,` after the type still ends it ([decision 0085](../decisions/0085-function-types-with-errors-and-uses.md)).
 
 - A function that can fail fits only a function type that says so, with an error its own fits (5.2). A function that can't fail fits any.
+- Only a function can be called. Calling a value of another type is a compile error, even when it hides a function of the same name: `const x = 5`, then `x(1)`, says "`x` is an `Int`, not a function, so it can't be called".
 - Calling a function value that can fail is a call that can fail: handle it with `try`, `catch` or `match` (chapter 5).
 - The error can be a type parameter, so generic code keeps the error type of the function it is given, and a `match` on it stays exhaustive.
 - With `uses`, a function value may use only what its type lists. Without it, the type sets no limit. `uses ()` lists nothing: such a function value may use no capability at all, not even the package's defaults (8.1), so a contract may call it (7.5). Either way, the code that makes the value, by naming a function or writing a lambda, must have what the function uses (8.1).
