@@ -9,52 +9,14 @@
 //! message at the same line.
 
 mod common;
+#[path = "common/programs.rs"]
+mod programs;
 
 use kavach_driver::{Options, compile};
+use programs::{kav_files, panic_line, test_args};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-
-fn kav_files(dir: &Path, out: &mut Vec<PathBuf>) {
-    // A project folder (with `kavach.toml` and `src/`) is one test: its
-    // `src/main.kav`, compiled with the other files of `src/`.
-    if dir.join("kavach.toml").is_file() && dir.join("src").is_dir() {
-        out.push(dir.join("src").join("main.kav"));
-        return;
-    }
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.is_dir() {
-            kav_files(&path, out);
-        } else if path.extension().is_some_and(|e| e == "kav") {
-            out.push(path);
-        }
-    }
-}
-
-/// The first line of a panic or of `main`'s error, and the line number
-/// it gives, without the path (which differs only in how it is written).
-fn panic_line(stderr: &str) -> Option<(&str, Option<&str>)> {
-    let mut lines = stderr.lines();
-    let first = lines.find(|l| l.starts_with("panic:") || l.starts_with("error:"))?;
-    let at = lines
-        .next()
-        .filter(|l| l.trim_start().starts_with("at "))
-        .and_then(|l| l.rsplit(':').next());
-    // Out of stack, the line is wherever the stack ran out: in a mutual
-    // recursion, either function, as each mode's frames differ in size.
-    let at = at.filter(|_| !first.contains("stack overflow"));
-    Some((first, at))
-}
-
-/// The arguments a test's `// args:` header gives the program.
-fn test_args(src: &str) -> Vec<String> {
-    src.lines()
-        .find_map(|l| l.strip_prefix("// args: "))
-        .map_or(Vec::new(), |w| {
-            w.split_whitespace().map(String::from).collect()
-        })
-}
 
 /// What checking one program found: `None` when the native compiler
 /// doesn't support it, else its name and how its native runs differ
@@ -158,50 +120,9 @@ fn native_code_matches_the_interpreter() {
     fs::create_dir_all(&work).unwrap();
     let home = std::env::current_dir().unwrap();
     std::env::set_current_dir(&work).unwrap();
-    // The programs are checked several at once: most of the time goes to
-    // waiting for `kavach` and the linker. At most 8 at a time, or
-    // `KAVACH_TEST_WORKERS`: each build runs its own linker, and 24 at once
-    // took a shared 32 GB machine down to 0.5 GB free (2026-11-25). Each
-    // worker has a large stack, as the interpreter runs deep recursion in it.
-    let next = std::sync::atomic::AtomicUsize::new(0);
-    let results = std::sync::Mutex::new(Vec::new());
-    let cores = std::thread::available_parallelism().map_or(4, |n| n.get());
-    let workers = std::env::var("KAVACH_TEST_WORKERS")
-        .ok()
-        .and_then(|v| v.parse::<usize>().ok())
-        .filter(|n| *n > 0)
-        .unwrap_or(cores.min(8));
-    let running = common::Running::new(workers);
-    // The watch ends once every worker has, or one panicked.
-    std::thread::scope(|outer| {
-        outer.spawn(|| running.watch());
-        let _finishing = running.finishing();
-        std::thread::scope(|scope| {
-            for w in 0..workers {
-                let (next, results, running) = (&next, &results, &running);
-                let (files, root, out_dir) = (&files, &root, &out_dir);
-                std::thread::Builder::new()
-                    .stack_size(256 * 1024 * 1024)
-                    .spawn_scoped(scope, move || {
-                        loop {
-                            let n = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                            let Some(path) = files.get(n) else {
-                                break;
-                            };
-                            running.set(w, Some(path.display().to_string()));
-                            let checked = check(n, path, root, out_dir);
-                            running.set(w, None);
-                            results.lock().unwrap().push((n, checked));
-                        }
-                    })
-                    .unwrap();
-            }
-        });
-    });
-    let mut results = results.into_inner().unwrap();
-    results.sort_by_key(|(n, _)| *n);
+    let results = programs::each(&files, |n, path| check(n, path, &root, &out_dir));
     let (mut supported, mut mismatches) = (Vec::new(), Vec::new());
-    for (name, found) in results.into_iter().filter_map(|(_, c)| c) {
+    for (name, found) in results.into_iter().flatten() {
         supported.push(name);
         mismatches.extend(found);
     }
