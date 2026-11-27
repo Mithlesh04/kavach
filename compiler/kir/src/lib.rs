@@ -140,6 +140,8 @@ mod written_types;
 
 pub use encode::{decode_shapes, encode_shapes};
 pub use ir::*;
+/// Stage times for `KAVACH_TIMES` (spec 10.11), for the backends too.
+pub use kavach_driver::times;
 pub use library::{Library, library};
 pub use lower::{lower, lower_with};
 pub use pass_set::PassSet;

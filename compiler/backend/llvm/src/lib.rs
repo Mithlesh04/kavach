@@ -60,6 +60,7 @@ pub fn build(
     let bin = tools().ok_or_else(|| {
         NotBuilt::Unsupported("LLVM's tools (`rustup component add llvm-tools`)".into())
     })?;
+    let mut clock = kavach_kir::times::Clock::start();
     let ir = emit(program);
     // For work on the compiler: `KAVACH_LLVM_IR=1` prints the IR before
     // LLVM optimizes it (like `KAVACH_CLIF` for Cranelift).
@@ -67,7 +68,7 @@ pub fn build(
         eprintln!("{ir}");
     }
     let dir = kavach_backend_cranelift::build_folder("kavach-llvm");
-    let built = compile(&bin, &dir, &ir, out, &c_libraries(program), exe);
+    let built = compile(&bin, &dir, &ir, out, &c_libraries(program), exe, &mut clock);
     let _ = std::fs::remove_dir_all(&dir);
     built.map_err(NotBuilt::Failed)
 }
@@ -154,6 +155,7 @@ fn compile(
     out: &Path,
     libs: &[String],
     exe: kavach_backend_cranelift::Exe,
+    clock: &mut kavach_kir::times::Clock,
 ) -> Result<(), String> {
     std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     let (ll, bc) = (dir.join("program.ll"), dir.join("program.bc"));
@@ -175,7 +177,11 @@ fn compile(
         llc.arg("-relocation-model=pic");
     }
     run(llc.arg(&bc).arg("-o").arg(&object))?;
-    kavach_backend_cranelift::link(&object, out, libs, exe)
+    // LLVM's code generation: writing the IR, `opt` and `llc`.
+    clock.lap("codegen");
+    let linked = kavach_backend_cranelift::link(&object, out, libs, exe);
+    clock.lap("link");
+    linked
 }
 
 pub(crate) fn run(cmd: &mut Command) -> Result<(), String> {

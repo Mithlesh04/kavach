@@ -41,6 +41,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/conformance.rs` | The conformance runner: every test in `tests/conformance/`, plus examples 01–04 |
 | `tests/native.rs` | Native code must match the interpreter on every program it supports |
 | `tests/passes_off.rs` | The differential test: control-flow and memory conformance programs and the loop benchmarks built with `KAVACH_PASSES=none` behave as with every pass (spec 10.11) |
+| `tests/times.rs` | `KAVACH_TIMES=1` prints each compiler stage's time, in order, for `build` and `run --native` (spec 10.11) |
 | `tests/project.rs` | `kavach new` and commands without a file inside a project |
 | `tests/packages.rs` | A git dependency: `kavach add`, the commit `kavach.lock` keeps until `kavach update`, and a package using `unsafe` refused until allowed (spec 10.12) |
 | `tests/context.rs` | `query` and `context` without a file inside a project |

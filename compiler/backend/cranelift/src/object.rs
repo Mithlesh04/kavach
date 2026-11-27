@@ -19,6 +19,7 @@ use std::path::Path;
 
 /// Compiles `program` and writes the executable `out`, as `exe` asks.
 pub fn build(program: &Program, out: &Path, exe: link::Exe) -> Result<(), String> {
+    let mut clock = kavach_kir::times::Clock::start();
     // Executables on Linux and macOS are position-independent.
     let isa = new_isa(!cfg!(windows))?;
     let builder = ObjectBuilder::new(isa.clone(), "kavach_program", default_libcall_names())
@@ -51,7 +52,9 @@ pub fn build(program: &Program, out: &Path, exe: link::Exe) -> Result<(), String
         l.dedup();
         l
     };
+    clock.lap("codegen");
     let linked = link::link(&object, out, &libs, exe);
+    clock.lap("link");
     let _ = std::fs::remove_dir_all(&dir);
     linked
 }

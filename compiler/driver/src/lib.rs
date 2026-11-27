@@ -25,6 +25,7 @@ mod std_modules;
 mod std_table;
 mod tables;
 mod tensors;
+pub mod times;
 mod variants;
 mod version;
 pub mod workspace;
@@ -286,7 +287,9 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         }
     }
     let src = src.as_str();
+    let mut clock = times::Clock::start();
     let mut parsed = kavach_parser::parse(src);
+    clock.lap("parse");
     let in_std = |at: u32| {
         (modules.iter()).any(|m| m.name.starts_with("std.") && m.start <= at && at < m.end)
     };
@@ -294,12 +297,14 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     let mut resolution = kavach_resolver::resolve_modules(&parsed.file, &modules);
     resolution.errors.extend(twice);
     project::unqualify(&mut parsed.file, &resolution);
+    clock.lap("resolve");
     let checker_options = kavach_checker::Options {
         allow_unsafe: options.allow_unsafe,
         unsafe_packages: options.unsafe_packages.clone(),
         granted: options.granted.clone(),
     };
     let mut checked = kavach_checker::check(&parsed.file, &resolution, checker_options);
+    clock.lap("check");
     // A script's constants that use a capability are its statements (1.13).
     resolution
         .module_consts
@@ -309,6 +314,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     tensors::to_calls(&mut parsed.file, &mut checked, &mut resolution);
     tables::to_calls(&mut parsed.file, &mut checked);
     frozen::lower(&mut parsed.file, &mut checked);
+    clock.lap("rewrites");
 
     let error = |text: &String, span: Span| Message {
         severity: Severity::Error,

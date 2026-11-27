@@ -71,6 +71,7 @@ pub fn run_with_args(program: &Program, args: &[String]) -> Result<i32, String> 
 }
 
 fn run_here(program: &Program) -> Result<i32, String> {
+    let mut clock = kavach_kir::times::Clock::start();
     runtime::start(&program.path, &program.shapes);
     let isa = new_isa(false)?;
     // Each C function of the system's C library must be found here: one
@@ -134,6 +135,7 @@ fn run_here(program: &Program) -> Result<i32, String> {
     let names = runtime::crash_stack::names_text(&program.functions);
     runtime::crash_stack::set_functions(&names, &starts);
     let code = module.get_finalized_function(entry);
+    clock.lap("codegen");
     let main = &program.functions[program.entry as usize];
     Ok(runtime::run_entry(code, main.fails))
 }
