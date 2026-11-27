@@ -32,6 +32,9 @@ Every probe below is in `checker-probes/` next to this file, under the name give
 
 ### 1. Interface methods hide capabilities (critical)
 
+**Fixed 2026-11-27** (decisions 0147, 0148 and spec 7.5, with conformance tests from this review's probes).
+
+
 ```kavach
 interface Describe {
     fn describe(self) -> String
@@ -107,6 +110,9 @@ print(t)
 - **Fix direction:** make secrecy a property of the value's flow, not of the syntax. The simplest sound rule: an expression is secret if **any** sub-expression is, except through `reveal(…)` and the few methods whose result can't carry the text (`len()` is a choice to make in the spec). Assignment and `op=` mark the target.
 
 ### 4. Capabilities used by code outside a function are dropped
+
+**Fixed 2026-11-27** (decisions 0147, 0148 and spec 7.5, with conformance tests from this review's probes).
+
 
 Two places, one cause:
 
@@ -219,6 +225,9 @@ print([true, false].sum(b => b))                      // panic: can't use `+` on
 
 ### 11. Contracts may call function values that use capabilities
 
+**Fixed 2026-11-27** (decisions 0147, 0148 and spec 7.5, with conformance tests from this review's probes).
+
+
 ```kavach
 fn check(f: fn(Int) -> Int, x: Int) -> Int
     require f(x) > 0
@@ -270,7 +279,7 @@ print(zero())                             // accepted: nothing says what T is
 - **S3. `ExprKind` on an unknown base gives `Ty::Error` silently:** `exprs.rs:202` (tuple field), `fields.rs:192` (index), `items.rs:461` (`for` item) and `patterns.rs:336` map `Ty::Var(_)` to `Ty::Error` with no message. Lambda bodies seem to be checked again once their parameter types are known (`var-error.kav` was refused), so no probe reached them; any other path where a base is still unknown would pass anything.
 - **S4. `==` on function values** is accepted and gives `false` (`fneq.kav`). Spec 1.8 says `==` "compares contents" and says nothing of functions. An open question for the spec.
 - **S5. No way to name an `inout` parameter's value before the call** in an `ensure` (spec 7.2: it sees the new value). `old(n)` is "not defined; did you mean `Add`?" (`contract4.kav`). An open question for chapter 7.
-- **S6. Interface methods that declare `uses`** are not compared with their implementations (`conform.rs`), so even after a spec decision on finding 1, `conforms` needs the check.
+- **S6 (fixed 2026-11-27). Interface methods that declare `uses`** are not compared with their implementations (`conform.rs`), so even after a spec decision on finding 1, `conforms` needs the check.
 
 ## What held up
 
