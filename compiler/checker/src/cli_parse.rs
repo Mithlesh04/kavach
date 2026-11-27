@@ -25,6 +25,7 @@ impl Checker<'_> {
             );
             return Ty::Error;
         };
+        self.check_decode_access(&t, span, "`cli.parse`");
         let shape = match &t {
             Ty::Adt(def, _) => self.types.get(def).map(|i| &i.shape),
             _ => None,

@@ -1,0 +1,7 @@
+pub type Account {
+    pub(read) balance: Int
+    pub owner: String
+
+    invariant balance >= 0
+}
+

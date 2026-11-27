@@ -1,0 +1,16 @@
+// Rule: A generic function that reads its type parameter from JSON can't be given a type with a private field of another module.
+// Spec: 10.1, 2.12
+// expect compile error
+
+use session
+use std.json
+
+fn load<T>(text: String) -> T ! json.JsonError {
+    try json.decode<T>(text)
+}
+
+fn main() {
+    const s = session.open("asha")
+    const forged = load<session.SessionKey>(`\{"n": 1}`) catch _ => return     // error: `n` is private
+    print(s.unfreeze(key: forged).roles)
+}

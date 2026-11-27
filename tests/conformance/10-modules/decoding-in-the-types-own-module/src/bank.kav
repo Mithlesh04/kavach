@@ -1,0 +1,12 @@
+use std.json
+
+pub type Account {
+    pub(read) balance: Int
+    pub owner: String
+
+    invariant balance >= 0
+}
+
+pub fn from_json(text: String) -> Account ! json.JsonError {
+    try json.decode<Account>(text)
+}

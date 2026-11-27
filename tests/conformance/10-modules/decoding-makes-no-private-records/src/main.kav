@@ -1,0 +1,14 @@
+// Rule: Outside its module, `json.decode<T>` can't make a record with a private field, such as the key of a sealed value.
+// Spec: 10.1, 2.12, 2.20
+// expect compile error
+
+use session
+use std.json
+
+fn main() {
+    const s = session.open("asha")
+    const forged = json.decode<session.SessionKey>(`\{"n": 1}`) catch _ => return     // error: `n` is private
+    let opened = s.unfreeze(key: forged)
+    opened.roles.push("admin")
+    print(opened.roles)
+}

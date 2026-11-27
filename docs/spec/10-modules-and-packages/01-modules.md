@@ -15,7 +15,7 @@
   }
   ```
 
-- A record with a private field can be **created only in its own module**. Other modules call a `pub fn` there that makes one, so the module keeps control of what its private fields hold.
+- A record with a private field can be **created only in its own module**. Other modules call a `pub fn` there that makes one, so the module keeps control of what its private fields hold. Reading one from outside data counts as creating it: `json.decode<T>`, `cli.parse<T>` or `ask<T>` of such a type, or of a type that holds one, is a compile error outside its module (2.12), and so is one with a `pub(read)` field.
 - A module constant marked `pub` (`pub const width = 640`, 1.13) is read from other modules as `module.width`, or named in `use`; one without `pub` stays in its module. Files other than the entry file may have module constants, but no other statements.
 - An `extend` of a type (2.5) in another module of the **same package** counts as the type's own module: it may read, change and build the type's private fields, so a type's methods can be spread over files without making its fields `pub`. An `extend` in another package sees only `pub` fields.
 

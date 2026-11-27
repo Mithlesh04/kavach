@@ -36,6 +36,7 @@ impl Checker<'_> {
         if let Some(why) = self.not_decodable(&t) {
             self.error(span, why);
         }
+        self.check_decode_access(&t, span, "`json.decode_texts`");
         self.json_reads.push((self.current_fn, t.clone(), span));
         let error = self.builtin_ty("JsonError");
         Some((

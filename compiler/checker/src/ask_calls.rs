@@ -118,6 +118,7 @@ impl Checker<'_> {
             Some(t) => self.lower(t, None),
             None => self.fresh(),
         };
+        self.check_decode_access(&answer, span, &format!("`{shown}`"));
         let answer = match (full, self.res.std_type("Asked")) {
             (true, Some(def)) => Ty::Adt(def, vec![answer]),
             _ => answer,

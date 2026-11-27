@@ -1,0 +1,14 @@
+pub type SessionKey {
+    n: Int
+}
+
+const key = SessionKey(n: 1)
+
+pub type Session {
+    pub user: String
+    pub roles: [String]
+}
+
+pub fn open(user: String) -> Frozen<Session, SessionKey> {
+    Session(user: user, roles: ["reader"]).freeze(key: key)
+}

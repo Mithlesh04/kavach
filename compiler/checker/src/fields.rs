@@ -336,7 +336,7 @@ impl Checker<'_> {
 
     /// Whether code at `at` is in an `extend` of type `def` inside the
     /// type's own package, which may use its private fields (spec 10.1).
-    fn extends_own(&self, def: kavach_resolver::DefId, at: kavach_ast::Span) -> bool {
+    pub(crate) fn extends_own(&self, def: kavach_resolver::DefId, at: kavach_ast::Span) -> bool {
         let Some(decl) = self.res.defs[def].span else {
             return false;
         };

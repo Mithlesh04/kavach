@@ -1,0 +1,11 @@
+// Rule: Outside its module, `cli.parse<T>` can't make a record with a private field.
+// Spec: 10.1, 2.12, 14.6
+// expect compile error
+
+use options
+use std.cli
+
+fn main() uses Env {
+    const o = cli.parse<options.Options>() catch _ => return     // error: `admin` is private
+    print(o.verbose)
+}

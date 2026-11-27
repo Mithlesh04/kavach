@@ -34,6 +34,7 @@ mod construct;
 mod conversions;
 mod costly_invariants;
 mod coverage;
+mod decode_access;
 mod deprecated;
 mod destructure;
 mod distinct;

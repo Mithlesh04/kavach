@@ -1,0 +1,11 @@
+// Rule: Outside its module, `json.decode<T>` can't make a record with a `pub(read)` field, even inside another type.
+// Spec: 10.1, 2.12
+// expect compile error
+
+use bank
+use std.json
+
+fn main() {
+    const rich = json.decode<[bank.Account]>(`[\{"balance": 1000000, "owner": "asha"}]`) catch _ => return     // error: `balance` is `pub(read)`
+    print(rich[0].balance)
+}

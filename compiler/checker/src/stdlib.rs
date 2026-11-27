@@ -419,6 +419,7 @@ impl Checker<'_> {
                 if let Some(why) = self.not_decodable(&t) {
                     self.error(span, why);
                 }
+                self.check_decode_access(&t, span, &format!("`json.{name}`"));
                 self.json_reads.push((self.current_fn, t.clone(), span));
                 let unknown = self.builtin_ty("JsonUnknown");
                 let params = if name == "decode" {

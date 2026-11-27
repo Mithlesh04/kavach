@@ -1,0 +1,10 @@
+// Rule: A type's own module may read it from JSON, private and `pub(read)` fields too, and give it to other modules.
+// Spec: 10.1, 2.12
+// expect output: asha 10
+
+use bank
+
+fn main() {
+    const a = bank.from_json(`\{"balance": 10, "owner": "asha"}`) catch _ => return
+    print(`{a.owner} {a.balance}`)
+}

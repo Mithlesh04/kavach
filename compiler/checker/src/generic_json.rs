@@ -39,6 +39,7 @@ impl Checker<'_> {
         }
         let calls = std::mem::take(&mut self.generic_calls);
         let mut reported = HashSet::new();
+        let mut made = HashSet::new();
         loop {
             let mut grew = false;
             for (caller, callee, args, span) in &calls {
@@ -54,6 +55,11 @@ impl Checker<'_> {
                         continue;
                     }
                     let t = self.inf.resolve(ty);
+                    if made.insert((span.start, *param)) {
+                        let name = self.res.defs[*callee].name.clone();
+                        let call = format!("`{name}`, which reads its type from JSON,");
+                        self.check_decode_access(&t, *span, &call);
+                    }
                     let Some(why) = self.not_decodable(&t) else {
                         continue;
                     };

@@ -1,0 +1,4 @@
+pub type Options {
+    pub verbose: Bool = false
+    admin: Bool = false
+}
