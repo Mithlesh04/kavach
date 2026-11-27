@@ -137,6 +137,8 @@ pub fn lower(c: &Compiled) -> Result<Program, Unsupported> {
 /// Lowers a checked file, keeping the top-level functions `exports` too,
 /// for a library (decision 0026).
 pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported> {
+    // Read once, here: the passes don't read the environment (spec 10.11).
+    let passes = crate::PassSet::from_env();
     let decl = c
         .resolution
         .defs
@@ -307,7 +309,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
     let mut kept = vec![entry];
     kept.extend(&roots);
     crate::collect::none_reached(&functions, &kept, failed)?;
-    let (functions, kept, quiet_from, notes) = crate::passes::finish(&mut l, c, functions, &kept);
+    let (functions, kept, quiet_from, notes) =
+        crate::passes::finish(&mut l, c, functions, &kept, &passes);
     let exports = kept[1..]
         .iter()
         .copied()

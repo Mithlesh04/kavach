@@ -120,6 +120,7 @@ mod lower_whole_generic;
 mod moves;
 mod nan_watch;
 mod par;
+mod pass_set;
 mod passes;
 mod prefetch;
 mod prune;
@@ -141,6 +142,7 @@ pub use encode::{decode_shapes, encode_shapes};
 pub use ir::*;
 pub use library::{Library, library};
 pub use lower::{lower, lower_with};
+pub use pass_set::PassSet;
 pub use rt_op::RtOp;
 
 /// A language feature the native compiler doesn't handle yet.

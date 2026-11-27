@@ -28,14 +28,6 @@ mod rewrite;
 mod tests;
 
 pub fn scalarize(f: &mut Function, shapes: &[Shape], holders: &std::collections::HashSet<Type>) {
-    if std::env::var_os("KAVACH_NO_SROA").is_some() {
-        return;
-    }
-    if let Ok(only) = std::env::var("KAVACH_SROA_ONLY")
-        && !only.split(',').any(|n| n == f.name)
-    {
-        return;
-    }
     let field_types = |l: Local| -> Option<Vec<Type>> {
         let Type::Ref(id) = f.locals[l as usize] else {
             return None;

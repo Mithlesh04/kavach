@@ -78,7 +78,7 @@ For work on the compiler (they print what a pass did, or turn one off):
 |---|---|
 | `KAVACH_CLIF` | Prints the Cranelift code of each function |
 | `KAVACH_LLVM_IR` | Prints the LLVM code before LLVM optimizes it, and why LLVM isn't used |
-| `KAVACH_NO_SROA` | Turns off splitting records into one local per field |
+| `KAVACH_PASSES` | Which optimization passes of native code run: `all` (the default), `none`, or a comma-separated list read left to right, `-name` turning a pass off and `+name` on: `-sroa,-fuse`, `none,+inline`. The passes a program needs always run; `none` keeps `moves` too, which `-moves` turns off. A name that is no pass is a warning naming the passes. The list is in `compiler/kir/src/pass_set.rs` |
 | `KAVACH_SROA_ONLY` | Splits records only in the functions named (comma-separated) |
 | `KAVACH_SROA_LOG` | Prints each record split |
 | `KAVACH_FUSE_LOG` | Prints each pair of loops fused into one |

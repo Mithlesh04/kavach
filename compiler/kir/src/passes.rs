@@ -9,17 +9,20 @@
 
 use crate::ir::{Expr, ExprKind, FuncId, Function, Shape};
 use crate::lower::Lowerer;
+use crate::pass_set::PassSet;
 use crate::rt_op::RtOp;
 use kavach_driver::Compiled;
 
 /// Runs the passes on `functions`. `roots` are what the program starts
 /// from: its entry first, then a library's exports. Gives the functions
-/// kept, and the roots' new numbers.
+/// kept, and the roots' new numbers. Of the passes that only make the
+/// program faster, only those `passes` has on run.
 pub(crate) fn finish(
     l: &mut Lowerer<'_>,
     c: &Compiled,
     mut functions: Vec<Function>,
     roots: &[FuncId],
+    passes: &PassSet,
 ) -> (Vec<Function>, Vec<FuncId>, FuncId, crate::gpu_later::Notes) {
     let error_ty = l.error_type();
     let mut scoped: Vec<(usize, RtOp, String)> = Vec::new();
@@ -49,10 +52,14 @@ pub(crate) fn finish(
             }
         }
     }
-    for (i, f) in functions.iter_mut().enumerate() {
-        crate::unrecurse::unrecurse(i as crate::ir::FuncId, f);
+    if passes.on("unrecurse") {
+        for (i, f) in functions.iter_mut().enumerate() {
+            crate::unrecurse::unrecurse(i as crate::ir::FuncId, f);
+        }
     }
-    crate::inline::inline_calls(&mut functions, &l.shapes.list);
+    if passes.on("inline") {
+        crate::inline::inline_calls(&mut functions, &l.shapes.list);
+    }
     // Functions with `inout` parameters that can't fail, and how many.
     let inout = (l.fns.iter().enumerate())
         .filter_map(|(i, (f, _))| {
@@ -61,7 +68,9 @@ pub(crate) fn finish(
             (n > 0 && f.errors.is_none()).then_some((i as FuncId, n))
         })
         .collect();
-    crate::inout_stash::stash_inout_tuples(&mut functions, &l.shapes.list, roots, &inout);
+    if passes.on("inout_stash") {
+        crate::inout_stash::stash_inout_tuples(&mut functions, &l.shapes.list, roots, &inout);
+    }
     let roots = crate::prune::keep_reachable(&mut functions, roots);
     // Before the passes that would free a `Drop` value at its last use.
     // A `Weak` can tell when its `Shared` is freed, so in a program that
@@ -97,32 +106,74 @@ pub(crate) fn finish(
     crate::stop_points::add_stop_points(&mut functions);
     crate::cancel::cancel_checks(&mut functions);
     let mut notes = crate::gpu_later::Notes::new();
+    let shapes = &l.shapes.list;
+    let on = |name| passes.on(name);
     for f in &mut functions {
-        crate::checked_fits::checked_fits(f, &l.shapes.list);
-        crate::gpu_stay::keep_on_gpu(f);
-        crate::gpu_later::overlap_sums(f, &mut notes);
-        crate::devirt::devirt(f);
-        crate::unused::drop_unused(f);
-        crate::tuple_lets::split_tuple_lets(f, &l.shapes.list);
-        crate::loop_fields::keep_fields_in_locals(f, &l.shapes.list);
-        crate::sroa::scalarize(f, &l.shapes.list, &holders);
-        crate::coalesce::coalesce(f);
-        crate::loop_lens::hoist_loop_lens(f);
-        crate::jam::jam_loops(f);
-        crate::fuse::fuse_loops(f, &l.shapes.list);
-        crate::version::version_loops(f);
-        crate::ranges::prove_ranges(f);
-        crate::prefetch::prefetch_loops(f, &l.shapes.list);
+        if on("checked_fits") {
+            crate::checked_fits::checked_fits(f, shapes);
+        }
+        if on("gpu_stay") {
+            crate::gpu_stay::keep_on_gpu(f);
+        }
+        if on("gpu_later") {
+            crate::gpu_later::overlap_sums(f, &mut notes);
+        }
+        if on("devirt") {
+            crate::devirt::devirt(f);
+        }
+        if on("unused") {
+            crate::unused::drop_unused(f);
+        }
+        if on("tuple_lets") {
+            crate::tuple_lets::split_tuple_lets(f, shapes);
+        }
+        if on("loop_fields") {
+            crate::loop_fields::keep_fields_in_locals(f, shapes);
+        }
+        if passes.sroa_in(&f.name) {
+            crate::sroa::scalarize(f, shapes, &holders);
+        }
+        if on("coalesce") {
+            crate::coalesce::coalesce(f);
+        }
+        if on("loop_lens") {
+            crate::loop_lens::hoist_loop_lens(f);
+        }
+        if on("jam") {
+            crate::jam::jam_loops(f);
+        }
+        if on("fuse") {
+            crate::fuse::fuse_loops(f, shapes);
+        }
+        if on("version") {
+            crate::version::version_loops(f);
+        }
+        if on("ranges") {
+            crate::ranges::prove_ranges(f);
+        }
+        if on("prefetch") {
+            crate::prefetch::prefetch_loops(f, shapes);
+        }
         // After `coalesce`, which would merge its locals away again.
         crate::exits::keep_before_exits(f);
-        crate::moves::mark_moves(f, &holders);
+        if on("moves") {
+            crate::moves::mark_moves(f, &holders);
+        }
     }
-    let quiet_from = crate::par::outline(&mut functions, &mut l.shapes.list, &l.on_cores);
-    for f in functions.iter_mut().skip(quiet_from as usize) {
-        crate::ranges::prove_ranges(f);
+    let quiet_from = if passes.on("par") {
+        crate::par::outline(&mut functions, &mut l.shapes.list, &l.on_cores)
+    } else {
+        functions.len() as FuncId
+    };
+    if passes.on("ranges") {
+        for f in functions.iter_mut().skip(quiet_from as usize) {
+            crate::ranges::prove_ranges(f);
+        }
     }
-    for f in &mut functions {
-        crate::counters::count_remainders(f);
+    if passes.on("counters") {
+        for f in &mut functions {
+            crate::counters::count_remainders(f);
+        }
     }
     (functions, roots, quiet_from, notes)
 }
