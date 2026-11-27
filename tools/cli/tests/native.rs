@@ -137,7 +137,7 @@ fn native_code_matches_the_interpreter() {
     );
     // Guard against the native subset silently shrinking.
     assert!(
-        supported.len() >= 85,
+        supported.len() >= 1380,
         "only {} programs compile natively: {supported:?}",
         supported.len()
     );
