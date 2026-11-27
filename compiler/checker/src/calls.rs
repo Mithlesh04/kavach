@@ -105,11 +105,25 @@ impl Checker<'_> {
                 for a in args {
                     self.value(&a.value, None);
                 }
-                if !matches!(other, Ty::Error | Ty::Var(_)) {
+                // A number literal's type is known to be a number already.
+                let known = match &other {
+                    Ty::Error => false,
+                    Ty::Var(v) => self.inf.kind(*v) != crate::infer::VarKind::Any,
+                    _ => true,
+                };
+                if known {
                     let shown = self.show(&other);
+                    let a = match shown.starts_with(['A', 'E', 'I', 'O', 'U']) {
+                        true => "an",
+                        false => "a",
+                    };
+                    let what = match &callee.kind {
+                        ExprKind::Name(id) => format!("`{}` is {a} `{shown}`", id.name),
+                        _ => format!("this is {a} `{shown}`"),
+                    };
                     self.error(
                         callee.span,
-                        format!("`{shown}` is not a function, so it can't be called"),
+                        format!("{what}, not a function, so it can't be called (spec 3.4)"),
                     );
                 }
                 Ty::Error

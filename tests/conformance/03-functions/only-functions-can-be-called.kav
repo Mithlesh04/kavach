@@ -1,0 +1,12 @@
+// Rule: Only a function value can be called: calling a value of another type, such as a constant that hides a function's name, is a compile error.
+// Spec: 3.4
+// expect compile error
+
+fn double(n: Int) -> Int {
+    n * 2
+}
+
+fn main() {
+    const double = 5
+    print(double(double))              // error: `double` is an `Int`, not a function
+}

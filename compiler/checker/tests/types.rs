@@ -332,3 +332,25 @@ fn a_bad_number_gives_one_error() {
         &["2: invalid digit in octal number"],
     )]);
 }
+
+#[test]
+fn only_functions_can_be_called() {
+    check_all(&[
+        (
+            "fn main() {
+    const x = 5
+    print(x(1))
+}
+",
+            &["3: `x` is an `Int`, not a function, so it can't be called (spec 3.4)"],
+        ),
+        (
+            "fn main() {
+    const s = \"a\"
+    print(s())
+}
+",
+            &["3: `s` is a `String`, not a function, so it can't be called (spec 3.4)"],
+        ),
+    ]);
+}

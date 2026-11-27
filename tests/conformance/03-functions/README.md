@@ -23,6 +23,7 @@ Conformance tests for spec chapter [3. Functions](../../../docs/spec/03-function
 | 3.4 | [functions-are-values.kav](functions-are-values.kav) | Functions are values and can be stored in variables. | runs |
 | 3.4 | [function-fields-are-called.kav](function-fields-are-called.kav) | A record field holding a function is called like a method: `h.on(x)`. | runs |
 | 3.4, 2.9 | [generic-functions-are-values.kav](generic-functions-are-values.kav) | A generic function used as a value takes its types from where it is used. | runs |
+| 3.4 | [only-functions-can-be-called.kav](only-functions-can-be-called.kav) | Only a function value can be called: calling a value of another type is a compile error. | compile error |
 | 3.5 | [signature-order-is-fixed.kav](signature-order-is-fixed.kav) | The parts of a signature always come in the same order: ->, !, uses, require, ensure, example. | compile error |
 | 3.7 | [discard-with-underscore.kav](discard-with-underscore.kav) | `const _ =` throws a value away on purpose. | runs |
 | 3.7 | [unused-result-is-an-error.kav](unused-result-is-an-error.kav) | A call's value must be used or discarded with `const _ =`. | compile error |
