@@ -78,6 +78,7 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/user_ops.rs` | Operators for a program's own types through `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Pow`, `Neg`, `MatMul`, `Comparable`, `Compare`, `BitAnd`, `BitOr` and `BitNot` (spec 2.16) |
 | `src/gpu_walk.rs` | The walk over a `gpu fn`'s body: what it may use, with a message naming anything else |
 | `src/always_panics.rs` | Arithmetic that always panics (spec 1.8): division by a known `0`, `+ - *` of known values that can't fit, an index past a known list's end; `1 / 2` warns |
+| `src/always_panics/help.rs` | The help line of an overflow of a type smaller than `Int` (spec 1.8): widen first, or wrap |
 | `src/deprecated.rs` | Calls to a deprecated function warn with its message (spec 12.6) |
 | `src/never_runs.rs` | Code that never runs (spec 4.7): `match` arms that can't match; `never_runs/chains.rs`, an `else if` an earlier condition covers; `never_runs/loops.rs`, a `while` that never ends, and a `for` over `0..=xs.len()` reading `xs[i]` (4.4) |
 | `src/gpu_fit.rs` | Whether a plain `fn` would fit the GPU's rules, for the message when a `gpu fn` calls one |

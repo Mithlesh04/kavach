@@ -119,6 +119,7 @@ mod where_bounds;
 
 pub use agent_settings::{AgentSetup, AuditSetup};
 pub use ai_models::{AiModel, AiModels};
+pub use always_panics::widened;
 pub use frozen::{FrozenCall, WRONG_KEY};
 pub use grouped_sums::{GroupedSum, grouped_sum};
 pub use int_numbers::bits_type;

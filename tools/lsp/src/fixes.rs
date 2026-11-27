@@ -254,7 +254,13 @@ pub fn fix_file(path: &str) -> std::io::Result<Vec<String>> {
         let mut fixed = text.clone();
         fixed.replace_range(e.from..e.to, &e.text);
         let after = compile(&fixed);
-        if errors(&after) > errors(&c) {
+        // Widening must take its overflow away, not put a type mismatch
+        // in its place (`widen.rs`): fewer errors, not as many.
+        let worse = match e.title.starts_with(crate::widen::TITLE) {
+            true => errors(&after) >= errors(&c),
+            false => errors(&after) > errors(&c),
+        };
+        if worse {
             left_out.insert(key);
             continue;
         }

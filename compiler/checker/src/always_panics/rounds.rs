@@ -186,15 +186,19 @@ impl Known<'_, '_> {
                     over = middle;
                 }
             }
-            let sign = if *op == AssignOp::Add { "+" } else { "-" };
-            self.errors.push((
-                s.span,
-                format!(
-                    "this always panics: integer overflow: {} {sign} {step} doesn't fit in {} (spec 1.8)",
-                    at(&fine),
-                    p.name()
-                ),
-            ));
+            let (sign, bin) = match op {
+                AssignOp::Add => ("+", BinaryOp::Add),
+                _ => ("-", BinaryOp::Sub),
+            };
+            let message = format!(
+                "this always panics: integer overflow: {} {sign} {step} doesn't fit in {} (spec 1.8)",
+                at(&fine),
+                p.name()
+            );
+            let over = at(&fine) + &signed;
+            let written = super::Written::Assign(target, value);
+            let message = super::with_help(message, p, bin, &over, written);
+            self.errors.push((s.span, message));
         }
     }
 }

@@ -183,3 +183,4 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.10 | [print-takes-sep-and-end.kav](print-takes-sep-and-end.kav) | `sep:` is the text between the values and `end:` the text after the last one, in either order, after the values. | runs |
 | 1.10 | [print-with-no-values-writes-an-empty-line.kav](print-with-no-values-writes-an-empty-line.kav) | `print()` writes an empty line. | runs |
 | 1.10 | [print-writes-text-among-values-as-it-is.kav](print-writes-text-among-values-as-it-is.kav) | Among several values, text is written as it is, while text inside a collection is quoted. | runs |
+| 1.8 | [a-small-overflow-has-two-ways-out.kav](a-small-overflow-has-two-ways-out.kav) | Arithmetic keeps its operands' type; for a wider result, widen the operands first, or wrap on purpose. | runs |

@@ -20,6 +20,7 @@ mod rpc;
 mod suggest;
 mod tokens;
 mod uri;
+mod widen;
 
 use kavach_driver::Compiled;
 use serde_json::{Value, json};

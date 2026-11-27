@@ -110,8 +110,12 @@ impl Holds {
 }
 
 mod contracts;
+mod help;
 mod lets;
 mod rounds;
+
+use help::Written;
+pub use help::widened;
 
 impl Known<'_, '_> {
     /// The value of `e` when the compiler knows it: whole-number literals
@@ -219,18 +223,18 @@ impl Known<'_, '_> {
         let (Some(a), Some(b)) = (self.value(l), self.value(r)) else {
             return;
         };
-        self.arithmetic(e.span, p, op, a, b);
+        self.arithmetic(e.span, p, op, (a, b), Written::Expr(l, r));
     }
 
-    /// `a op b` of type `p`, for `+`, `-` or `*`: its value, or an error at
-    /// `span` when it doesn't fit.
+    /// `a op b` of type `p`, for `+`, `-` or `*`, as `written`: its value,
+    /// or an error at `span` when it doesn't fit.
     fn arithmetic(
         &mut self,
         span: Span,
         p: Prim,
         op: BinaryOp,
-        a: BigInt,
-        b: BigInt,
+        (a, b): (BigInt, BigInt),
+        written: Written,
     ) -> Option<BigInt> {
         // Only the innermost: an operand that overflows was reported.
         if !fits(&a, p) || !fits(&b, p) {
@@ -245,14 +249,22 @@ impl Known<'_, '_> {
         if fits(&v, p) {
             return Some(v);
         }
-        self.errors.push((
-            span,
-            format!(
-                "this always panics: integer overflow: {a} {sign} {b} doesn't fit in {} (spec 1.8)",
-                p.name()
-            ),
-        ));
+        let message = format!(
+            "this always panics: integer overflow: {a} {sign} {b} doesn't fit in {} (spec 1.8)",
+            p.name()
+        );
+        self.errors
+            .push((span, with_help(message, p, op, &v, written)));
         None
+    }
+}
+
+/// `message` with the help line of an overflow of a type smaller than
+/// `Int` (spec 1.8), when it has one.
+fn with_help(message: String, p: Prim, op: BinaryOp, v: &BigInt, written: Written) -> String {
+    match help::help(p, op, v, written) {
+        Some(help) => format!("{message}\nhelp: {help}"),
+        None => message,
     }
 }
 

@@ -1,0 +1,13 @@
+// Rule: Arithmetic keeps its operands' type; for a wider result, widen the operands first, or wrap on purpose.
+// Spec: 1.8
+// expect output: 254
+// expect output: -2
+// expect output: 400
+
+fn main() {
+    const a: Int8 = 127
+    const b: UInt8 = 200
+    print(Int(a) + Int(a))
+    print(a.wrapping_add(a))
+    print(2 * Int(b))
+}

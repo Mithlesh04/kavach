@@ -20,6 +20,7 @@ It uses the same compiler driver as `kavach check`, so the messages are the same
 | `src/complete.rs` | Completion: the names in scope, or after a `.` the fields and methods of the value |
 | `src/deprecated.rs` | A call to a deprecated function rewritten with its `fix`: parameters replaced by the arguments |
 | `src/suggest.rs` | The compiler's suggestions made: the change a message asks for |
+| `src/widen.rs` | An overflow of a type smaller than `Int` widened first, as its help line writes it (spec 1.8) |
 | `src/fixes.rs` | Quick fixes: code that never runs taken out (spec 4.7), found in the compile's syntax tree, and a plain `fn` marked `gpu`; `kavach fix` |
 | `src/tokens.rs` | Semantic tokens: modules and names brought in with `use` (`imported`), built-in methods (`defaultLibrary`) against the program's own |
 | `src/position.rs` | Byte offsets to LSP positions (line, UTF-16 column) and back |

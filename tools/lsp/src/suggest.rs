@@ -97,6 +97,15 @@ pub(crate) fn suggest(
     if message.starts_with("`.unwrap()` panics on `none` and says nothing of why") {
         return say_why(c, base, text, at);
     }
+    // An overflow of a type smaller than `Int` (spec 1.8): widened first.
+    if let Some(wide) = message
+        .split("\nhelp: ")
+        .nth(1)
+        .and_then(|help| help.split("widen first: ").nth(1))
+        .and_then(|rest| rest.split(';').next())
+    {
+        return crate::widen::widen(c, base, text, at, wide);
+    }
     if message.contains("hiding the one declared above") {
         // `let total = total + i` made `total = total + i`: it changes what
         // the code does, so the editor only.

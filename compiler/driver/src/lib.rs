@@ -458,9 +458,13 @@ fn render_at(src: &str, path: &str, first_line: usize, m: &Message) -> String {
         Severity::Error => "error",
         Severity::Warning => "warning",
     };
+    // A `help:` line in the message goes under the code it is about.
+    let (text, help) = match m.text.split_once("\nhelp: ") {
+        Some((text, help)) => (text, format!("help: {help}\n")),
+        None => (m.text.as_str(), String::new()),
+    };
     format!(
-        "{label}: {}\n{gutter}--> {path}:{line_no}:{col}\n{gutter} |\n{line_no} | {}\n{gutter} | {}{}\n\n",
-        m.text,
+        "{label}: {text}\n{gutter}--> {path}:{line_no}:{col}\n{gutter} |\n{line_no} | {}\n{gutter} | {}{}\n{help}\n",
         &src[line_start..line_end],
         " ".repeat(col - 1),
         "^".repeat(width)

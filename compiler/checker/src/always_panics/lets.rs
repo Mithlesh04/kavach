@@ -159,7 +159,7 @@ impl Known<'_, '_> {
         }
         let (a, b) = (self.value(x)?, b?);
         let p = self.whole(x)?;
-        self.arithmetic(s.span, p, op, a, b)
+        self.arithmetic(s.span, p, op, (a, b), super::Written::Assign(x, value))
     }
 
     /// Whether a call of `callee` may change a variable it is given: an
