@@ -41,6 +41,8 @@ export const genericsDoc: LessonDoc = {
       <Ex name="types/generics-construction" />
       <P>When nothing says what a type argument is, the compiler asks for it:</P>
       <Ex name="types/generics-unfixed.fails" />
+      <P>A generic function&apos;s call is the same. Nothing given to <C>empty</C> shows what <C>T</C> is, so it is written at the call, <C>{"empty<String>()"}</C>:</P>
+      <Ex name="types/generics-fn-unfixed.fails" />
       <P>The count must match the type&apos;s parameters:</P>
       <Ex name="types/generics-arity.fails" />
       <H2>Math in generic code</H2>

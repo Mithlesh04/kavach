@@ -78,7 +78,7 @@ export const variablesDoc: LessonDoc = {
       </P>
       <P>A name can&apos;t start with a digit:</P>
       <Ex name="variables/digit.fails" />
-      <P>A keyword can&apos;t be a name either, and the message suggests one:</P>
+      <P>A keyword can&apos;t be a name either, and the message says which keyword it is:</P>
       <Ex name="habits/keyword.fails" />
       <P>Nor can it be declared twice in the same block. An inner block may reuse it, and the outer name comes back after:</P>
       <Ex name="variables/twice.fails" />

@@ -3,7 +3,7 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { specTables } from "@/lib/spec-tables";
-import { Ex, H2, Note, P, Syntax } from "./parts";
+import { Ex, Files, H2, Note, P, Syntax } from "./parts";
 import { Cell } from "./spec-table";
 
 const SPEC = "08-capabilities-and-agents/01-capabilities.md";
@@ -46,7 +46,7 @@ export const capabilitiesDoc: LessonDoc = {
       <Syntax code={"pub fn name(…) -> Result ! Error uses Capability, Other {\n    …\n}"} />
       <Ex name="agents/cap-overview" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>total</C> has no <C>uses</C>: it can&apos;t touch anything outside the program. It only computes.</li>
+        <li><C>total</C> has no <C>uses</C>: it can&apos;t read files, use the network or touch anything else outside the program. Like every function, it could print: <Link href="/docs/agents/capabilities/default-capabilities/"><C>Console</C> is a default</Link>.</li>
         <li><C>save_total</C> says <C>uses Fs.write</C>: it may write files, and do nothing else outside.</li>
         <li><C>main</C> has every built-in capability, so it can call both.</li>
       </ul>
@@ -54,13 +54,14 @@ export const capabilitiesDoc: LessonDoc = {
       <BuiltIns />
       <Note>
         Reading the first line of a function tells you everything it can reach. A library function that says no{" "}
-        <C>uses</C> can&apos;t send your data anywhere: the compiler guarantees it, so you don&apos;t have to read its body.
+        <C>uses</C> can at most print: it can&apos;t read your files or send your data anywhere. The compiler
+        guarantees it, so you don&apos;t have to read its body.
       </Note>
     </>
   ),
   tryIt: {
-    task: <>Write <C>pub fn hello(name: String)</C> that prints a greeting. What must its first line say?</>,
-    answer: <P>It prints, so it must say <C>uses Console</C>: <C>pub fn hello(name: String) uses Console</C>.</P>,
+    task: <>Write <C>pub fn save(name: String)</C> that writes the name to a file. What must its first line say?</>,
+    answer: <P>It writes a file, so it must say <C>uses Fs.write</C>: <C>pub fn save(name: String) ! FsError uses Fs.write</C>. Printing would need nothing written, as <C>Console</C> is a default capability.</P>,
   },
   deeper: (
     <>
@@ -77,18 +78,18 @@ export const capabilitiesDoc: LessonDoc = {
       type: "choice",
       prompt: <>A library you use has <C>pub fn format_price(p: Decimal) -&gt; String</C>, with no <C>uses</C>. What can it do?</>,
       options: [
-        "Only compute its result: it can't read files, use the network or print",
+        "Compute its result, and print: it can't read files or use the network",
         "Anything, as long as it returns a String",
         "Read files, but not use the network",
       ],
       answer: 0,
-      explain: "A pub function must list what it touches. No uses means it touches nothing, and the compiler checks that.",
+      explain: "A pub function must list what it touches beyond the package's defaults, which are Console unless kavach.toml says otherwise. No uses means it touches nothing else, and the compiler checks that.",
     },
   ],
 };
 
 export const usesDoc: LessonDoc = {
-  lead: "A pub function must write its uses clause. A private one may leave it out: the compiler works it out.",
+  lead: "A pub function must write its uses clause for what it uses beyond the package's defaults. A private one may leave it out: the compiler works it out.",
   simple: <><C>uses</C> is like the ingredients label on food: anything sold to others (<C>pub</C>) must carry one. A dish you only cook at home may skip it, and the compiler still knows what went in.</>,
   minutes: 3,
   body: (
@@ -102,12 +103,56 @@ export const usesDoc: LessonDoc = {
       <Ex name="agents/cap-inferred" />
       <P>So a <C>pub</C> function that calls it must list it too:</P>
       <Ex name="agents/cap-inferred-caller.fails" />
+      <H2>Field defaults count where a value is made</H2>
+      <P>
+        A field&apos;s default value is worked out when a value is made without that field. So the code that makes
+        it needs what the default uses. Here <C>Report()</C> runs <C>disk_size()</C>, which reads a file:
+      </P>
+      <Ex name="agents/cap-field-default.fails" />
+    </>
+  ),
+};
+
+export const defaultCapsDoc: LessonDoc = {
+  lead: "Every function in a package may use its default capabilities without writing uses. The default is Console, so print needs no uses; kavach.toml can change it.",
+  simple: <>Some permissions are so common that asking for each one would only add noise. Printing is one: every function may print without saying so. A project that wants every effect written down can turn that off.</>,
+  minutes: 4,
+  before: ["agents/capabilities/uses"],
+  body: (
+    <>
+      <P>
+        <C>greet</C> is <C>pub</C> and prints, but writes no <C>uses</C>: <C>Console</C> is the default, so every
+        function may use it:
+      </P>
+      <Ex name="agents/cap-default" />
+      <P>Writing <C>uses Console</C> anyway is allowed, and changes nothing.</P>
+      <H2>Choosing the defaults</H2>
+      <P>
+        <C>[capabilities] default</C> in <C>kavach.toml</C> lists them. Left out, it is{" "}
+        <C>[&quot;Console&quot;]</C>. Several may be listed. <C>default = []</C> takes them all away, so every
+        effect is written in a <C>uses</C>, printing too:
+      </P>
+      <Files name="agents/cap-default-none.fails" first={["kavach.toml", "src/main.kav"]} outcome="refused" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A default capability is part of every signature other packages see. A package without it must write <C>uses</C> to call code that has it.</li>
+        <li>An agent gets no defaults: it may use only what its <Link href="/docs/agents/agents/can/"><C>can</C></Link> lists, <C>Console</C> too.</li>
+      </ul>
+      <H2>What can&apos;t be a default</H2>
+      <P>
+        <C>System.critical</C>, <C>Approvals</C> and <C>Foreign</C> are always written by name, in a{" "}
+        <C>uses</C>, so a reader always sees them:
+      </P>
+      <Files name="agents/cap-default-foreign.fails" first={["kavach.toml", "src/main.kav"]} outcome="refused" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/decisions/0148-default-capabilities.md" label="decision 0148 · default capabilities" />
+        <SrcRef file={`docs/spec/${SPEC}`} label="spec 8.1 · rule 7" />
+      </div>
     </>
   ),
 };
 
 export const pureDoc: LessonDoc = {
-  lead: "A function without uses is pure: it can't affect the outside world at all.",
+  lead: "A function that uses no capability is pure: it can't affect the outside world at all. With default = [] in kavach.toml, every function without uses is.",
   simple: <>A pure function is like a calculator: it only works out an answer from what you give it, and can&apos;t touch anything else. The same input always gives the same answer, which makes it easy to test.</>,
   minutes: 2,
   body: (
@@ -115,6 +160,7 @@ export const pureDoc: LessonDoc = {
       <Ex name="agents/cap-pure" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A pure function gives the same result for the same arguments, every time. That makes it easy to test.</li>
+        <li>Without <C>uses</C>, a function may still print, as <Link href="/docs/agents/capabilities/default-capabilities/"><C>Console</C> is a default</Link>. A project that sets <C>default = []</C> makes every function without <C>uses</C> pure.</li>
         <li><C>debug()</C> needs no capability: it writes to the error output, and release builds leave it out.</li>
         <li>Logging with <C>std.log</C> needs none either: the program&apos;s owner decides where log events go.</li>
       </ul>
@@ -131,6 +177,12 @@ export const pureDoc: LessonDoc = {
       </ul>
       <P>A function type can set a limit with <C>uses</C>: a function value may then use only what the type lists.</P>
       <Ex name="agents/cap-fn-type.fails" />
+      <P>
+        <C>uses ()</C> lists nothing: such a function value may use no capability at all, not even the
+        package&apos;s defaults. That is what a <Link href="/docs/errors/contracts/require/">contract</Link> needs
+        to call one:
+      </P>
+      <Ex name="agents/cap-fn-type-nothing.fails" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/01-capabilities.md" label="spec 8.1 · capabilities" />
         <SrcRef file="tests/conformance/08-capabilities/function-values-carry-their-makers-rights.kav" label="tested" />

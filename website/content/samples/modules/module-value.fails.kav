@@ -1,0 +1,6 @@
+use std.math
+
+fn main() {
+    const m = math
+    print(m.sqrt(16.0))
+}

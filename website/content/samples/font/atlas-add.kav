@@ -15,7 +15,7 @@ fn sample() -> Font ! Error {
     try font.load(try base64.decode(file))
 }
 
-fn main() ! Error uses Console {
+fn main() ! Error {
     const f = try sample()
     const a = f.atlas("A", 64.0)
     print(`before: glyphs {a.boxes.keys().sort()}, {a.image.width} x {a.image.height}`)

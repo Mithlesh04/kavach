@@ -1,7 +1,7 @@
 type Door: Drop {
     name: String
 
-    fn drop(self) uses Console {
+    fn drop(self) {
         print(`closing {self.name}`)
     }
 }

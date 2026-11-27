@@ -7,7 +7,7 @@ fn time_of(e: Event?) -> Int? {
     e?.time
 }
 
-fn main() uses Console {
+fn main() {
     print(time_of(Event(name: "start", time: 5)) ?? -1)
     print(time_of(Event(name: "later", time: none)) ?? -1)
     print(time_of(none) ?? -1)

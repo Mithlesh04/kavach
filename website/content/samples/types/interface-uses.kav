@@ -1,0 +1,22 @@
+use std.fs
+
+interface Describe {
+    fn describe(self) -> String uses Fs.read
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String uses Fs.read {
+        const note = fs.read_text("notes.txt") catch _ => "no notes"
+        `{self.name}: {note}`
+    }
+}
+
+fn show<T: Describe>(item: T) uses Fs.read {
+    print(item.describe())
+}
+
+fn main() {
+    show(User(name: "Asha"))
+}

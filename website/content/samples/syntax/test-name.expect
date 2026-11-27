@@ -1,0 +1,11 @@
+$ kavach run src/main.kav
+pass
+fail
+$ kavach test --seed 7
+✓ test "a high score passes"
+1 passed, 0 failed
+seed 7
+✓ test  200 cases
+1 functions   1 ✓   0 ✗   1 weakly tested
+weakly tested (no contract or example; only checked for panics):
+  src/main.kav:2   test

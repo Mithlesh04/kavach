@@ -2,7 +2,8 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, H2, Note, P } from "./parts";
+import { specBlock } from "@/lib/spec-tables";
+import { Ex, Files, H2, Note, P } from "./parts";
 
 // ---------- Syntax ----------
 
@@ -112,12 +113,8 @@ export const namesDoc: LessonDoc = {
   ),
 };
 
-const keywords = [
-  "agent", "and", "arena", "as", "assert", "break", "capability", "catch", "const", "continue", "deprecated",
-  "else", "ensure", "example", "extend", "extern", "fail", "false", "fn", "for", "if", "in", "interface",
-  "invariant", "let", "match", "none", "not", "or", "pub", "require", "return", "secret", "self", "spawn",
-  "test", "true", "try", "type", "unsafe", "use", "uses", "var", "while", "with",
-];
+/** The reserved words, read from the block in spec 1.6. */
+const keywords = specBlock("01-basics.md", "1.6").split(/\s+/).filter(Boolean);
 
 export const keywordsDoc: LessonDoc = {
   lead: "Keywords are the words the language itself uses. They can't be used as names.",
@@ -135,8 +132,20 @@ export const keywordsDoc: LessonDoc = {
         <Link href="/docs/basics/variables/let/">let</Link>. A few more words, such as <C>result</C> in a contract,
         are keywords only in one place and ordinary names everywhere else.
       </P>
+      <P>
+        A keyword used as a name is one error, which names the keyword and asks for another name. The compiler
+        reads on past it, so the rest of the file is still checked:
+      </P>
+      <Ex name="syntax/keyword-name.fails" />
       <P>A keyword can&apos;t name a field either: the field could never be read, since <C>r.agent</C> can&apos;t be written.</P>
       <Ex name="syntax/keyword-field.fails" />
+      <H2>test: a keyword in one place</H2>
+      <P>
+        <C>test</C> is a keyword only at the start of a top-level line, before a name in quotes: a{" "}
+        <Link href="/docs/errors/testing/test-blocks/">test block</Link>. Everywhere else it is an ordinary name, so a function, a
+        constant or a field may be called <C>test</C>, in the same file as a test block:
+      </P>
+      <Files name="syntax/test-name" first={["src/main.kav"]} />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/01-basics.md" line={85} symbol="Keywords" label="spec 1.6 · the full list" />
         <SrcRef file="tests/conformance/02-types/a-keyword-cant-name-a-field.kav" label="a keyword as a field, tested" />

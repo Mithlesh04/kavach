@@ -1,0 +1,17 @@
+use std.fs
+
+fn disk_size() -> Int uses Fs.read {
+    (fs.read_text("size.txt") catch _ => "").len()
+}
+
+type Report {
+    size: Int = disk_size()
+}
+
+pub fn empty() -> Report {
+    Report()
+}
+
+fn main() {
+    print(empty().size)
+}

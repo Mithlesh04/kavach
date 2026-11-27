@@ -56,6 +56,8 @@ export const useDoc: LessonDoc = {
       </ul>
       <Ex name="modules/std-runtime-name.fails" />
       <SrcRef file="tests/conformance/14-standard-library/runtime-functions-are-not-named-alone.kav" label="tested" />
+      <P>A module is not a value: it can&apos;t be stored or passed, only used through its names.</P>
+      <Ex name="modules/module-value.fails" />
       <H2>A type through its module</H2>
       <P>
         Without bringing a type in by name, write it through its module, as you write its functions:{" "}

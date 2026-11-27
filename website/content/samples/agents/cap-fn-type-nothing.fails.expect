@@ -1,0 +1,1 @@
+error: this lambda uses Console, but the function type it is given as allows nothing (spec 3.4)

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
@@ -36,15 +37,16 @@ export const outputDoc: LessonDoc = {
 
 export const printDoc: LessonDoc = {
   lead: "Each print call writes exactly one line to standard output.",
-  simple: <>Each <C>print</C> is like writing one line in a notebook: every call starts a fresh line. Writing to the screen is something code must be allowed to do, and Kavach usually sorts out that permission for you.</>,
+  simple: <>Each <C>print</C> is like writing one line in a notebook: every call starts a fresh line. Writing to the screen is something code must be allowed to do, and in Kavach every function is allowed it unless the project says otherwise.</>,
   minutes: 2,
   body: (
     <>
       <Ex name="output/print" />
       <P>
-        Printing needs the <C>Console</C> capability. <C>main</C> has it, and for your own functions the compiler
-        works it out, so a beginner never notices. A <C>pub</C> function, one other files may call, must say it
-        with <C>uses Console</C>: its first line then tells every caller that it writes to the screen.
+        Printing uses the <C>Console</C> capability. It is a{" "}
+        <Link href="/docs/agents/capabilities/default-capabilities/">default capability</Link>: every function may
+        print without writing <C>uses</C>, unless the project&apos;s <C>kavach.toml</C> takes it away. An agent is
+        the one exception: it may print only when its <C>can</C> lists <C>Console</C>.
       </P>
       <H2>What the machine does</H2>
       <P>

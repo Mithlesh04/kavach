@@ -1,0 +1,7 @@
+fn while(n: Int) -> Int {
+    n + 1
+}
+
+fn main() {
+    print(while(1))
+}

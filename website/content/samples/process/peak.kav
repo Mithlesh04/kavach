@@ -1,6 +1,6 @@
 use std.process
 
-fn main() uses Console {
+fn main() {
     let numbers: [Int] = []
     for i in 0..1_000_000 {
         numbers.push(i)

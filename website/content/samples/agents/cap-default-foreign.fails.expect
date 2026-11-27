@@ -1,0 +1,1 @@
+error: `Foreign` can't be a default capability: `Foreign` is always written by name, in `uses` (spec 8.1)

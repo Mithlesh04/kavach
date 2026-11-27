@@ -11,7 +11,7 @@ fn order_pattern() -> regex.Regex ! regex.RegexError {
     try regex.new("order (\d+)")
 }
 
-fn main() uses Console {
+fn main() {
     const r = order_pattern() catch e => panic(`{e}`)
     print(first_number(r, "order 4471 shipped") ?? "none")
     print(first_number(r, "no number here") ?? "none")

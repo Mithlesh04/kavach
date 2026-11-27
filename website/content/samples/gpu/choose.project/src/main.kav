@@ -8,7 +8,7 @@ gpu(1) fn shade(x: Float32) -> Float32 {     // this function's maps on device 1
     x * x
 }
 
-fn main() uses Console, Gpu {
+fn main() uses Gpu {
     const devices = gpu.devices()            // the best first
     for d in devices {
         print(`{d.index}: {d.name} ({d.vendor}, {d.kind})`)

@@ -1,0 +1,4 @@
+fn main() {
+    const words = ["tea", "milk", "sugar"]
+    print(words.sum(w => w))
+}

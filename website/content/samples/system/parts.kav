@@ -1,6 +1,6 @@
 use std.system
 
-fn main() uses Console, System {
+fn main() uses System {
     const volumes = system.volumes()
     print(volumes.len() > 0 and volumes.all(v => v.available <= v.total))
     print(system.disks().all(d => d.size >= 0))

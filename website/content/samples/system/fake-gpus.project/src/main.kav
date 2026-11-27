@@ -1,6 +1,6 @@
 use std.system
 
-fn main() uses Console, System {
+fn main() uses System {
     const gpus = system.gpus()
     print(`{gpus.len()} GPUs`)
     for g in gpus {

@@ -10,7 +10,7 @@ fn place() -> String uses System {
     }
 }
 
-fn main() uses Console, System {
+fn main() uses System {
     const memory = system.memory()
     print(memory.available <= memory.total)
     const where = place()

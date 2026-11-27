@@ -79,6 +79,14 @@ export const requireDoc: LessonDoc = {
         <C>invariant</C>:
       </P>
       <Ex name="contracts/pure.fails" />
+      <P>
+        Nor may a contract use a capability. A function value could do anything the code that made it could, so a
+        contract may call one only when its type says it uses nothing at all: <C>uses ()</C>, which rules out even
+        the package&apos;s default capabilities:
+      </P>
+      <Ex name="contracts/fn-value-pure.fails" />
+      <P>With <C>uses ()</C> in its type, the call is allowed, and a lambda that prints can&apos;t be given:</P>
+      <Ex name="contracts/fn-value-pure" />
     </>
   ),
 };

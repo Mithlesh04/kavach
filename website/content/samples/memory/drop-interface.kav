@@ -9,7 +9,7 @@ type Note: Drop, Named {
         self.text
     }
 
-    fn drop(self) uses Console {
+    fn drop(self) {
         print(`freed {self.text}`)
     }
 }

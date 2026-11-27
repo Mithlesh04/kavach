@@ -5,7 +5,7 @@ fn listening() -> [Int] uses System.critical.read {
     system.ports().filter(p => p.state == "listen").map(p => p.port)
 }
 
-fn main() uses Console, System, System.critical.read {
+fn main() uses System, System.critical.read {
     print(system.running().len() > 0)
     print(listening().all(port => port >= 0 and port <= 65535))
     print(system.user().name != "")

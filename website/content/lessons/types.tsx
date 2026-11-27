@@ -329,6 +329,18 @@ export const interfacesDoc: LessonDoc = {
         promises a <C>get</C> that gives a <C>String</C>:
       </P>
       <Ex name="types/interfaces-same-types.fails" />
+      <H2>What a method may use</H2>
+      <P>
+        An interface method lists its <Link href="/docs/agents/capabilities/">capabilities</Link> with{" "}
+        <C>uses</C>, as a function does. Without <C>uses</C>, it may use only the package&apos;s default
+        capabilities, <C>Console</C> unless <C>kavach.toml</C> says otherwise. An implementation may use only what
+        the interface&apos;s method lists, so code that calls it through a bound such as <C>T: Describe</C> knows
+        what it needs from the interface alone:
+      </P>
+      <Ex name="types/interface-uses" />
+      <P>An implementation that reaches further than its interface says is refused:</P>
+      <Ex name="types/interface-uses-missing.fails" />
+      <SrcRef file="docs/decisions/0147-interfaces-declare-uses.md" label="decision 0147 · interfaces declare uses" />
       <Note>Other languages call this a trait or a protocol.</Note>
     </>
   ),

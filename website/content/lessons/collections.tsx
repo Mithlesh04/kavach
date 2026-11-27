@@ -190,6 +190,9 @@ export const pipelineDoc: LessonDoc = {
         <SrcRef file="compiler/backend/llvm/src/expr.rs" line={331} symbol="Fallback" />
         <SrcRef file="compiler/backend/cranelift/src/codegen.rs" line={435} symbol="only the LLVM backend" />
       </div>
+      <H2>What sum adds</H2>
+      <P><C>sum</C> adds numbers: its function gives each item&apos;s number. A function that gives anything else is refused, with what to write:</P>
+      <Ex name="lists/sum-text.fails" />
       <H2>The first items, and the rest</H2>
       <P>
         <C>scores[:2]</C> is the first two items, and <C>scores[2:]</C> all but them: a <em>slice</em>, written in

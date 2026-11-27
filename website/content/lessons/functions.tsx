@@ -55,6 +55,8 @@ export const declaringDoc: LessonDoc = {
         A function with no <C>-&gt;</C> gives nothing back: it is called for what it does, here printing. It can be
         written above or below the code that calls it.
       </P>
+      <P>So its last line can&apos;t be a value. One there is a mistake, and the message says what to write if a result was meant:</P>
+      <Ex name="functions/no-arrow-value.fails" />
       <H2>One function per name</H2>
       <P>
         Two functions can&apos;t share a name: Kavach has no overloading. The error says what to do instead:

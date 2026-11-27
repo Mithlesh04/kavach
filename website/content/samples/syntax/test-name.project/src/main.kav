@@ -1,0 +1,13 @@
+/// Whether a score passes. `test` is an ordinary name here.
+fn test(score: Int) -> String {
+    if score >= 50 { "pass" } else { "fail" }
+}
+
+fn main() {
+    print(test(72))
+    print(test(31))
+}
+
+test "a high score passes" {
+    assert test(72) == "pass"
+}

@@ -1,9 +1,11 @@
-fn shout(message: String) {
-    print(`{message}!`)
+use std.fs
+
+fn note(name: String) -> String {
+    fs.read_text(name) catch _ => "no note today"
 }
 
 pub fn greet(name: String) {
-    shout(`Namaste, {name}`)
+    print(`Namaste, {name}: {note("note.txt")}`)
 }
 
 fn main() {

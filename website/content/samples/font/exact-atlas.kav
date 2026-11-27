@@ -15,7 +15,7 @@ fn sample() -> Font ! Error {
     try font.load(try base64.decode(file))
 }
 
-fn main() ! Error uses Console {
+fn main() ! Error {
     // The square spans 1.5 to 9 pixels across at 15 pixels to the em.
     const a = (try sample()).atlas("A", 15.0, exact: true)
     print(`exact: {a.exact}`)

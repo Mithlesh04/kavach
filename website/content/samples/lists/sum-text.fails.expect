@@ -1,0 +1,1 @@
+error: `sum` adds numbers, and the function gives `String`: give each item's number, as `words.sum(w => w.len())` (spec 14.2)

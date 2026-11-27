@@ -1,4 +1,4 @@
-fn main() uses Console {
+fn main() {
     let report = ""
     for i in 0..5000 {
         report += `line {i}\n`

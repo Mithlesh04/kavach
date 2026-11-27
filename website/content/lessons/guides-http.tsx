@@ -43,7 +43,7 @@ export const guideHttpDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>An item it doesn&apos;t have is 404. A body that isn&apos;t a <C>Stock</C>, or a count below zero, is 400, and changes nothing.</li>
         <li><C>stock</C> is a <Link href="/docs/memory/shared-state/">Shared</Link> value: the one value every request sees. <C>update</C> changes it with no other request in the middle, so two requests at once never lose a change.</li>
-        <li><C>handle</C> has no <C>uses</C>, so it can&apos;t read a file, open a connection or print. The compiler holds it to that, so what it does is all on the page.</li>
+        <li><C>handle</C> has no <C>uses</C>, so it can&apos;t read a file or open a connection; at most it could print, as every function may. The compiler holds it to that, so what it does is all on the page.</li>
       </ul>
       <H2>3. Serve it</H2>
       <P>

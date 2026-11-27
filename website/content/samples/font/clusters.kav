@@ -15,7 +15,7 @@ fn sample() -> Font ! Error {
     try font.load(try base64.decode(file))
 }
 
-fn main() ! Error uses Console {
+fn main() ! Error {
     const line = (try sample()).shape("AB A", 100.0)
     for g in line.glyphs {
         print(`glyph {g.id} at x {g.x}: character {g.cluster}, moves the pen {g.advance}`)

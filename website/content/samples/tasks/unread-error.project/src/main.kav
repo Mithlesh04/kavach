@@ -4,7 +4,7 @@ fn save(report: String) -> Int ! Error {
     fail Error(`no room for {report}`)
 }
 
-fn main() uses Console, Clock {
+fn main() uses Clock {
     // `_`: nobody waits for this task, on purpose
     const _saving = spawn save("weekly report")
     time.sleep(10.ms)       // the task runs and fails meanwhile

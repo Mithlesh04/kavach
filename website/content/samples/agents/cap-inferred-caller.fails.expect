@@ -1,1 +1,1 @@
-error: `greet` is `pub`, so it must say what it uses: add `uses Console` (through `shout`) (spec 8.1)
+error: `greet` is `pub`, so it must say what it uses: add `uses Fs.read` (through `note`) (spec 8.1)

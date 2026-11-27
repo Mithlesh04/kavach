@@ -76,7 +76,7 @@ import { gpuSumsDoc } from "./gpu-streams";
 import { gpuChooseDoc } from "./speed-gpu-choose";
 import { gpuDrawDoc } from "./speed-gpu-draw";
 import {
-  capabilitiesDoc, declareCapDoc, fsNarrowDoc, implementCapDoc, ownCapsDoc, pureDoc, refusedCapDoc, usesDoc,
+  capabilitiesDoc, declareCapDoc, defaultCapsDoc, fsNarrowDoc, implementCapDoc, ownCapsDoc, pureDoc, refusedCapDoc, usesDoc,
 } from "./agents-capabilities";
 import {
   agentsDoc, canDoc, checksOrderDoc, declareAgentDoc, limitDoc, onDoc, runningDoc,
@@ -402,6 +402,7 @@ export const lessons: Record<string, LessonDoc> = {
   "other-languages/kavach-audit": kavachAuditDoc,
   "agents/capabilities": capabilitiesDoc,
   "agents/capabilities/uses": usesDoc,
+  "agents/capabilities/default-capabilities": defaultCapsDoc,
   "agents/capabilities/pure-functions": pureDoc,
   "agents/capabilities/narrower-file-access": fsNarrowDoc,
   "agents/your-own-capabilities": ownCapsDoc,

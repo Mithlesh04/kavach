@@ -2,11 +2,11 @@ fn save(report: String) -> Int ! Error {
     fail Error(`no room for {report}`)
 }
 
-fn greet(name: String) uses Console {
+fn greet(name: String) {
     print(`hello, {name}`)
 }
 
-fn main() uses Console {
+fn main() {
     spawn greet("ann")              // nobody waits for it
     spawn save("weekly report")     // nor for this one, and its error is printed
     print("main goes on")

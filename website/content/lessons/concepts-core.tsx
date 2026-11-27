@@ -98,7 +98,7 @@ export const conceptErrorsDoc: LessonDoc = {
 };
 
 export const conceptCapabilitiesDoc: LessonDoc = {
-  lead: "A function's type says what it may touch: files, the network, the clock, a payment API. A function that says nothing touches nothing, and the compiler holds every function to what it says.",
+  lead: "A function's type says what it may touch: files, the network, the clock, a payment API. A function that says nothing touches nothing beyond the project's defaults, printing unless kavach.toml takes it away, and the compiler holds every function to what it says.",
   simple: <>Before you let a program, or an AI agent, run on your computer, you want to know what it can do. In Kavach, every function says that in its first line, and it can&apos;t do anything else.</>,
   minutes: 6,
   before: ["agents/capabilities"],
@@ -122,7 +122,11 @@ export const conceptCapabilitiesDoc: LessonDoc = {
         outside shows what it does:
       </P>
       <Ex name="agents/cap-pub.fails" />
-      <P>A function with no <C>uses</C> is pure: it can only compute, so what it does is all in front of you:</P>
+      <P>
+        A function with no <C>uses</C> can only compute, and print: <C>Console</C> is the one{" "}
+        <Link href="/docs/agents/capabilities/default-capabilities/">default capability</Link>. With{" "}
+        <C>default = []</C> in <C>kavach.toml</C>, it is pure, so what it does is all in front of you:
+      </P>
       <Ex name="agents/cap-pure" />
       <ul className={ul}>
         <li>Outside systems are capability types with implementations you can swap, so a test passes a fake.</li>

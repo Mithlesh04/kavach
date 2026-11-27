@@ -211,7 +211,7 @@ export const canDoc: LessonDoc = {
   body: (
     <>
       <Ex name="agents/sub-can.fails" />
-      <P>Built-in capabilities count too. A handler that prints needs <C>Console</C> in <C>can</C>:</P>
+      <P>Built-in capabilities count too, and an agent gets no defaults. A handler that prints needs <C>Console</C> in <C>can</C>:</P>
       <Ex name="agents/agent-console.fails" />
       <Note>The compiler works out what each handler uses, including through the functions it calls, so nothing slips past.</Note>
     </>

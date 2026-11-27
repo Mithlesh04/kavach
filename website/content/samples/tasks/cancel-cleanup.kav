@@ -5,7 +5,7 @@ use std.time
 type Seat: Drop {
     free: Shared<Int>
 
-    fn drop(self) uses Console {
+    fn drop(self) {
         const _ = self.free.update(n => n + 1)
         print("seat given back")
     }
@@ -16,7 +16,7 @@ fn sit(free: Shared<Int>) -> Seat {
     Seat(free: free)
 }
 
-fn main() uses Console, Clock {
+fn main() uses Clock {
     const free = Shared(2)
     const (seated, ready) = Channel<Bool>(capacity: 1)
     const guest = spawn {

@@ -1,0 +1,9 @@
+fn apply(f: fn(Int) -> Int, x: Int) -> Int
+    require f(x) >= 0
+{
+    f(x)
+}
+
+fn main() {
+    print(apply(n => n * 2, 21))
+}

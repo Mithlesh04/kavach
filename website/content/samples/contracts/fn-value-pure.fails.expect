@@ -1,0 +1,1 @@
+error: `f` may use capabilities, and contracts must be pure: give it the type `fn(Int) -> Int uses ()` (spec 7.5)

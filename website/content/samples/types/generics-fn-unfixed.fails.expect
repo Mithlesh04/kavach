@@ -1,0 +1,1 @@
+error: nothing here says what `T` of `empty` is: write it at the call, as `empty<Int>(…)` (spec 2.9)

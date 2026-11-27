@@ -1,0 +1,8 @@
+fn empty<T>() -> [T] {
+    []
+}
+
+fn main() {
+    const names = empty()
+    print(names.len())
+}

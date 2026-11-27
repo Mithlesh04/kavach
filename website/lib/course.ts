@@ -166,7 +166,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["How Tasks Run", "9.8"],
   ]],
   ["agents", "Capabilities & Agents", "intermediate", [
-    ["Capabilities", "8.1", ["uses", "Pure functions", "Narrower file access"]],
+    ["Capabilities", "8.1", ["uses", "Default capabilities", "Pure functions", "Narrower file access"]],
     ["Your Own Capabilities", "8.2", ["Declaring a capability", "Implementing one", "When a call is refused"]],
     ["Agents", "8.3", ["Declaring an agent", "model", "settings", "can", "limit", "approve", "The order of checks", "on: events"]],
     ["Running an Agent", "8.8"],

@@ -1,0 +1,1 @@
+error: `User.describe` uses Fs.read, but `Describe.describe` uses only Console: an implementation may use only what its interface's method lists, so add `uses Fs.read` to `Describe.describe` or stop using it here (spec 2.8)

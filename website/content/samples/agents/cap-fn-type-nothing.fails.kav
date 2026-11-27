@@ -1,0 +1,10 @@
+fn apply(f: fn(Int) -> Int uses (), x: Int) -> Int {
+    f(x)
+}
+
+fn main() {
+    print(apply(n => {
+        print("doubling")
+        n * 2
+    }, 21))
+}
