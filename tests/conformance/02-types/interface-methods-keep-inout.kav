@@ -10,7 +10,7 @@ type Step: Counter {     // error: `n` of `Step.bump` is not `inout`
     size: Int
 
     fn bump(self, n: Int) {
-        print(n + self.size)
+        const _ = n + self.size
     }
 }
 

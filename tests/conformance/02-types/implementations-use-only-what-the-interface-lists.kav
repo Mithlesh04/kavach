@@ -1,0 +1,25 @@
+// Rule: A method that implements an interface's method may use only the capabilities the interface's method lists.
+// Spec: 2.8
+// expect compile error
+
+use std.fs
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String uses Fs.read {   // error: `Describe.describe` doesn't list Fs.read
+        if fs.exists(self.name) { "file" } else { self.name }
+    }
+}
+
+pub fn show(x: Describe) -> String {
+    x.describe()
+}
+
+fn main() {
+    print(show(User(name: "Ann")))
+}

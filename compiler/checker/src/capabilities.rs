@@ -52,6 +52,9 @@ struct FnInfo<'f> {
     declared: Option<BTreeSet<String>>,
     /// The agent whose handler it is: then `declared` is the agent's `can`.
     agent: Option<&'f str>,
+    /// An interface's method: what its `uses` lists is all a caller
+    /// knows, and all an implementation may use (decision 0147).
+    iface: bool,
 }
 
 /// Whether `declared` covers `cap`: `Payments` covers `Payments.refund`.
@@ -102,7 +105,8 @@ impl Checker<'_> {
                        f: &'f FnDecl,
                        is_pub: bool,
                        fixed: Option<BTreeSet<String>>,
-                       agent: Option<&'f str>| {
+                       agent: Option<&'f str>,
+                       iface: bool| {
             if let Some(&def) = c.decl.get(&f.name.span.start) {
                 let listed: BTreeSet<String> = f
                     .uses
@@ -117,7 +121,7 @@ impl Checker<'_> {
                     .collect();
                 let declared = match fixed {
                     Some(d) => Some(d),
-                    None if f.uses.is_empty() => None,
+                    None if f.uses.is_empty() && !iface => None,
                     None => Some(listed),
                 };
                 out.insert(
@@ -127,6 +131,7 @@ impl Checker<'_> {
                         is_pub,
                         declared,
                         agent,
+                        iface,
                     },
                 );
             }
@@ -134,7 +139,15 @@ impl Checker<'_> {
         for item in &file.items {
             let methods = match &item.kind {
                 ItemKind::Fn(f) => {
-                    add(self, f, item.is_pub, None, None);
+                    add(self, f, item.is_pub, None, None, false);
+                    continue;
+                }
+                ItemKind::Interface(i) => {
+                    for m in &i.methods {
+                        if let ItemKind::Fn(f) = &m.kind {
+                            add(self, f, true, None, None, true);
+                        }
+                    }
                     continue;
                 }
                 ItemKind::Type(t) => match &t.body {
@@ -147,7 +160,7 @@ impl Checker<'_> {
                     for m in &c.methods {
                         if let ItemKind::Fn(f) = &m.kind {
                             let own = format!("{}.{}", c.name.name, f.name.name);
-                            add(self, f, true, Some(BTreeSet::from([own])), None);
+                            add(self, f, true, Some(BTreeSet::from([own])), None, false);
                         }
                     }
                     continue;
@@ -172,7 +185,7 @@ impl Checker<'_> {
                         .collect();
                     for m in &a.members {
                         if let AgentMember::On(f) = m {
-                            add(self, f, true, Some(can.clone()), Some(&a.name.name));
+                            add(self, f, true, Some(can.clone()), Some(&a.name.name), false);
                         }
                     }
                     continue;
@@ -181,7 +194,7 @@ impl Checker<'_> {
             };
             for m in methods {
                 if let ItemKind::Fn(f) = &m.kind {
-                    add(self, f, m.is_pub, None, None);
+                    add(self, f, m.is_pub, None, None, false);
                 }
             }
         }
@@ -265,10 +278,10 @@ impl Checker<'_> {
                     ),
                 };
                 if n.in_contract {
-                    // Direct and declared uses are reported where the call is
-                    // checked; here only uses inferred through a function.
-                    let inferred = matches!(&n.need, Need::Fn(f) if infos.get(f).is_some_and(|i| i.declared.is_none()));
-                    if let (true, Some(callee), Some(cap)) = (inferred, what, caps.iter().next()) {
+                    // Direct and written uses are reported where the call is
+                    // checked; here only uses a function doesn't write.
+                    let unwritten = matches!(&n.need, Need::Fn(f) if infos.get(f).is_some_and(|i| i.decl.uses.is_empty()));
+                    if let (true, Some(callee), Some(cap)) = (unwritten, what, caps.iter().next()) {
                         errors.push((n.span, format!("a contract can't call `{callee}`: it uses {cap}, and contracts must be pure (spec 7.5)")));
                     }
                     continue;
@@ -357,6 +370,12 @@ impl Checker<'_> {
                 }
             }
         }
+        // An implementation uses only what its interface's method lists.
+        let allowed = (infos.iter())
+            .filter(|(_, i)| i.iface)
+            .map(|(d, i)| (*d, i.declared.clone().unwrap_or_default()))
+            .collect();
+        errors.extend(self.implementations_overreach(&effective, &allowed));
         let lambdas = std::mem::take(&mut self.lambda_needs);
         errors.extend(self.limits_broken(&effective, &lambdas));
         errors.sort_by_key(|(s, _)| s.start);

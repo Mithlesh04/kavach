@@ -1,0 +1,25 @@
+// Rule: An interface method lists its capabilities with `uses`; an implementation may use them, and a caller through the interface needs them.
+// Spec: 2.8
+// expect output: false
+
+use std.fs
+
+interface Store {
+    fn has(self, name: String) -> Bool uses Fs.read
+}
+
+type Folder: Store {
+    path: String
+
+    fn has(self, name: String) -> Bool uses Fs.read {
+        fs.exists(`{self.path}/{name}`)
+    }
+}
+
+pub fn check(s: Store) -> Bool uses Fs.read {
+    s.has("no-such-file.txt")
+}
+
+fn main() {
+    print(check(Folder(path: ".")))
+}

@@ -1,0 +1,11 @@
+// Rule: Calling a method through an interface value needs what the interface's method lists.
+// Spec: 2.8
+// expect compile error
+
+interface Report {
+    fn write(self) -> Bool uses Fs
+}
+
+pub fn save(r: Report) -> Bool {
+    r.write()                   // error: `write` uses Fs, which `save` doesn't list
+}

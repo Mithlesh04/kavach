@@ -26,3 +26,11 @@ A maintainer chose (2026-11-26):
 
 - **Pay when boxing:** making an interface value pays for its type's methods' capabilities, as making a function value does. Rejected: the cost shows where the value is made, not where the call is, and generic bounds need a second rule.
 - **Both, with generics charged at each instantiation:** most flexible, most work, and the signature no longer tells the whole story.
+
+## Built, and points for a maintainer's review
+
+Built on 2026-11-27 (spec 2.8). Where this record didn't settle a point, the simplest option that fits it was taken. Each is **for a maintainer's review**:
+
+1. **What an implementation uses is what it is compared with**, written or inferred: a private method without `uses` that reads a file breaks the rule as one that writes `uses Fs.read` does.
+2. **The error is on the implementing method**, and names the interface's method: add the capability to the interface's method, or stop using it there.
+3. **A contract can't call an interface's method that lists a capability** (7.5), as it can't call a function that does. With default capabilities ([decision 0148](0148-default-capabilities.md)), see that record's points.

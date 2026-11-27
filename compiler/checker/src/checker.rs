@@ -295,6 +295,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) literal_uses: Vec<crate::literals::LiteralUse>,
     /// Numbers in types (spec 2.9, `sizes.rs`).
     pub(crate) sizes: crate::sizes::Sizes,
+    /// Capabilities outside functions' bodies (`cap_parts.rs`).
+    pub(crate) caps: crate::cap_parts::CapParts,
 }
 
 impl<'a> Checker<'a> {
@@ -403,6 +405,7 @@ impl<'a> Checker<'a> {
             literal_tags: HashMap::new(),
             literal_uses: Vec::new(),
             sizes: Default::default(),
+            caps: Default::default(),
         }
     }
 

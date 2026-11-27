@@ -46,7 +46,7 @@ type Name: Getter<String> {
 }
 ```
 
-**An interface method says what it may use** ([decision 0147](../../decisions/0147-interfaces-declare-uses.md); *not built yet*: today an interface method has no `uses`, and an implementation's is not compared). It lists its capabilities with `uses`, as a function does (8.1), and one without `uses` may use only the package's default capabilities (8.1, rule 7). An implementation may use only what the interface's method lists, so code that calls the method through the interface, or through a generic bound such as `T: Describe`, needs exactly that, and knows it from the interface alone:
+**An interface method says what it may use** ([decision 0147](../../decisions/0147-interfaces-declare-uses.md)). It lists its capabilities with `uses`, as a function does (8.1), and one without `uses` may use only the package's default capabilities (8.1, rule 7). An implementation may use only what the interface's method lists, so code that calls the method through the interface, or through a generic bound such as `T: Describe`, needs exactly that, and knows it from the interface alone:
 
 ```kavach
 interface Report {

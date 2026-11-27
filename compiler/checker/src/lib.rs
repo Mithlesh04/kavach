@@ -19,6 +19,7 @@ mod builtin_methods;
 mod builtins;
 mod c_functions;
 mod calls;
+mod cap_parts;
 mod capabilities;
 mod chains;
 mod changes;

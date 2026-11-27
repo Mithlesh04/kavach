@@ -110,6 +110,16 @@ impl Checker<'_> {
                     );
                     continue;
                 };
+                // Its `uses`, once capabilities are known (decision 0147).
+                if let (Some(m), Some(w)) = (have.def, want.def) {
+                    self.note_implements(crate::cap_parts::Implements {
+                        method: m,
+                        shown: format!("{name}.{method}"),
+                        wanted: w,
+                        wanted_shown: format!("{iface_name}.{method}"),
+                        span: i.span,
+                    });
+                }
                 if have.params.len() != want.params.len() {
                     self.error(
                         i.span,
