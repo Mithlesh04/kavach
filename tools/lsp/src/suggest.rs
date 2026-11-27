@@ -279,7 +279,13 @@ mod tests {
     fn fixed(src: &str) -> (String, bool) {
         let c = kavach_driver::compile(src, "fix.kav", Default::default());
         let m = c.messages.first().expect("a message");
-        let at = (m.span.start - c.files[0].start) as usize;
+        // The program's own file, not a standard library module it uses.
+        let file = c
+            .files
+            .iter()
+            .find(|f| f.path == "fix.kav")
+            .expect("fix.kav");
+        let at = (m.span.start - file.start) as usize;
         let e = crate::fixes::fix(&c, "fix.kav", src, &m.text, at).expect("a fix");
         (
             format!("{}{}{}", &src[..e.from], e.text, &src[e.to..]),
@@ -311,16 +317,18 @@ mod tests {
                 "    x % 2 == 0\n",
             ),
             (
-                "pub fn hi() {\n    print(\"hi\")\n}\n\nfn main() {\n    hi()\n}\n",
-                "pub fn hi() uses Console {\n",
+                // `Console` is a default capability (spec 8.1, rule 7), so
+                // these use `Clock`, which a function must still write.
+                "use std.time\n\npub fn hi() {\n    time.sleep(1.ms)\n}\n\nfn main() {\n    hi()\n}\n",
+                "pub fn hi() uses Clock {\n",
             ),
             (
-                "pub fn hi(n: Int)\n    require n > 0\n{\n    print(n)\n}\n\nfn main() {\n    hi(1)\n}\n",
-                "pub fn hi(n: Int)\n    uses Console\n    require n > 0\n{",
+                "use std.time\n\npub fn hi(n: Int)\n    require n > 0\n{\n    time.sleep(1.ms)\n}\n\nfn main() {\n    hi(1)\n}\n",
+                "pub fn hi(n: Int)\n    uses Clock\n    require n > 0\n{",
             ),
             (
-                "fn shout(s: String) uses Fs {\n    print(s)\n}\n\nfn main() {\n    shout(\"x\")\n}\n",
-                "fn shout(s: String) uses Fs, Console {\n",
+                "use std.time\n\nfn shout(s: String) uses Fs {\n    print(s)\n    time.sleep(1.ms)\n}\n\nfn main() {\n    shout(\"x\")\n}\n",
+                "fn shout(s: String) uses Fs, Clock {\n",
             ),
         ];
         for (src, want) in cases {
