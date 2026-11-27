@@ -139,6 +139,8 @@ const TABLE: &[(&str, &[&str])] = &[
             "re-exports names",
             "names each item type",
             "is outside `main`",
+            "is a module, not a value",
+            "is a type parameter, not a value",
         ],
     ),
     ("no-value", &["returns nothing"]),
