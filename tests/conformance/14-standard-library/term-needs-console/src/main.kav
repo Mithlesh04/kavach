@@ -1,4 +1,4 @@
-// Rule: `std.term` needs `Console`: a function that colors text must list it.
+// Rule: `std.term` needs `Console`: in a package without default capabilities, a function that colors text must list it.
 // Spec: 14.13
 // expect compile error
 

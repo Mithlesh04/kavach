@@ -319,6 +319,7 @@ impl EnvConfig {
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
     pub package: Package,
+    pub capabilities: crate::default_caps::CapabilitiesConfig,
     pub limits: Limits,
     pub test: TestConfig,
     pub ai: AiConfig,
@@ -353,6 +354,7 @@ impl Config {
     /// error reads like the compiler's: what is wrong, then where.
     fn parse_file(text: &str, path: &Path) -> Result<Config, String> {
         let config: Config = Config::parse_toml(text, path)?;
+        crate::default_caps::check(&config.capabilities, text, &relative_path(path))?;
         let edition = &config.package.edition;
         if !edition.is_empty() && !EDITIONS.contains(&edition.as_str()) {
             let line = (text
@@ -435,42 +437,6 @@ impl Config {
             }
         }
         Ok(Config::default())
-    }
-
-    /// The compiler options for `file`, with its own line limit if
-    /// `[limits.files]` gives it one.
-    pub fn options_for(&self, file: &Path) -> crate::Options {
-        let log_otlp = self.log.otlp.is_some();
-        let mut limits = self.limits.clone();
-        if let Some(root) = &self.root {
-            let full = std::fs::canonicalize(file).unwrap_or_else(|_| file.to_path_buf());
-            if let Ok(rel) = full.strip_prefix(root) {
-                let rel = rel.to_string_lossy().replace('\\', "/");
-                if let Some(n) = self.limits.files.get(&rel) {
-                    limits.file_lines = *n;
-                }
-            }
-        }
-        let packages: Vec<crate::deps::Package> = self
-            .root
-            .as_deref()
-            .map(|r| crate::deps::resolve(r, false))
-            .and_then(Result::ok)
-            .unwrap_or_default();
-        let unsafe_packages = packages
-            .iter()
-            .filter(|p| p.allow_unsafe)
-            .map(|p| p.name.clone())
-            .collect();
-        let granted = packages.into_iter().map(|p| (p.name, p.granted)).collect();
-        crate::Options {
-            allow_unsafe: self.package.allow_unsafe,
-            unsafe_packages,
-            granted,
-            limits,
-            log_otlp,
-            library: false,
-        }
     }
 }
 

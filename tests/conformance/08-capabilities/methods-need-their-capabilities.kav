@@ -2,14 +2,16 @@
 // Spec: 8.1
 // expect compile error
 
-type Note {
-    text: String
+use std.fs
 
-    fn show(self) uses Console {
-        print(self.text)
+type Note {
+    path: String
+
+    fn saved(self) -> Bool uses Fs.read {
+        fs.exists(self.path)
     }
 }
 
-pub fn work(n: Note) uses Fs {
-    n.show()                    // error: `show` uses Console, which `work` doesn't list
+pub fn work(n: Note) -> Bool uses Net {
+    n.saved()                   // error: `saved` uses Fs.read, which `work` doesn't list
 }

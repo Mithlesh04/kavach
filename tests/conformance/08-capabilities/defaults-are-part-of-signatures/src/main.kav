@@ -1,0 +1,13 @@
+// Rule: A default capability counts in what a function of another package uses, so a package whose own defaults lack it must write `uses` to call that function.
+// Spec: 8.1
+// expect compile error
+
+use loud
+
+pub fn greet() {
+    loud.hello()                // error: `hello` uses Console, which this package's defaults don't give
+}
+
+fn main() {
+    greet()
+}

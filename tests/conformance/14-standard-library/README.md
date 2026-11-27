@@ -266,7 +266,7 @@ The tests are listed in five files, by area:
 | 14.6 | [cli-parse-refuses-an-option-without-its-value.kav](cli-parse-refuses-an-option-without-its-value.kav) | an option that needs a value but comes last, with none, is a `CliError` naming it. | runs |
 | 14.6 | [cli-parse-refuses-an-unknown-option.kav](cli-parse-refuses-an-unknown-option.kav) | an option that is no field of the type is a `CliError` naming it, not silently skipped. | runs |
 | 14.6 | [io-input-ends-with-none.kav](io-input-ends-with-none.kav) | at the end of standard input, `io.read_line` and `io.read_hidden` give `none`; `io.write` prints without a line end; `io.is_terminal` is `false` under a test runner. | runs |
-| 14.6 | [io-needs-console.kav](io-needs-console.kav) | `std.io` reads and writes the console, so it needs `Console`. | compile error |
+| 14.6 | [io-needs-console/](io-needs-console/src/main.kav) | `std.io` reads and writes the console, so it needs `Console` where it isn't a default capability. | compile error |
 | 11.8, 14.7 | [test-a-failed-assert-fails-the-test.kav](test-a-failed-assert-fails-the-test.kav) | A `test` block whose `assert` is false fails the test run. | tests fail |
 | 14.7 | [test-gen-int-from-above-to-fails.kav](test-gen-int-from-above-to-fails.kav) | `gen.int(from, to)` needs `from` no larger than `to`; a `sample` that asks for an empty range fails the test run. | tests fail |
 | 14.7 | [test-gen-int-stays-in-its-range.kav](test-gen-int-stays-in-its-range.kav) | `gen.int(from, to)` gives an `Int` from `from` to `to`, both included, so generated values meet the `ensure`s that count on it. | tests pass |

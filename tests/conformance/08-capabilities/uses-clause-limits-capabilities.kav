@@ -1,7 +1,9 @@
-// Rule: A function with a `uses` clause can only use the capabilities it lists.
+// Rule: A function with a `uses` clause can only use the capabilities it lists, and the package's defaults.
 // Spec: 8.1
 // expect compile error
 
-fn save(text: String) uses Fs {
-    print(text)                 // error: Console is not listed in `uses Fs`
+use std.fs
+
+fn save(path: String) -> Bool uses Fs.write {
+    fs.exists(path)             // error: Fs.read is not listed in `uses Fs.write`
 }

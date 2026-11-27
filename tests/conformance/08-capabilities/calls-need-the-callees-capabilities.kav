@@ -2,10 +2,12 @@
 // Spec: 8.1
 // expect compile error
 
-fn log(message: String) uses Console {
-    print(message)
+use std.fs
+
+fn has(path: String) -> Bool uses Fs.read {
+    fs.exists(path)
 }
 
-pub fn work() uses Fs {
-    log("working")              // error: `log` uses Console, which `work` doesn't list
+pub fn work() -> Bool uses Net {
+    has("notes.txt")            // error: `has` uses Fs.read, which `work` doesn't list
 }

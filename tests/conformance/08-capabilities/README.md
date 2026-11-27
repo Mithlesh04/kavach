@@ -4,8 +4,8 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 
 | Spec | Test | Rule | Expects |
 |---|---|---|---|
-| 8.1 | [pub-functions-list-their-uses.kav](pub-functions-list-their-uses.kav) | A `pub` function must write its `uses` clause. | compile error |
-| 8.1 | [uses-clause-limits-capabilities.kav](uses-clause-limits-capabilities.kav) | A function with a `uses` clause can only use the capabilities it lists. | compile error |
+| 8.1 | [pub-functions-list-their-uses.kav](pub-functions-list-their-uses.kav) | A `pub` function must write its `uses` clause for what it uses beyond the package's defaults. | compile error |
+| 8.1 | [uses-clause-limits-capabilities.kav](uses-clause-limits-capabilities.kav) | A function with a `uses` clause can only use the capabilities it lists, and the package's defaults. | compile error |
 | 8.1 | [calls-need-the-callees-capabilities.kav](calls-need-the-callees-capabilities.kav) | A function may only call functions whose capabilities it also has. | compile error |
 | 8.1 | [private-functions-infer-uses.kav](private-functions-infer-uses.kav) | A private function may leave out `uses`; the compiler infers it. | runs |
 | 8.1 | [inferred-uses-reach-pub-functions.kav](inferred-uses-reach-pub-functions.kav) | Inferred capabilities count when a `pub` function calls a private one. | compile error |
@@ -73,3 +73,8 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.6 | [audit-log-that-cant-be-written-refuses.kav](audit-log-that-cant-be-written-refuses.kav) | An audit log that can't be written refuses the agent's calls: the call whose entry failed has run, and the next one is refused with `Denied`. | runs |
 | 3.4, 8.1 | [function-types-limit-what-functions-use.kav](function-types-limit-what-functions-use.kav) | With `uses` in a function type, a function value may use only what the type lists. | compile error |
 | 8.1 | [function-values-carry-their-makers-rights.kav](function-values-carry-their-makers-rights.kav) | The code that makes a function value pays for what it uses; a pure function can call what it is given. | runs |
+| 8.1 | [functions-print-without-uses.kav](functions-print-without-uses.kav) | A function without `uses` may use the package's default capabilities, `Console` unless `kavach.toml` says otherwise. | runs |
+| 8.1 | [no-default-capabilities/](no-default-capabilities/src/main.kav) | With `default = []` in `[capabilities]`, a function has no default capabilities, so a `pub` function that prints must write `uses Console`. | compile error |
+| 8.1 | [defaults-are-part-of-signatures/](defaults-are-part-of-signatures/src/main.kav) | A default capability counts in what another package's function uses, so a package whose defaults lack it must write `uses` to call that function. | compile error |
+| 8.1, 8.3 | [agents-get-no-default-capabilities.kav](agents-get-no-default-capabilities.kav) | An agent gets no default capabilities: its handlers may use only what its `can` lists. | compile error |
+| 8.1, 2.8 | [no-defaults-reach-implementations/](no-defaults-reach-implementations/src/main.kav) | Without default capabilities, an implementation that prints needs an interface method that lists `Console`. | compile error |

@@ -1,0 +1,11 @@
+// Rule: A function without `uses` may use the package's default capabilities, `Console` unless `kavach.toml` says otherwise, so a `pub` function may print without writing `uses`.
+// Spec: 8.1
+// expect output: hello Ann
+
+pub fn greet(name: String) {
+    print(`hello {name}`)
+}
+
+fn main() {
+    greet("Ann")
+}

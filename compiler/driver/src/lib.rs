@@ -9,6 +9,7 @@
 mod agent_config;
 pub mod codes;
 mod config;
+mod default_caps;
 pub mod deps;
 mod fetch_checks;
 mod frozen;
@@ -18,6 +19,7 @@ mod indexing;
 mod limits;
 mod lock_file;
 mod operators;
+mod options;
 mod project;
 mod run_config;
 mod schema;
@@ -37,6 +39,7 @@ pub use config::{
 use kavach_ast::{File, Item, Span};
 pub use kavach_checker::{AiModel, Prim, Ty};
 use kavach_resolver::Resolution;
+pub use options::Options;
 pub use project::{Source, SourceFile, project_sources};
 pub use run_config::{set_watch_nan, watch_nan};
 pub use schema::{NO_SCHEMA, ask_schema, describe_def, describe_fn, json_schema};
@@ -45,25 +48,6 @@ use std_modules::{BUILTIN, is_builtin};
 pub use version::{
     compiler_version, find_marked, marked, program_icon, program_version, set_build_options,
 };
-
-/// What the compiler is told about a file, usually from `kavach.toml`
-/// (see [`Config::options_for`]).
-#[derive(Clone, Debug, Default)]
-pub struct Options {
-    /// `unsafe = true` in `[package]` (spec 6.4).
-    pub allow_unsafe: bool,
-    /// The dependencies allowed to use `unsafe` (spec 10.12).
-    pub unsafe_packages: Vec<String>,
-    /// Each dependency with the capabilities it is granted (spec 10.12).
-    pub granted: Vec<(String, Vec<String>)>,
-    pub limits: Limits,
-    /// Whether `kavach.toml` has a `[log.otlp]` collector (14.12), which an
-    /// agent's `Audit(otlp: true)` needs (spec 8.6).
-    pub log_otlp: bool,
-    /// Compiled as a library, as `kavach build --lib` does (spec 10.10):
-    /// it may offer names with `pub(out)` even outside `src/lib.kav`.
-    pub library: bool,
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Severity {
@@ -298,12 +282,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     resolution.errors.extend(twice);
     project::unqualify(&mut parsed.file, &resolution);
     clock.lap("resolve");
-    let checker_options = kavach_checker::Options {
-        allow_unsafe: options.allow_unsafe,
-        unsafe_packages: options.unsafe_packages.clone(),
-        granted: options.granted.clone(),
-    };
-    let mut checked = kavach_checker::check(&parsed.file, &resolution, checker_options);
+    let mut checked = kavach_checker::check(&parsed.file, &resolution, options.checker());
     clock.lap("check");
     // A script's constants that use a capability are its statements (1.13).
     resolution

@@ -1,0 +1,4 @@
+/// Prints without `uses`: `Console` is this package's default.
+pub(out) fn hello() {
+    print("hello")
+}

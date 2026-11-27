@@ -48,6 +48,7 @@ pub(crate) fn lock_text(
                 root: PathBuf::new(),
                 allow_unsafe: false,
                 granted: Vec::new(),
+                defaults: None,
                 git: Some((url.clone(), commit.clone())),
             });
         }

@@ -1,0 +1,11 @@
+// Rule: With `default = []` in `[capabilities]`, a function has no default capabilities, so a `pub` function that prints must write `uses Console`.
+// Spec: 8.1
+// expect compile error
+
+pub fn greet(name: String) {
+    print(`hello {name}`)       // error: `greet` is pub and the package has no default capabilities
+}
+
+fn main() {
+    greet("Ann")
+}

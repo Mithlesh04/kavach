@@ -1,0 +1,24 @@
+// Rule: Without default capabilities, an implementation that prints needs an interface method that lists `Console`, so code calling it through a generic bound can't print unseen.
+// Spec: 8.1, 2.8
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String uses Console {   // error: `Describe.describe` uses nothing
+        print("leak")
+        self.name
+    }
+}
+
+pub fn show<T: Describe>(x: T) -> String {
+    x.describe()
+}
+
+fn main() {
+    print(show(User(name: "a")))
+}

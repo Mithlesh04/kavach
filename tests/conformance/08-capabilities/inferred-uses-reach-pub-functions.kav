@@ -2,10 +2,12 @@
 // Spec: 8.1
 // expect compile error
 
-fn shout(text: String) {
-    print(text.upper())
+use std.fs
+
+fn has(path: String) -> Bool {
+    fs.exists(path)
 }
 
-pub fn announce(text: String) {
-    shout(text)                 // error: `shout` uses Console, so `announce` must say `uses Console`
+pub fn ready() -> Bool {
+    has("ready.txt")            // error: `has` uses Fs.read, so `ready` must say `uses Fs.read`
 }

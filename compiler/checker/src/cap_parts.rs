@@ -4,7 +4,8 @@
 
 //! Capabilities outside a function's own body (spec 8.1, 2.8): an
 //! implementation may use only what its interface's method lists
-//! (decision 0147).
+//! (decision 0147), and each package's default capabilities (decision
+//! 0148).
 
 use crate::checker::Checker;
 use kavach_ast::Span;
@@ -30,7 +31,26 @@ pub(crate) struct CapParts {
     pub(crate) implements: Vec<Implements>,
 }
 
+/// What a package may use when `kavach.toml` doesn't say (spec 8.1).
+const DEFAULT: &str = "Console";
+
 impl Checker<'_> {
+    /// The default capabilities of the package of the code at `at`
+    /// (spec 8.1, rule 7): what its functions may use without `uses`.
+    pub(crate) fn defaults_at(&self, at: u32) -> BTreeSet<String> {
+        let module = self.res.modules.get(self.res.module_at(at));
+        // The standard library writes every capability it uses, so an
+        // interface of its own, as `ai.Provider`, costs only what it lists.
+        if module.is_some_and(|m| m.name.starts_with("std.")) {
+            return BTreeSet::new();
+        }
+        let package = module.map_or("", |m| m.package.as_str());
+        match self.opts.defaults.iter().find(|(p, _)| p == package) {
+            Some((_, caps)) => caps.iter().cloned().collect(),
+            None => BTreeSet::from([DEFAULT.to_string()]),
+        }
+    }
+
     /// Notes that `method` implements `wanted` (spec 2.8).
     pub(crate) fn note_implements(&mut self, implements: Implements) {
         self.caps.implements.push(implements);

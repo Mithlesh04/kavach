@@ -2,15 +2,17 @@
 // Spec: 6.1
 // expect compile error
 
+use std.fs
+
 type Note: Drop {
     text: String
 
-    fn drop(self) uses Console {
-        print(`dropping {self.text}`)
+    fn drop(self) uses Fs.read {
+        const _ = fs.exists(self.text)
     }
 }
 
-pub fn make() -> String uses Fs {
-    const n = Note(text: "hi")  // error: `drop` uses Console, which `make` doesn't list
+pub fn make() -> String uses Net {
+    const n = Note(text: "hi")  // error: `drop` uses Fs.read, which `make` doesn't list
     n.text
 }

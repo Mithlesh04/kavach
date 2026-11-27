@@ -44,6 +44,8 @@ pub struct Package {
     /// The capabilities it may use: what its entry grants, and for a
     /// dependency of a dependency no more than that one was granted.
     pub granted: Vec<String>,
+    /// Its own `[capabilities] default`; `None` when left out (spec 8.1).
+    pub defaults: Option<Vec<String>>,
     /// The repository and commit, for a git dependency.
     pub(crate) git: Option<(String, String)>,
 }
@@ -267,7 +269,9 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
                 root.display()
             ));
         }
-        let own_unsafe = read_toml(&root)?
+        let own = read_toml(&root)?;
+        let defaults = crate::default_caps::of_table(&own, &dep.name)?;
+        let own_unsafe = own
             .get("package")
             .and_then(|p| p.get("unsafe"))
             .and_then(|v| v.as_bool())
@@ -289,6 +293,7 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
             root,
             allow_unsafe: own_unsafe,
             granted,
+            defaults,
             git,
         });
     }

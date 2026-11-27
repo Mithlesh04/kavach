@@ -143,7 +143,15 @@ impl Checker<'_> {
                     continue;
                 }
             };
-            for cap in used.iter().filter(|c| !covers(&limit, c)) {
+            // A limit that lists something allows the defaults too (8.1).
+            let defaults = match limit.is_empty() {
+                true => BTreeSet::new(),
+                false => self.defaults_at(at.start),
+            };
+            let allowed = |c: &&String| {
+                covers(&limit, c) || defaults.iter().any(|d| kavach_resolver::cap_covers(d, c))
+            };
+            for cap in used.iter().filter(|c| !allowed(c)) {
                 errors.push((at, format!("{what} uses {cap}, but the function type it is given as allows only {shown} (spec 3.4)")));
             }
         }

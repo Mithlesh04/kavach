@@ -1,0 +1,10 @@
+[package]
+name = "defaults-are-part-of-signatures"
+version = "0.1.0"
+edition = "2026"
+
+[capabilities]
+default = []
+
+[dependencies]
+loud = { path = "loud", can = ["Console"] }

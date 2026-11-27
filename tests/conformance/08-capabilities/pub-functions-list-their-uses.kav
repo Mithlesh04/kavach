@@ -1,7 +1,9 @@
-// Rule: A `pub` function must write its `uses` clause.
+// Rule: A `pub` function must write its `uses` clause for what it uses beyond the package's defaults.
 // Spec: 8.1
 // expect compile error
 
-pub fn greet(name: String) {
-    print(`hello {name}`)       // error: `greet` is pub but doesn't say it uses Console
+use std.fs
+
+pub fn has_notes(folder: String) -> Bool {
+    fs.exists(`{folder}/notes.txt`)     // error: `has_notes` is pub but doesn't say it uses Fs.read
 }

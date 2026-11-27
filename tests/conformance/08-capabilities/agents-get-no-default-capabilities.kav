@@ -1,0 +1,9 @@
+// Rule: An agent gets no default capabilities: its handlers may use only what its `can` lists, so printing needs `can Console`.
+// Spec: 8.1, 8.3
+// expect compile error
+
+agent Greeter {
+    on hello(name: String) {
+        print(`hello {name}`)   // error: `Greeter` can't use Console: add it to `can`
+    }
+}

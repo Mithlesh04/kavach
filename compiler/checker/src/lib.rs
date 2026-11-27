@@ -150,6 +150,9 @@ pub struct Options {
     /// Each dependency, with the capabilities its entry grants (`can`,
     /// spec 10.12).
     pub granted: Vec<(String, Vec<String>)>,
+    /// Each package's default capabilities (`[capabilities] default`,
+    /// spec 8.1), `""` for the program's own; one left out has `Console`.
+    pub defaults: Vec<(String, Vec<String>)>,
 }
 
 #[derive(Clone, Debug)]

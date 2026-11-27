@@ -1,4 +1,4 @@
-// Rule: `std.io` reads and writes the console, so it needs `Console`.
+// Rule: `std.io` reads and writes the console, so it needs `Console`: in a package without default capabilities, a function that uses it must list it.
 // Spec: 14.6
 // expect compile error
 

@@ -52,9 +52,12 @@ struct FnInfo<'f> {
     declared: Option<BTreeSet<String>>,
     /// The agent whose handler it is: then `declared` is the agent's `can`.
     agent: Option<&'f str>,
-    /// An interface's method: what its `uses` lists is all a caller
-    /// knows, and all an implementation may use (decision 0147).
-    iface: bool,
+    /// The interface whose method it is: what its `uses` lists is all a
+    /// caller knows, and all an implementation may use (decision 0147).
+    iface: Option<&'f str>,
+    /// What it may use without listing it: its package's defaults, none
+    /// for an agent's handler (spec 8.1, rule 7).
+    defaults: BTreeSet<String>,
 }
 
 /// Whether `declared` covers `cap`: `Payments` covers `Payments.refund`.
@@ -106,7 +109,7 @@ impl Checker<'_> {
                        is_pub: bool,
                        fixed: Option<BTreeSet<String>>,
                        agent: Option<&'f str>,
-                       iface: bool| {
+                       iface: Option<&'f str>| {
             if let Some(&def) = c.decl.get(&f.name.span.start) {
                 let listed: BTreeSet<String> = f
                     .uses
@@ -121,7 +124,7 @@ impl Checker<'_> {
                     .collect();
                 let declared = match fixed {
                     Some(d) => Some(d),
-                    None if f.uses.is_empty() && !iface => None,
+                    None if f.uses.is_empty() && iface.is_none() => None,
                     None => Some(listed),
                 };
                 out.insert(
@@ -132,6 +135,10 @@ impl Checker<'_> {
                         declared,
                         agent,
                         iface,
+                        defaults: match agent {
+                            Some(_) => BTreeSet::new(),
+                            None => c.defaults_at(f.name.span.start),
+                        },
                     },
                 );
             }
@@ -139,13 +146,13 @@ impl Checker<'_> {
         for item in &file.items {
             let methods = match &item.kind {
                 ItemKind::Fn(f) => {
-                    add(self, f, item.is_pub, None, None, false);
+                    add(self, f, item.is_pub, None, None, None);
                     continue;
                 }
                 ItemKind::Interface(i) => {
                     for m in &i.methods {
                         if let ItemKind::Fn(f) = &m.kind {
-                            add(self, f, true, None, None, true);
+                            add(self, f, true, None, None, Some(&i.name.name));
                         }
                     }
                     continue;
@@ -160,7 +167,7 @@ impl Checker<'_> {
                     for m in &c.methods {
                         if let ItemKind::Fn(f) = &m.kind {
                             let own = format!("{}.{}", c.name.name, f.name.name);
-                            add(self, f, true, Some(BTreeSet::from([own])), None, false);
+                            add(self, f, true, Some(BTreeSet::from([own])), None, None);
                         }
                     }
                     continue;
@@ -185,7 +192,7 @@ impl Checker<'_> {
                         .collect();
                     for m in &a.members {
                         if let AgentMember::On(f) = m {
-                            add(self, f, true, Some(can.clone()), Some(&a.name.name), false);
+                            add(self, f, true, Some(can.clone()), Some(&a.name.name), None);
                         }
                     }
                     continue;
@@ -194,7 +201,7 @@ impl Checker<'_> {
             };
             for m in methods {
                 if let ItemKind::Fn(f) = &m.kind {
-                    add(self, f, m.is_pub, None, None, false);
+                    add(self, f, m.is_pub, None, None, None);
                 }
             }
         }
@@ -204,9 +211,15 @@ impl Checker<'_> {
     /// Infers `uses` and reports every capability used without permission.
     pub(crate) fn check_capabilities(&mut self, file: &File) {
         let infos = self.fn_infos(file);
-        let mut effective: HashMap<DefId, BTreeSet<String>> = infos
-            .iter()
-            .map(|(d, i)| (*d, i.declared.clone().unwrap_or_default()))
+        // An interface's method may use its package's defaults (0148).
+        let mut effective: HashMap<DefId, BTreeSet<String>> = (infos.iter())
+            .map(|(d, i)| {
+                let mut caps = i.declared.clone().unwrap_or_default();
+                if i.iface.is_some() {
+                    caps.extend(i.defaults.iter().cloned());
+                }
+                (*d, caps)
+            })
             .collect();
         let mut needs = std::mem::take(&mut self.needs);
         // Logging needs no capability (spec 14.12): the program's owner
@@ -229,16 +242,22 @@ impl Checker<'_> {
             }
             out
         };
-        // Inferred functions: grow until nothing changes.
+        // Inferred functions, and the defaults a function with `uses`
+        // uses besides what it lists: grow until nothing changes.
         loop {
             let mut changed = false;
             for (d, info) in &infos {
-                if info.declared.is_none() && info.decl.name.name != "main" {
-                    let n = needed(*d, &effective);
-                    if effective[d] != n {
-                        effective.insert(*d, n);
-                        changed = true;
-                    }
+                if info.iface.is_some() || info.decl.name.name == "main" {
+                    continue;
+                }
+                let mut n = needed(*d, &effective);
+                if let Some(listed) = &info.declared {
+                    n.retain(|c| covers(&info.defaults, c));
+                    n.extend(listed.iter().cloned());
+                }
+                if effective[d] != n {
+                    effective.insert(*d, n);
+                    changed = true;
                 }
             }
             if !changed {
@@ -267,7 +286,8 @@ impl Checker<'_> {
                 continue;
             }
             let checks_uses = info.declared.is_some() || info.is_pub;
-            let allowed = info.declared.clone().unwrap_or_default();
+            let mut allowed = info.declared.clone().unwrap_or_default();
+            allowed.extend(info.defaults.iter().cloned());
             let mut reported = BTreeSet::new();
             for n in needs.get(d).into_iter().flatten() {
                 let (what, caps) = match &n.need {
@@ -281,8 +301,14 @@ impl Checker<'_> {
                     // Direct and written uses are reported where the call is
                     // checked; here only uses a function doesn't write.
                     let unwritten = matches!(&n.need, Need::Fn(f) if infos.get(f).is_some_and(|i| i.decl.uses.is_empty()));
-                    if let (true, Some(callee), Some(cap)) = (unwritten, what, caps.iter().next()) {
-                        errors.push((n.span, format!("a contract can't call `{callee}`: it uses {cap}, and contracts must be pure (spec 7.5)")));
+                    let iface = match &n.need {
+                        Need::Fn(f) => infos.get(f).and_then(|i| i.iface),
+                        Need::Cap(_) => None,
+                    };
+                    match (unwritten, what, caps.iter().next(), iface) {
+                        (true, Some(callee), Some(cap), Some(i)) => errors.push((n.span, format!("a contract can't call `{callee}`: an implementation of `{i}.{callee}` may use {cap}, a default capability of its package, and contracts must be pure (spec 7.5, 8.1)"))),
+                        (true, Some(callee), Some(cap), None) => errors.push((n.span, format!("a contract can't call `{callee}`: it uses {cap}, and contracts must be pure (spec 7.5)"))),
+                        _ => {}
                     }
                     continue;
                 }
@@ -370,10 +396,11 @@ impl Checker<'_> {
                 }
             }
         }
-        // An implementation uses only what its interface's method lists.
+        // An implementation uses only what its interface's method lists:
+        // its `uses` and its package's defaults, `effective` above.
         let allowed = (infos.iter())
-            .filter(|(_, i)| i.iface)
-            .map(|(d, i)| (*d, i.declared.clone().unwrap_or_default()))
+            .filter(|(_, i)| i.iface.is_some())
+            .map(|(d, _)| (*d, effective[d].clone()))
             .collect();
         errors.extend(self.implementations_overreach(&effective, &allowed));
         let lambdas = std::mem::take(&mut self.lambda_needs);
