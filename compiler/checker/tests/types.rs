@@ -334,6 +334,23 @@ fn a_bad_number_gives_one_error() {
 }
 
 #[test]
+fn a_mistake_inside_a_call_gives_one_error() {
+    // Not also "nothing here says what `K` of `first_key` is", first.
+    check_all(&[(
+        "type Sale { region: String }
+fn first_key<K>(xs: [Sale], key: fn(Sale) -> K) -> Int {
+    xs.len()
+}
+fn main() {
+    const sales = [Sale(region: \"north\")]
+    print(first_key(sales, .regoin))
+}
+",
+        &["7: `Sale` has no field `regoin`"],
+    )]);
+}
+
+#[test]
 fn only_functions_can_be_called() {
     check_all(&[
         (

@@ -86,8 +86,10 @@ impl Checker<'_> {
                     || self.is_num_param(*g)
                     || self.is_error_param(callee, *g)
                     || !told.insert((span.start, *g))
-                    // One mistake, one message: the call was refused.
-                    || self.errors.iter().any(|e| e.span == span)
+                    // One mistake, one message: the call, or something
+                    // inside it, was refused.
+                    || (self.errors.iter())
+                        .any(|e| e.span.start >= span.start && e.span.end <= span.end)
                 {
                     continue;
                 }
