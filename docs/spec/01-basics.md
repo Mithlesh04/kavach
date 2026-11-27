@@ -282,6 +282,8 @@ print(1 < f() <= 10)                   // f is called once
 
 **Arithmetic that always panics** is a compile error, when the compiler knows the values: a whole-number division or remainder by `0`, `+`, `-` or `*` of known values whose result doesn't fit the type, an index outside a list whose length is known (a list literal, or a `const` set to one), and `.unwrap()` on a value known to be `none` (2.7). The message is the one the run would give. A known value is a literal (`none` too), a `const` set to one, a known whole number converted to a whole-number type it fits (`Int8(i)`), or a `let` set to one with nothing in between that may change it: a branch, a loop or a lambda may or may not run, so a `let` it sets is known no more, nor is a `let` an `if`, `while` or `match` tests, since the test may be what keeps the arithmetic safe.
 
+An overflow of a type smaller than `Int` gets a help line naming both ways out, and the editor and `kavach fix` offer the first (a maintainer, 2026-11-27; *not built yet*): `help: for 254, widen first: Int(a) + Int(b); to wrap: a.wrapping_add(b)`. Arithmetic keeps its operands' type wherever it is used, stored or not, so moving `a + b` into a variable never changes its result.
+
 A `for` over a range of known numbers counts too, when nothing in its body can leave early (`break`, `continue`, `return`, `fail` or `try`): each statement that always runs in the body is checked for the loop's first and last values, and a `+=` or `-=` of a known number for all its rounds. The message is that of the first round that panics. A body that can leave early may be what keeps that round from running, so it gets no error; nor does a statement inside an `if`, a `match` or an inner loop that may not run.
 
 ```kavach
