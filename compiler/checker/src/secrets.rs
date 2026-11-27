@@ -31,11 +31,22 @@ impl Checker<'_> {
     /// Passing a secret where nothing may receive it: an argument of a
     /// parameter, or a field, that isn't marked `secret` (spec 8.7).
     pub(crate) fn check_secret_arg(&mut self, e: &Expr, what: &str, name: &str, owner: &str) {
+        // A built-in's parameters have no names: `argument 1` is the first.
+        let unnamed = name
+            .strip_prefix("argument ")
+            .and_then(|n| n.parse::<usize>().ok());
         for hit in self.secrets_in(e) {
-            let message = format!(
-                "`{}` is secret, so it can't go into the {what} `{name}` of {owner}, which isn't `secret`; mark it `secret`, or use `reveal(…)` if you really mean to",
-                hit.name
-            );
+            let message = match unnamed {
+                Some(n) => format!(
+                    "`{}` is secret, so it can't go into the {} argument of {owner}, which isn't `secret`; use `reveal(…)` if you really mean to",
+                    hit.name,
+                    ordinal(n)
+                ),
+                None => format!(
+                    "`{}` is secret, so it can't go into the {what} `{name}` of {owner}, which isn't `secret`; mark it `secret`, or use `reveal(…)` if you really mean to",
+                    hit.name
+                ),
+            };
             self.report_secret(hit, message);
         }
     }
@@ -220,5 +231,15 @@ fn tail(b: &Block) -> Option<&Expr> {
     match b.stmts.last().map(|s| &s.kind) {
         Some(StmtKind::Expr(x)) => Some(x),
         _ => None,
+    }
+}
+
+/// `1` as "first", for a built-in's unnamed parameters.
+fn ordinal(n: usize) -> String {
+    match n {
+        1 => "first".into(),
+        2 => "second".into(),
+        3 => "third".into(),
+        _ => format!("{n}th"),
     }
 }
