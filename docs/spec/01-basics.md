@@ -328,8 +328,17 @@ const grade = if score >= 90 { "A" } else { "B" }
 
 ## 1.10 Printing
 
-- `print(value)` writes a line to standard output. It needs the `Console` capability, which `main` has (chapter 8).
-- `debug(value)` prints the value with its file and line, to standard error. It works anywhere, needs no capability, and is **removed from release builds**: `kavach run` prints it, native code (`kavach build`, `kavach run --native`) leaves it out, argument and all. So `debug(reveal(secret))` shows a secret while you develop and never in production.
+- `print(a, b, …)` writes its values to standard output on one line, a space between them, as Python's `print` does (a maintainer, 2026-11-27; *not built yet*: today it takes one value). Text is written as it is, other values as 1.11 shows them, and `print()` writes an empty line. It needs the `Console` capability, which `main` has (chapter 8).
+- Two named arguments change the layout: `sep:` is the text between values (`" "` by default) and `end:` the text after the last one (`"\n"` by default). Both are `String`s and are written by name. On a terminal, what `print` writes shows at once, even without a line end.
+
+```kavach
+print("a =", a)                    // a = 1
+print("name:", "Asha", 30, true)   // name: Asha 30 true
+print(1, 2, 3, sep: ", ")          // 1, 2, 3
+print("loading", end: "")          // loading, and the next print goes on this line
+```
+
+- `debug(…)` takes values, `sep:` and `end:` as `print` does. It prints them with their file and line, to standard error. It works anywhere, needs no capability, and is **removed from release builds**: `kavach run` prints it, native code (`kavach build`, `kavach run --native`) leaves it out, argument and all. So `debug(reveal(secret))` shows a secret while you develop and never in production.
 
 ## 1.11 How values are printed
 
