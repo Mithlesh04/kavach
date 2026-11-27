@@ -38,6 +38,7 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.7, 3.3 | [lambdas-return-no-secrets.kav](lambdas-return-no-secrets.kav) | A lambda can't return a secret. | compile error |
 | 8.7, 14.10 | [tls-keys-take-secrets.kav](tls-keys-take-secrets.kav) | The private `key` of `net.listen_tls` and `net.connect_tls` takes a secret. | runs |
 | 8.7, 2.11 | [secret-method-results-are-secret.kav](secret-method-results-are-secret.kav) | A method's result is secret when its receiver is. | compile error |
+| 8.7 | [built-in-methods-take-no-secret.kav](built-in-methods-take-no-secret.kav) | A built-in method's parameters aren't `secret`, so `name.contains(card)` is refused. | compile error |
 | 8.7 | [values-holding-a-secret-are-secret.kav](values-holding-a-secret-are-secret.kav) | A list, tuple, dict or record holding a secret is secret. | compile error |
 | 8.7 | [branches-giving-a-secret-are-secret.kav](branches-giving-a-secret-are-secret.kav) | An `if` or `match` whose branch gives a secret is secret. | compile error |
 | 8.7 | [assigning-a-secret-makes-a-variable-secret.kav](assigning-a-secret-makes-a-variable-secret.kav) | A variable given a secret later, with `=`, is secret. | compile error |

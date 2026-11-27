@@ -165,6 +165,8 @@ impl Checker<'_> {
             {
                 self.mismatch(&arg.value, &string, &found);
             }
+            // As for `starts_with`: a built-in's parameter isn't `secret` (8.7).
+            self.check_secret_arg(&arg.value, "argument", "argument 1", "`contains`");
             return Ty::Prim(Prim::Bool);
         }
         if let Some(t) = self.reflect_has_member(&recv, name, args, e) {
