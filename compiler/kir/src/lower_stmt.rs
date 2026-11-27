@@ -5,7 +5,7 @@
 //! Lowering statements: `let`, assignment (including to fields), loops,
 //! and expressions used as statements.
 
-use crate::ir::{self, PrintPart, Shape, Stmt, Type};
+use crate::ir::{self, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
 use crate::rt_op::RtOp;
 use kavach_ast::{self as ast, ExprKind, PatternKind, StmtKind};
@@ -441,25 +441,7 @@ impl<'a> Lowerer<'a> {
             // 1.10), its argument not even computed.
             ExprKind::Call { callee, .. } if self.is_builtin(callee, "debug") => {}
             ExprKind::Call { callee, args, .. } if self.is_builtin(callee, "print") => {
-                let arg = args
-                    .first()
-                    .map(|a| &a.value)
-                    .ok_or_else(|| self.unsupported("`print` without an argument", e.span))?;
-                // A text worked out before its task started is printed whole.
-                let held = self
-                    .held_parts
-                    .contains_key(&(arg.span.start, arg.span.end));
-                let parts = match &arg.kind {
-                    ExprKind::Str(parts) if !held => parts
-                        .iter()
-                        .map(|p| match p {
-                            ast::StrPart::Text(t) => Ok(PrintPart::Text(t.clone())),
-                            ast::StrPart::Expr(x) => Ok(PrintPart::Value(self.expr(x)?)),
-                        })
-                        .collect::<Lowered<Vec<_>>>()?,
-                    _ => vec![PrintPart::Value(self.expr(arg)?)],
-                };
-                out.push(Stmt::Print(parts));
+                self.print_stmt(args, e.span, out)?;
             }
             ExprKind::Call { callee, .. } if self.is_mutating_call(callee) => {
                 // `list.push(x)` changes the list stored in a variable or field.

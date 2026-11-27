@@ -179,3 +179,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.14 | [tuple-assignment-places-must-change.kav](tuple-assignment-places-must-change.kav) | Each place is one `=` could set alone: a `const` among them is a compile error. | compile error |
 | 1.14 | [tuple-assignment-is-only-equals.kav](tuple-assignment-is-only-equals.kav) | Only `=` sets several places at once: `(a, b) += (1, 1)` is a compile error. | compile error |
 | 1.14 | [tuple-assignment-needs-parentheses.kav](tuple-assignment-needs-parentheses.kav) | Python's `a, b = b, a`, without parentheses, is a compile error that shows the form with them. | compile error |
+| 1.10 | [print-joins-values-with-spaces.kav](print-joins-values-with-spaces.kav) | `print(a, b, …)` writes its values on one line, a space between them. | runs |
+| 1.10 | [print-takes-sep-and-end.kav](print-takes-sep-and-end.kav) | `sep:` is the text between the values and `end:` the text after the last one, in either order, after the values. | runs |
+| 1.10 | [print-with-no-values-writes-an-empty-line.kav](print-with-no-values-writes-an-empty-line.kav) | `print()` writes an empty line. | runs |
+| 1.10 | [print-writes-text-among-values-as-it-is.kav](print-writes-text-among-values-as-it-is.kav) | Among several values, text is written as it is, while text inside a collection is quoted. | runs |

@@ -1,0 +1,11 @@
+// Rule: `print()` writes an empty line.
+// Spec: 1.10
+// expect output: above
+// expect output:
+// expect output: below
+
+fn main() {
+    print("above")
+    print()
+    print("below")
+}

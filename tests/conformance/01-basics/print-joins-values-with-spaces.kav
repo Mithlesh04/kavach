@@ -1,0 +1,13 @@
+// Rule: `print(a, b, …)` writes its values on one line, a space between them.
+// Spec: 1.10
+// expect output: a = 1
+// expect output: name: Asha 30 true
+// expect output: 2.5 [1, 2] none
+
+fn main() {
+    const a = 1
+    const found: Int? = none
+    print("a =", a)
+    print("name:", "Asha", 30, true)
+    print(2.5, [1, 2], found)
+}

@@ -50,6 +50,10 @@ impl<'a> Interp<'a> {
             let n = self.gen_rng.range(0, span_of);
             return Ok(Value::Int(n, kavach_checker::Prim::Int));
         }
+        // `print(a, b, sep: s, end: e)` and `debug(…)` (spec 1.10).
+        if name == "print" || name == "debug" {
+            return self.print_call(name, args, span);
+        }
         if name == "log_write" {
             let mut values = args.into_iter().map(|(_, v)| v);
             let level = match values.next() {
@@ -67,19 +71,6 @@ impl<'a> Interp<'a> {
             .map(|(_, v)| v)
             .unwrap_or(Value::Unit);
         match name {
-            "print" => {
-                let text = self.shown(&arg, true, span)?;
-                self.out.push_str(&text);
-                self.out.push('\n');
-                self.show_live();
-                Ok(Value::Unit)
-            }
-            "debug" => {
-                let (path, line) = self.c.shown_location(span.start);
-                let shown = format!("[{path}:{line}] {}\n", arg.display());
-                self.err.push_str(&shown);
-                Ok(Value::Unit)
-            }
             "panic" => Err(self.panic(arg.display(), span)),
             // `sum(amount)` in a `limit` rule: the window's total with this
             // call's amount added (spec 8.3).

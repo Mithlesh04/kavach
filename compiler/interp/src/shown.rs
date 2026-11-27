@@ -4,12 +4,54 @@
 
 //! `Display` (spec 1.11): a value whose type implements it shows as its
 //! `display()` gives, at the top and inside collections and records.
+//! `print` and `debug` (spec 1.10) write values shown so.
 
+use crate::calls::Args;
 use crate::interp::Interp;
-use crate::value::{Flow, Shown, Value};
+use crate::value::{Eval, Flow, Shown, Value};
 use kavach_ast::Span;
 
 impl<'a> Interp<'a> {
+    /// `print(a, b, …, sep: s, end: e)`, to standard output, and
+    /// `debug(…)`, to standard error after its file and line (spec 1.10).
+    pub(crate) fn print_call(&mut self, name: &str, args: Args<'a>, span: Span) -> Eval<'a> {
+        // `print(x)`, the usual call, written straight on.
+        if let ("print", [(None, v)]) = (name, args.as_slice()) {
+            let text = self.shown(v, true, span)?;
+            self.out.push_str(&text);
+            self.out.push('\n');
+            self.show_live();
+            return Ok(Value::Unit);
+        }
+        let text = self.printed(args, span)?;
+        if name == "debug" {
+            let (path, line) = self.c.shown_location(span.start);
+            self.err.push_str(&format!("[{path}:{line}] {text}"));
+        } else {
+            self.out.push_str(&text);
+            self.show_live();
+        }
+        Ok(Value::Unit)
+    }
+
+    /// What `print` writes: each value as it shows at the top, `sep`
+    /// between them (a space unless given) and `end` after the last (a
+    /// line end unless given).
+    fn printed(&mut self, args: Args<'a>, span: Span) -> Result<String, Flow<'a>> {
+        let (mut sep, mut end) = (None, None);
+        let mut pieces = Vec::with_capacity(args.len());
+        for (name, v) in args {
+            match name {
+                Some("sep") => sep = Some(v.display()),
+                Some("end") => end = Some(v.display()),
+                _ => pieces.push(self.shown(&v, true, span)?),
+            }
+        }
+        let mut text = pieces.join(sep.as_deref().unwrap_or(" "));
+        text.push_str(end.as_deref().unwrap_or("\n"));
+        Ok(text)
+    }
+
     /// `v` as `print` shows it (`top`), or as it shows inside a collection.
     pub(crate) fn shown(
         &mut self,

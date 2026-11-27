@@ -61,13 +61,13 @@ impl Checker<'_> {
         match name {
             // `sum(amount)` in a `limit` rule: a total of the same type.
             "sum" => one(self, None),
-            "print" | "debug" | "panic" => {
-                let t = one(self, (name == "panic").then(|| string.clone()));
+            "print" | "debug" => self.print_args(name, args),
+            "panic" => {
+                one(self, Some(string.clone()));
                 if let Some(a) = args.first() {
                     self.check_secret(&a.value, name);
                 }
-                let _ = t;
-                if name == "panic" { Ty::Never } else { Ty::Unit }
+                Ty::Never
             }
             "ask" => self.ask_type(generics, args, span, false),
             // Its value is a secret (spec 10.13): keys come this way.
@@ -248,5 +248,39 @@ impl Checker<'_> {
 
     pub(crate) fn error_ty(&self) -> Ty {
         Ty::Builtin("Error", Vec::new())
+    }
+
+    /// `print(a, b, …, sep: s, end: e)` and `debug(…)` (spec 1.10): any
+    /// number of values, then `sep:` and `end:`, both `String`s, by name.
+    /// No secret goes into any of them (spec 8.7).
+    fn print_args(&mut self, name: &str, args: &[Arg]) -> Ty {
+        let mut given: Vec<&str> = Vec::new();
+        for a in args {
+            match &a.name {
+                // A value after `sep:` is the parser's error already.
+                None => {
+                    self.value(&a.value, None);
+                }
+                Some(n) if n.name == "sep" || n.name == "end" => {
+                    if given.contains(&n.name.as_str()) {
+                        self.error(n.span, format!("`{}` is given twice", n.name));
+                    }
+                    given.push(&n.name);
+                    self.check_expect(&a.value, &Ty::Prim(Prim::String));
+                }
+                Some(n) => {
+                    self.error(
+                        n.span,
+                        format!(
+                            "`{name}` has no parameter `{}`: it takes values, then `sep:` and `end:` (spec 1.10)",
+                            n.name
+                        ),
+                    );
+                    self.value(&a.value, None);
+                }
+            }
+            self.check_secret(&a.value, name);
+        }
+        Ty::Unit
     }
 }

@@ -26,6 +26,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower.rs` | The file: the lowering state, its items, functions and methods, `main`, and the finished program |
 | `src/lower_body.rs` | What lowering every body uses: lines and text, locals and names, coercion (optional wrapping, interface boxes), blocks, `ensure` checks |
 | `src/lower_stmt.rs` | Statements: `const`, assignment to fields, loops |
+| `src/lower_print.rs` | `print(a, b, sep: s, end: e)` (spec 1.10): piece by piece with the usual line end, else the line made as text and written whole, shown at once |
 | `src/lower_expr.rs` | Expressions, names and text interpolation |
 | `src/lower_if.rs` | `if`, `if let`, `match` and blocks, as values or as statements |
 | `src/lower_calls.rs` | Calls to named functions, and their arguments |

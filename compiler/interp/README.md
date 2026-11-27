@@ -22,6 +22,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/ops.rs` | Operators, with overflow checks per integer type |
 | `src/panic_places.rs` | Where a panic is shown: one from the standard library's code, leaving it for the program's, points at the program's call (spec 5.6); the functions a crash report lists (14.30) |
 | `src/builtins.rs` | Prelude functions and methods of built-in types |
+| `src/shown.rs` | Values as `print` shows them, `Display` too (spec 1.11); `print` and `debug` with several values, `sep:` and `end:` (1.10) |
 | `src/bytes.rs` | `Bytes` (spec 2.13) |
 | `src/net.rs` | `std.net` (spec 14.10): TCP, with the code in `runtime/core` |
 | `src/fakes.rs` | The fakes of `Fs` and `Clock` in generated tests (spec 11.5): files in memory, a clock that jumps |

@@ -371,3 +371,27 @@ fn only_functions_can_be_called() {
         ),
     ]);
 }
+
+#[test]
+fn print_takes_values_then_sep_and_end() {
+    check_all(&[
+        (
+            "fn main() {\n    print()\n    print(1, \"a\", [2], sep: \", \", end: \"\")\n    debug(1, 2, end: \"!\", sep: \"-\")\n}\n",
+            &[],
+        ),
+        (
+            "fn main() {\n    print(1, sep: \", \", 2)\n}\n",
+            &["2: positional arguments must come before named ones"],
+        ),
+        (
+            "fn main() {\n    print(1, end: \"\", end: \"!\")\n}\n",
+            &["2: `end` is given twice"],
+        ),
+        (
+            "fn main() {\n    debug(1, flush: true)\n}\n",
+            &[
+                "2: `debug` has no parameter `flush`: it takes values, then `sep:` and `end:` (spec 1.10)",
+            ],
+        ),
+    ]);
+}

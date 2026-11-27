@@ -21,6 +21,7 @@ count += 1
 const price: Decimal = 499.00       // exact; literals take their type from context
 const big = 1_000_000 + 0xff + 0b1010
 print(`Hi {name}, {count + 1}\n`) // backticks fill in {expr} and read \n \t \{ \`
+print("count:", count, end: "")    // several values, a space between; sep: and end: by name
 const path = "C:\new\{x}"           // quotes: exactly what is written, one line; no r"…" or f"…"
 const body = `
     \{"name": "{name}"}

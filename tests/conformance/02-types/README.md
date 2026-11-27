@@ -444,3 +444,4 @@ The tests are listed in two files, by section:
 | 2.2 | [swap-works-on-an-item-and-a-dict-entry.kav](swap-works-on-an-item-and-a-dict-entry.kav) | `swap` changes a list held in an item, a field or a dict entry where it is. | runs |
 | 2.2 | [swap-out-of-range-panics.kav](swap-out-of-range-panics.kav) | `swap` with an index out of range panics with the message `xs[i]` gives. | panic |
 | 2.2 | [swap-needs-a-let.kav](swap-needs-a-let.kav) | `swap` changes the list, so like `push` it is a compile error on a `const`. | compile error |
+| 2.11 | [secret-cannot-be-printed-among-values.kav](secret-cannot-be-printed-among-values.kav) | A secret value must not flow into print, whichever of its values it is. | compile error |

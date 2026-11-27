@@ -330,8 +330,8 @@ const grade = if score >= 90 { "A" } else { "B" }
 
 ## 1.10 Printing
 
-- `print(a, b, …)` writes its values to standard output on one line, a space between them, as Python's `print` does (a maintainer, 2026-11-27; *not built yet*: today it takes one value). Text is written as it is, other values as 1.11 shows them, and `print()` writes an empty line. It needs the `Console` capability, which `main` has (chapter 8).
-- Two named arguments change the layout: `sep:` is the text between values (`" "` by default) and `end:` the text after the last one (`"\n"` by default). Both are `String`s and are written by name. On a terminal, what `print` writes shows at once, even without a line end.
+- `print(a, b, …)` writes its values to standard output on one line, a space between them, as Python's `print` does (a maintainer, 2026-11-27). Text is written as it is, other values as 1.11 shows them, and `print()` writes an empty line. It needs the `Console` capability, which `main` has (chapter 8).
+- Two named arguments change the layout: `sep:` is the text between values (`" "` by default) and `end:` the text after the last one (a line end by default; written out, it is a template, `` end: `\n` ``, as quotes take no escapes, 1.7). Both are `String`s and are written by name, after the values. On a terminal, what `print` writes shows at once, even without a line end.
 
 ```kavach
 print("a =", a)                    // a = 1

@@ -1,0 +1,16 @@
+// Rule: `sep:` is the text between the values and `end:` the text after the last one, in either order, after the values.
+// Spec: 1.10
+// expect output: 1, 2, 3
+// expect output: loading... done
+// expect output: a-b-c!
+// expect output: x|y;
+
+fn main() {
+    print(1, 2, 3, sep: ", ")
+    print("loading", end: "... ")
+    print("done")
+    const dash = "-"
+    const mark = "!"
+    print("a", "b", "c", sep: dash, end: `{mark}\n`)
+    print("x", "y", end: `;\n`, sep: "|")
+}

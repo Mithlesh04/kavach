@@ -91,6 +91,7 @@ mod lower_ops;
 mod lower_optional;
 mod lower_order;
 mod lower_power;
+mod lower_print;
 mod lower_process;
 mod lower_ptr;
 mod lower_ptr_syntax;

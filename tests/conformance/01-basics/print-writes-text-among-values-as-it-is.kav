@@ -1,0 +1,7 @@
+// Rule: Among several values, text is written as it is, while text inside a collection is quoted, as `print(x)` shows each.
+// Spec: 1.10, 1.11
+// expect output: Asha ["Asha", "Ravi"] (1, "one")
+
+fn main() {
+    print("Asha", ["Asha", "Ravi"], (1, "one"))
+}
