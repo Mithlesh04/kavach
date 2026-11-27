@@ -310,6 +310,11 @@ export const fnValuesDoc: LessonDoc = {
         <C>fn(Int, Int) -&gt; Int</C> is the type of a function that takes two <C>Int</C>s and gives one.{" "}
         <C>apply_twice</C> takes such a function as its parameter <C>f</C> and calls it.
       </P>
+      <P>
+        Only a function can be called. A value of another type is refused, even when it hides a function of the same
+        name, as the constant <C>total</C> hides the function here:
+      </P>
+      <Ex name="functions/call-not-function.fails" />
       <H2>Functions in a collection</H2>
       <P>
         A function goes in a list or a dict like any value. A dict from names to functions picks what to do by a name,

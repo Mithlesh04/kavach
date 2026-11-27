@@ -1,0 +1,1 @@
+error: `json.decode` can't make a value of `Account` here: its field `balance` is `pub(read)`, so only module `bank` can make one (spec 10.1, 2.12)

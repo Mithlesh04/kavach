@@ -2,7 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, H2, P } from "./parts";
+import { Ex, Files, H2, P } from "./parts";
 
 // ---------- JSON › Decoding into a type ----------
 //
@@ -63,6 +63,29 @@ export const jsonDecodingDoc: LessonDoc = {
         <li>The problem&apos;s <C>path</C> is the record&apos;s: <C>[1]</C> is the second item.</li>
         <li>The invariants are checked once every value has the right shape. Until then, the problems are those of shape.</li>
       </ul>
+      <H2>Types only their module may make</H2>
+      <P>
+        A record with a private or <C>pub(read)</C> field is{" "}
+        <Link href="/docs/modules/modules/">made only in its own module</Link>, so that module keeps control of what
+        the field holds. Decoding makes a value, so it follows the same rule: outside the type&apos;s module,{" "}
+        <C>json.decode</C>, <C>decode_value</C> and <C>decode_texts</C> of such a type are refused when compiling,
+        wherever the type sits inside <C>T</C>. Otherwise text from outside could set <C>balance</C> to anything:
+      </P>
+      <Files name="json/decode-private.fails" first={["src/main.kav", "src/bank.kav"]} outcome="refused" />
+      <P>The type&apos;s own module may decode it, check it, and hand the value out:</P>
+      <Files name="json/decode-own-module" first={["src/bank.kav", "src/main.kav"]} />
+      <P>
+        The same holds for the other ways text becomes a record:{" "}
+        <Link href="/docs/standard-library/command-line-programs/">cli.parse&lt;T&gt;</Link> and{" "}
+        <Link href="/docs/agents/ask/">ask&lt;T&gt;</Link>.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/10-modules-and-packages/01-modules.md" label="spec 10.1 · private fields" />
+        <SrcRef file="tests/conformance/10-modules/decoding-makes-no-private-records/src/main.kav" label="refused, tested" />
+        <SrcRef file="tests/conformance/10-modules/decoding-sets-no-pub-read-fields/src/main.kav" label="pub(read), tested" />
+        <SrcRef file="tests/conformance/10-modules/decoding-in-the-types-own-module/src/main.kav" label="own module, tested" />
+        <SrcRef file="tests/conformance/10-modules/parsing-makes-no-private-records/src/main.kav" label="cli.parse, tested" />
+      </div>
       <H2>Fields your type doesn&apos;t have</H2>
       <P>
         A field the type doesn&apos;t have is a problem at its path, as the type&apos;s schema says. Another

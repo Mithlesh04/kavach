@@ -1,0 +1,7 @@
+use bank
+use std.json
+
+fn main() {
+    const a = json.decode<bank.Account>(`\{"balance": 1000000, "owner": "asha"}`) catch _ => return
+    print(a.balance)
+}

@@ -4,7 +4,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { Ex, Note, P } from "./parts";
+import { Ex, H2, Note, P } from "./parts";
 
 const audited = loadProject("agents/audit-cmd", ["src/main.kav"]);
 
@@ -74,6 +74,43 @@ export const secretParamsDoc: LessonDoc = {
         secret: here <C>c</C> is, and an ordinary parameter can&apos;t take it:
       </P>
       <Ex name="agents/secret-remember.fails" />
+      <H2>Anything made from a secret</H2>
+      <P>
+        A value made from a secret is a secret too, whatever it computes. A method&apos;s result is, even the
+        card&apos;s length:
+      </P>
+      <Ex name="agents/secret-made.fails" />
+      <P>
+        So is a list, tuple, dict or record holding one, text built from one, and an <C>if</C> or <C>match</C> whose
+        branch gives one. Storing a secret in a part of a
+        variable, as <C>cards[0] = …</C>, makes the whole variable secret:
+      </P>
+      <Ex name="agents/secret-list.fails" />
+      <P>
+        A variable given a secret is secret everywhere in its function, even above that line, as a loop may come
+        back to it:
+      </P>
+      <Ex name="agents/secret-above.fails" />
+      <P>The names a <C>for</C>, <C>match</C>, <C>if let</C> or destructuring takes from a secret are secret too:</P>
+      <Ex name="agents/secret-loop.fails" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A built-in method&apos;s parameters aren&apos;t <C>secret</C>, so <C>cards.push(card)</C> is refused.</li>
+        <li>A field that isn&apos;t <C>secret</C> can&apos;t take one, when the record is made or later.</li>
+        <li>A lambda given to a method of a secret may use its secrets: in <C>{"cards.map(c => c.upper())"}</C> the result is secret anyway.</li>
+      </ul>
+      <P>
+        Only what is computed counts. The condition of an <C>if</C>, or the value a <C>match</C> looks at,
+        doesn&apos;t make the result secret, and <C>reveal</C> makes a value public where you choose:
+      </P>
+      <Ex name="agents/secret-condition" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/08-capabilities-and-agents/07-secrets.md" label="spec 8.7 · made from a secret" />
+        <SrcRef file="tests/conformance/08-capabilities/secret-method-results-are-secret.kav" label="method results, tested" />
+        <SrcRef file="tests/conformance/08-capabilities/storing-a-secret-in-a-list-makes-it-secret.kav" label="parts, tested" />
+        <SrcRef file="tests/conformance/08-capabilities/variables-are-secret-above-the-assignment.kav" label="above the line, tested" />
+        <SrcRef file="tests/conformance/08-capabilities/loops-over-a-secret-take-secrets.kav" label="loops, tested" />
+        <SrcRef file="tests/conformance/08-capabilities/branches-giving-a-secret-are-secret.kav" label="branches, tested" />
+      </div>
     </>
   ),
 };
@@ -114,8 +151,10 @@ export const revealDoc: LessonDoc = {
     <>
       <Ex name="agents/secret-param" />
       <P>
-        <C>reveal(order.card)</C> gives an ordinary <C>String</C>, here used to show the last four digits.{" "}
-        <C>kavach audit</C> lists every <C>reveal</C> in a project, so none goes unnoticed:
+        <C>reveal(order.card)</C> gives an ordinary <C>String</C>, here used to show the last four digits. Anything
+        made from a secret is secret too, a card&apos;s length included, so <C>charge</C> writes{" "}
+        <C>reveal(card.len())</C> to put it in its text. <C>kavach audit</C> lists every <C>reveal</C> in a project,
+        so none goes unnoticed:
       </P>
       <Terminal session={audited.output ?? ""} />
       <div><SrcRef file="docs/spec/08-capabilities-and-agents/07-secrets.md" label="spec 8.7 · secrets" /></div>

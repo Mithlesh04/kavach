@@ -1,0 +1,1 @@
+error: `total` is an `Int`, not a function, so it can't be called (spec 3.4)
