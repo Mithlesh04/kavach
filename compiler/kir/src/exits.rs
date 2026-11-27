@@ -13,6 +13,9 @@
 use crate::ir::{Block, Expr, ExprKind, Function, Local, Stmt, Type};
 use crate::walk;
 
+#[cfg(test)]
+mod tests;
+
 /// Keeps the operands computed before an early exit in locals, in every
 /// expression of `f`.
 pub fn keep_before_exits(f: &mut Function) {

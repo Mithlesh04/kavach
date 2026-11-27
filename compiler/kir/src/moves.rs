@@ -20,6 +20,9 @@
 use crate::ir::{Block, Expr, ExprKind, Function, Local, PrintPart, Stmt, Type};
 use std::collections::{BTreeSet, HashSet};
 
+#[cfg(test)]
+mod tests;
+
 type Live = BTreeSet<Local>;
 
 struct Pass<'f> {
