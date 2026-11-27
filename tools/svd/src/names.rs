@@ -42,7 +42,6 @@ const KEYWORDS: &[&str] = &[
     "secret",
     "self",
     "spawn",
-    "test",
     "true",
     "try",
     "type",
