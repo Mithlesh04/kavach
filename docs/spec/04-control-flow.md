@@ -50,12 +50,27 @@ Patterns:
 | `Status.Paid` | A union variant, always with its union's name (2.6) |
 | `Shape.Circle(radius)` | A variant, binding its field |
 | `Shape.Rect(width: w, height: _)` | Binding a field under another name, ignoring one |
+| `Customer(name, age)` | A record of that type, binding its fields as a variant pattern does |
 | `1..=9` | A value in a range |
 | `(0, y)` | A tuple |
 | `none` | A missing optional |
 | `ok(value)` / `err(e)` | Success or failure of a call that can fail (chapter 5) |
 | `_` | Anything |
 | `pattern if condition` | A pattern plus an extra check (a guard) |
+
+**A record pattern** is written like a variant pattern, with the record's type name (a maintainer, 2026-11-28; *not built yet*). Every value of the type fits its shape, so it matches unless a field inside it is a pattern that doesn't (`Point(x: 0, y)`) or its guard fails; an arm with neither covers the type. It works anywhere a pattern does, inside a variant too. A field private to another module (10.1) can't be named in it.
+
+```kavach
+match c {                                        // c: Customer
+    Customer(name, age) if age >= 18 => `adult {name}`,
+    Customer(name) => `child {name}`,            // covers every Customer
+}
+match parcel {
+    Box.Full(item: Point(x: 0, y)) => `on the axis at {y}`,
+    Box.Full(item) => "elsewhere",
+    Box.Empty => "empty",
+}
+```
 
 Covering every case looks inside nested variants: arms that differ in one field cover the variant when, between them, they cover that field's type. A `match` on an optional may list `none` and the variants of the value inside, which match a present value:
 
