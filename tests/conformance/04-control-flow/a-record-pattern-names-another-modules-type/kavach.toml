@@ -1,0 +1,4 @@
+[package]
+name = "a-record-pattern-names-another-modules-type"
+version = "0.1.0"
+edition = "2026"

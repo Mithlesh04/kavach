@@ -58,7 +58,7 @@ Patterns:
 | `_` | Anything |
 | `pattern if condition` | A pattern plus an extra check (a guard) |
 
-**A record pattern** is written like a variant pattern, with the record's type name (a maintainer, 2026-11-28; *not built yet*). Every value of the type fits its shape, so it matches unless a field inside it is a pattern that doesn't (`Point(x: 0, y)`) or its guard fails; an arm with neither covers the type. It works anywhere a pattern does, inside a variant too. A field private to another module (10.1) can't be named in it.
+**A record pattern** is written like a variant pattern, with the record's type name (a maintainer, 2026-11-28), and with its module's name for another module's record, as a variant is: `orders.Order(id, amount)`. Every value of the type fits its shape, so it matches unless a field inside it is a pattern that doesn't (`Point(x: 0, y)`) or its guard fails; an arm with neither covers the type. It works anywhere a pattern does, inside a variant too. A field private to another module (10.1) can't be named in it.
 
 ```kavach
 match c {                                        // c: Customer

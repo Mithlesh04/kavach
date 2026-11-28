@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! Patterns, branching (`if`, `if let`, `match`) and match coverage (spec 4).
+//! Patterns and branching (`if`, `if let`, `match`) (spec 4). What a
+//! `match`'s arms cover is in `coverage.rs`.
 
 use crate::checker::{Checker, FieldInfo, Shape};
 use crate::ty::{Prim, Ty};
@@ -183,7 +184,8 @@ impl Checker<'_> {
         };
         self.pattern_variants.insert(last.span.start, def);
         let DefKind::Variant { of } = self.res.defs[def].kind else {
-            return;
+            // `Customer(name, age)`: a record of that type (spec 4.3).
+            return self.bind_record(p, last, def, fields, ty);
         };
         // An `Error` holds an error of any type: a pattern names the type
         // and matches only an error of it (spec 5.5, decision 0050).
@@ -407,92 +409,5 @@ impl Checker<'_> {
         }
         let lifted = Ty::Optional(Box::new(self.inf.resolve(result)));
         self.coerce(t, &lifted).then_some(lifted)
-    }
-
-    /// A `match` must cover every possible case (spec 4.3).
-    fn check_coverage(&mut self, arms: &[MatchArm], ty: &Ty, span: Span) {
-        let open: Vec<&Pattern> = arms
-            .iter()
-            .filter(|a| a.guard.is_none())
-            .map(|a| &a.pattern)
-            .collect();
-        if open.iter().any(|p| irrefutable(p)) {
-            return;
-        }
-        if matches!(self.inf.resolve(ty), Ty::Builtin("Error", _)) {
-            self.error(
-                span,
-                "a `match` on an `Error` needs a `_ => …` arm: an `Error` can hold any error type",
-            );
-            return;
-        }
-        let union_missing = |def: DefId, pats: &[&Pattern]| -> Vec<String> {
-            match self.types.get(&def).map(|t| &t.shape) {
-                // Named as a case is written: with the union (decision 0070).
-                Some(Shape::Union(vs)) => vs
-                    .iter()
-                    .filter(|v| !self.variant_covered(pats, def, v.def, 0))
-                    .flat_map(|v| self.missing_in(pats, def, v.def, 0))
-                    .collect(),
-                _ => vec!["every other value (add `_ => …`)".to_string()],
-            }
-        };
-        let missing: Vec<String> = match self.inf.resolve(ty) {
-            Ty::Adt(def, _) => union_missing(def, &open),
-            Ty::Prim(Prim::Bool) => ["true", "false"]
-                .into_iter()
-                .filter(|b| !open.iter().any(|p| matches!(&p.kind, PatternKind::Literal(Expr { kind: ExprKind::Bool(v), .. }) if v.to_string() == *b)))
-                .map(String::from)
-                .collect(),
-            // `none` and the present values: a name, or patterns that cover
-            // the inner type, such as each variant of a union (C9).
-            Ty::Optional(inner) => {
-                let has_none = open.iter().any(|p| matches!(p.kind, PatternKind::None));
-                let present: Vec<&Pattern> = (open.iter().copied())
-                    .filter(|p| !matches!(p.kind, PatternKind::None))
-                    .collect();
-                let mut missing = Vec::new();
-                if !has_none {
-                    missing.push("none".to_string());
-                }
-                if !self.pats_cover(&present, &inner, 0) {
-                    missing.push("a present value (`value => …`)".to_string());
-                }
-                missing
-            }
-            Ty::Result(_, err) => {
-                let mut missing = Vec::new();
-                if !open.iter().any(|p| matches!(&p.kind, PatternKind::Ok(i) if irrefutable(i))) {
-                    missing.push("ok(…)".to_string());
-                }
-                let errs: Vec<&Pattern> = open.iter().filter_map(|p| match &p.kind { PatternKind::Err(i) => Some(&**i), _ => None }).collect();
-                if !errs.iter().any(|p| irrefutable(p)) {
-                    match self.inf.resolve(&err) {
-                        Ty::Adt(def, _) => missing.extend(union_missing(def, &errs).into_iter().map(|v| format!("err({v})"))),
-                        _ => missing.push("err(…)".to_string()),
-                    }
-                }
-                missing
-            }
-            Ty::Error | Ty::Var(_) => Vec::new(),
-            _ => vec!["every other value (add `_ => …`)".to_string()],
-        };
-        if !missing.is_empty() {
-            let list = missing
-                .iter()
-                .map(|m| format!("`{m}`"))
-                .collect::<Vec<_>>()
-                .join(", ");
-            self.error(span, format!("this `match` does not cover {list}"));
-        }
-    }
-}
-
-/// A pattern that matches every value.
-pub(crate) fn irrefutable(p: &Pattern) -> bool {
-    match &p.kind {
-        PatternKind::Wildcard | PatternKind::Binding(_) => true,
-        PatternKind::Tuple(items) => items.iter().all(irrefutable),
-        _ => false,
     }
 }

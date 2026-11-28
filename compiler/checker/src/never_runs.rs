@@ -11,7 +11,7 @@
 use crate::checker::Checker;
 use kavach_ast::visit::{VisitMut, walk_expr, walk_file, walk_stmt};
 use kavach_ast::*;
-use kavach_resolver::Resolution;
+use kavach_resolver::{DefKind, Resolution};
 use std::collections::HashSet;
 
 impl Checker<'_> {
@@ -149,6 +149,17 @@ fn variant(res: &Resolution, p: &Pattern) -> Option<String> {
     })
 }
 
+/// Whether `p` is a record pattern (spec 4.3): it names a type, not a
+/// variant.
+fn record(res: &Resolution, p: &Pattern) -> bool {
+    let PatternKind::Variant { path, .. } = &p.kind else {
+        return false;
+    };
+    (path.segments.last())
+        .and_then(|last| res.uses.get(&last.span.start))
+        .is_some_and(|d| res.defs[*d].kind == DefKind::Type)
+}
+
 impl NeverRuns<'_> {
     fn arms(&mut self, arms: &[MatchArm]) {
         let mut before: Vec<Covers> = Vec::new();
@@ -156,7 +167,14 @@ impl NeverRuns<'_> {
             let hidden = before.iter().find_map(|b| match b {
                 Covers::All => Some("the arm above it matches every value first".to_string()),
                 Covers::Variant(v) if variant(self.res, &arm.pattern).as_ref() == Some(v) => {
-                    Some("an arm above it matches every value of that variant first".to_string())
+                    let what = if record(self.res, &arm.pattern) {
+                        "record type"
+                    } else {
+                        "variant"
+                    };
+                    Some(format!(
+                        "an arm above it matches every value of that {what} first"
+                    ))
                 }
                 b if covers(self.res, &arm.pattern).as_ref() == Some(b) => {
                     Some("an arm above it has the same pattern".to_string())

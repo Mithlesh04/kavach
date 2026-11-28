@@ -262,6 +262,20 @@ fn match_must_cover_every_case() {
             "type Shape = Circle(r: Int) | Square(x: Int)\ntype Box = Empty | Full(s: Shape)\nfn f(b: Box) -> Int {\n  match b {\n    Box.Empty => 0\n    Box.Full(s: Shape.Circle(r)) => r\n  }\n}",
             &["4: this `match` does not cover `Box.Full(s: Shape.Square(..))`"],
         ),
+        (
+            // A record pattern covers its type unless a field inside is tested.
+            "type P {\n  x: Int\n  y: Int\n}\nfn f(p: P) -> Int {\n  match p {\n    P(x: 0, y) => y\n  }\n}",
+            &["6: this `match` does not cover `every other value (add `_ => …`)`"],
+        ),
+        (
+            // Record patterns of names take any value of their fields.
+            "type P {\n  x: Int\n  y: Int\n}\ntype B = Empty | Full(a: P, b: P)\nfn f(b: B) -> Int {\n  match b {\n    B.Empty => 0\n    B.Full(a: P(x, y), b: P(x: u)) => x + y + u\n  }\n}",
+            &[],
+        ),
+        (
+            "type P {\n  x: Int\n}\nfn f(p: P?) -> Int {\n  match p {\n    P(x: 1) => 1\n    P(x) => x\n  }\n}",
+            &["5: this `match` does not cover `none`"],
+        ),
     ]);
 }
 

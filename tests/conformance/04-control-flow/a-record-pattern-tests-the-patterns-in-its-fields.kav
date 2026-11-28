@@ -1,0 +1,21 @@
+// Rule: A record pattern doesn't match when a pattern inside one of its fields doesn't: `Point(x: 0, y)` matches only a point whose `x` is 0.
+// Spec: 4.3
+// expect output: on the axis at 4
+// expect output: at 2, 5
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn place(p: Point) -> String {
+    match p {
+        Point(x: 0, y) => `on the axis at {y}`,
+        Point(x, y) => `at {x}, {y}`,
+    }
+}
+
+fn main() {
+    print(place(Point(x: 0, y: 4)))
+    print(place(Point(x: 2, y: 5)))
+}

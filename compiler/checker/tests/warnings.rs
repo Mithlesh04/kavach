@@ -124,3 +124,22 @@ fn changes_to_a_copy_inside_a_lambda_or_task() {
         .collect();
     assert!(failures.is_empty(), "\n{}", failures.join("\n"));
 }
+
+#[test]
+fn a_repeated_record_arm_is_named_as_a_record() {
+    let src = "type P {\n  x: Int\n}\nfn f(p: P) -> Int {\n  match p {\n    P(x) => x\n    P(x) => x + 1\n  }\n}";
+    let parsed = kavach_parser::parse(src);
+    let resolved = kavach_resolver::resolve(&parsed.file);
+    let checked = check(&parsed.file, &resolved, Options::default());
+    let messages: Vec<&str> = checked
+        .warnings
+        .iter()
+        .map(|w| w.message.as_str())
+        .collect();
+    assert!(
+        messages
+            .iter()
+            .any(|m| m.contains("every value of that record type first")),
+        "{messages:?}"
+    );
+}

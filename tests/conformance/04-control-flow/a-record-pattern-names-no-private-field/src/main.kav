@@ -1,0 +1,14 @@
+// Rule: A record pattern can't name a field that is private to another module.
+// Spec: 4.3, 10.1
+// expect compile error
+
+use accounts.{Account, open}
+
+fn main() {
+    const a = open("asha")
+    const text = match a {
+        Account(pin: _) => "has a pin",     // error: `pin` is private to module `accounts`
+        _ => "no pin",
+    }
+    print(text)
+}

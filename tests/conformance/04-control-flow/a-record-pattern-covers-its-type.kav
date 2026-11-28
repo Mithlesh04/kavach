@@ -1,0 +1,21 @@
+// Rule: A record pattern matches every value of its type unless its guard fails; an arm without a guard covers the type.
+// Spec: 4.3
+// expect output: adult asha
+// expect output: child ravi
+
+type Customer {
+    name: String
+    age: Int
+}
+
+fn kind(c: Customer) -> String {
+    match c {
+        Customer(name, age) if age > 18 => `adult {name}`,
+        Customer(name) => `child {name}`,
+    }
+}
+
+fn main() {
+    print(kind(Customer(name: "asha", age: 31)))
+    print(kind(Customer(name: "ravi", age: 9)))
+}

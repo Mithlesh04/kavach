@@ -173,8 +173,9 @@ pub(crate) struct Checker<'a> {
     /// `t["name"]` on a table: the column's name, the row type and the
     /// field's type (`std_table.rs`).
     pub(crate) table_columns: HashMap<(u32, u32), (String, Ty, Ty)>,
-    /// The variant each variant pattern names, by the span start of its
-    /// last name: settled from the matched value's type (`patterns.rs`).
+    /// The variant each variant pattern names, or the type a record
+    /// pattern names, by the span start of its last name: settled from
+    /// the matched value's type (`patterns.rs`).
     pub(crate) pattern_variants: HashMap<u32, DefId>,
     /// Interfaces built-in types implement with `extend`, by type name.
     pub(crate) ext_implements: HashMap<String, HashSet<DefId>>,

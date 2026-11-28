@@ -182,7 +182,7 @@ impl Checker<'_> {
     }
 
     /// The variables `p` binds, at any depth.
-    fn bound(&self, p: &Pattern) -> Vec<DefId> {
+    pub(crate) fn bound(&self, p: &Pattern) -> Vec<DefId> {
         let mut names = Vec::new();
         names_in(p, &mut names);
         (names.into_iter())

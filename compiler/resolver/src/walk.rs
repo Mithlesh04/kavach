@@ -348,9 +348,15 @@ impl Resolver {
                 let found = self.modules.own[m]
                     .values()
                     .find_map(|u| self.union_variants.get(u)?.get(&name.name).copied());
+                // `orders.Customer(name)`: a record type of that module (spec 4.3).
+                let a_type = (self.modules.own[m].get(&name.name))
+                    .is_some_and(|d| self.res.defs[*d].kind == DefKind::Type);
                 match found {
                     Some(id) => {
                         self.res.uses.insert(name.span.start, id);
+                    }
+                    None if a_type => {
+                        self.member(m, name);
                     }
                     None => self.error(
                         name.span,

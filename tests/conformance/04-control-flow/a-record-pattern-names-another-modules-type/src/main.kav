@@ -1,0 +1,12 @@
+// Rule: Another module's record is matched with its module's name, as a variant of its union is: `orders.Order(id, amount)`.
+// Spec: 4.3, 10.2
+// expect output: #1: 100
+
+use orders
+
+fn main() {
+    const o = orders.Order(id: 1, amount: 100)
+    match o {
+        orders.Order(id, amount) => print(`#{id}: {amount}`),
+    }
+}

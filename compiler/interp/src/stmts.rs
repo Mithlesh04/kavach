@@ -5,7 +5,7 @@
 //! Blocks, statements, assignment to places, and pattern matching.
 
 use crate::interp::Interp;
-use crate::value::{Eval, Flow, Value};
+use crate::value::{Eval, Field, Flow, Value};
 use kavach_ast::*;
 use kavach_resolver::{DefId, DefKind};
 use std::rc::Rc;
@@ -340,29 +340,54 @@ impl<'a> Interp<'a> {
                 if !is_variant || other_type || **name != *last.name {
                     return Ok(false);
                 }
-                for (i, fp) in fields.iter().flatten().enumerate() {
-                    let field_name = match (&fp.name, &fp.pattern.kind) {
-                        (Some(n), _) => Some(n.name.as_str()),
-                        (None, PatternKind::Binding(b))
-                            if values.iter().any(|f| *f.name == *b.name) =>
-                        {
-                            Some(b.name.as_str())
-                        }
-                        _ => None,
-                    };
-                    let value = match field_name {
-                        Some(n) => values.iter().find(|f| *f.name == *n),
-                        None => values.get(i),
-                    };
-                    match value {
-                        Some(f) if self.match_into(&fp.pattern, &f.value, out)? => {}
-                        _ => return Ok(false),
-                    }
+                self.match_fields(fields.as_deref(), values, out)?
+            }
+            // A record pattern (spec 4.3): every value of its type fits,
+            // so only the patterns inside its fields can fail.
+            (
+                PatternKind::Variant { path, fields },
+                Value::Record {
+                    def,
+                    fields: values,
+                    ..
+                },
+            ) => {
+                let last = path.segments.last().expect("a name");
+                if self.c.resolution.uses.get(&last.span.start) != Some(def) {
+                    return Ok(false);
                 }
-                true
+                self.match_fields(fields.as_deref(), values, out)?
             }
             _ => false,
         })
+    }
+
+    /// Whether the fields of a variant or record match their patterns: a
+    /// bare name takes the field it names, else the one at its place.
+    fn match_fields(
+        &mut self,
+        fields: Option<&'a [FieldPattern]>,
+        values: &[Field<'a>],
+        out: &mut Vec<(DefId, Value<'a>)>,
+    ) -> Result<bool, Flow<'a>> {
+        for (i, fp) in fields.unwrap_or_default().iter().enumerate() {
+            let field_name = match (&fp.name, &fp.pattern.kind) {
+                (Some(n), _) => Some(n.name.as_str()),
+                (None, PatternKind::Binding(b)) if values.iter().any(|f| *f.name == *b.name) => {
+                    Some(b.name.as_str())
+                }
+                _ => None,
+            };
+            let value = match field_name {
+                Some(n) => values.iter().find(|f| *f.name == *n),
+                None => values.get(i),
+            };
+            match value {
+                Some(f) if self.match_into(&fp.pattern, &f.value, out)? => {}
+                _ => return Ok(false),
+            }
+        }
+        Ok(true)
     }
 }
 

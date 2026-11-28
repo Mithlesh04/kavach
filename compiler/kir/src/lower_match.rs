@@ -5,7 +5,7 @@
 //! Lowering `match`: a chain of `if`s over a local holding the value,
 //! with patterns turned into conditions and bindings.
 
-use crate::ir::{self, Block, ExprKind as K, Shape, Stmt, Type, UnOp};
+use crate::ir::{self, Block, ExprKind as K, FieldShape, Shape, Stmt, Type, UnOp};
 use crate::lower::{Lowered, Lowerer};
 use crate::lower_expr::wrap;
 use crate::rt_op::RtOp;
@@ -328,6 +328,18 @@ impl<'a> Lowerer<'a> {
                 self.pattern(p, tmp, path, inner, conds, binds)?;
                 path.pop();
             }
+            // A record pattern (spec 4.3): every value of the type fits,
+            // so only the patterns inside its fields add conditions.
+            PatternKind::Variant { fields, .. }
+                if matches!(self.shapes.shape(ty), Some(Shape::Record { .. })) =>
+            {
+                let Some(Shape::Record { fields: shape, .. }) = self.shapes.shape(ty).cloned()
+                else {
+                    return Err(self.unsupported("this pattern", p.span));
+                };
+                let fields = fields.as_deref().unwrap_or_default();
+                self.field_patterns(p, fields, &shape, tmp, path, conds, binds)?;
+            }
             PatternKind::Variant { path: name, fields } => {
                 let variant_name = &name.segments.last().expect("a name").name;
                 let Some(Shape::Union { variants, .. }) = self.shapes.shape(ty).cloned() else {
@@ -342,26 +354,9 @@ impl<'a> Lowerer<'a> {
                     line,
                 };
                 conds.push(has);
-                let shape_fields = &variants[index].fields;
-                for (i, fp) in fields.iter().flatten().enumerate() {
-                    let field_name = match (&fp.name, &fp.pattern.kind) {
-                        (Some(n), _) => Some(n.name.as_str()),
-                        (None, PatternKind::Binding(b))
-                            if shape_fields.iter().any(|f| f.name == b.name) =>
-                        {
-                            Some(b.name.as_str())
-                        }
-                        _ => None,
-                    };
-                    let at = field_name
-                        .map_or(Some(i), |n| shape_fields.iter().position(|f| f.name == n));
-                    let Some(at) = at.filter(|a| *a < shape_fields.len()) else {
-                        return Err(self.unsupported("this pattern", p.span));
-                    };
-                    path.push((Step::Field(at as u32), shape_fields[at].ty));
-                    self.pattern(&fp.pattern, tmp, path, shape_fields[at].ty, conds, binds)?;
-                    path.pop();
-                }
+                let fields = fields.as_deref().unwrap_or_default();
+                let shape = &variants[index].fields;
+                self.field_patterns(p, fields, shape, tmp, path, conds, binds)?;
             }
             PatternKind::Ok(_) | PatternKind::Err(_) => {
                 return Err(self.unsupported("matching on errors", p.span));
@@ -370,6 +365,39 @@ impl<'a> Lowerer<'a> {
             PatternKind::List { .. } | PatternKind::Record(_) => {
                 return Err(self.unsupported("list and record patterns in `match`", p.span));
             }
+        }
+        Ok(())
+    }
+
+    /// The conditions and names of a variant's or record's field patterns
+    /// `fields`, the fields' shapes being `shape`: a bare name takes the
+    /// field it names, else the one at its place.
+    #[allow(clippy::too_many_arguments)]
+    fn field_patterns(
+        &mut self,
+        p: &ast::Pattern,
+        fields: &'a [ast::FieldPattern],
+        shape: &[FieldShape],
+        tmp: ir::Local,
+        path: &mut Vec<(Step, Type)>,
+        conds: &mut Vec<ir::Expr>,
+        binds: &mut Vec<(ir::Local, ir::Expr)>,
+    ) -> Lowered<()> {
+        for (i, fp) in fields.iter().enumerate() {
+            let field_name = match (&fp.name, &fp.pattern.kind) {
+                (Some(n), _) => Some(n.name.as_str()),
+                (None, PatternKind::Binding(b)) if shape.iter().any(|f| f.name == b.name) => {
+                    Some(b.name.as_str())
+                }
+                _ => None,
+            };
+            let at = field_name.map_or(Some(i), |n| shape.iter().position(|f| f.name == n));
+            let Some(at) = at.filter(|a| *a < shape.len()) else {
+                return Err(self.unsupported("this pattern", p.span));
+            };
+            path.push((Step::Field(at as u32), shape[at].ty));
+            self.pattern(&fp.pattern, tmp, path, shape[at].ty, conds, binds)?;
+            path.pop();
         }
         Ok(())
     }

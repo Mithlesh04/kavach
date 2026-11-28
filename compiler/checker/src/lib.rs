@@ -82,6 +82,7 @@ mod patterns;
 mod pointers;
 mod processes;
 mod read_only;
+mod record_patterns;
 mod reflect;
 mod scoped;
 mod secret_flow;

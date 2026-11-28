@@ -56,8 +56,9 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/table_methods.rs` | Grouping and statistics (spec 14.2): the result type of `mean` and `median`, other tools' names, and the removed `math.mean` and `collections.unique` and `counts` |
 | `src/c_functions.rs` | C functions (spec 10.7): the types their signatures may use, and the Kavach functions C calls back |
 | `src/fields.rs` | Fields, indexing, `with`, and arena escapes |
-| `src/patterns.rs` | Patterns, `if`/`match` branches, match coverage |
-| `src/coverage.rs` | Whether a `match`'s arms cover each variant, nested ones and an optional's too (spec 4.3) |
+| `src/patterns.rs` | Patterns, `if`/`match` branches |
+| `src/coverage.rs` | Whether a `match`'s arms cover each case: variants and records, nested ones and an optional's too (spec 4.3) |
+| `src/record_patterns.rs` | Record patterns, `Customer(name, age)`: their fields' types and who may name them (spec 4.3) |
 | `src/read_only.rs` | `pub(read)` fields (spec 10.1): changing one outside its type's module is refused |
 | `src/frozen.rs` | Frozen values (spec 2.20): `x.freeze()`, `f.unfreeze()`, the changes refused, and where a `Frozen<T>` fits a `T` |
 | `src/frozen_reads.rs` | Which functions only read a parameter, so a frozen value may be passed to it (spec 2.20) |

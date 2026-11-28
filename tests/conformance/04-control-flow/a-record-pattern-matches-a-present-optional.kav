@@ -1,0 +1,21 @@
+// Rule: A record pattern on an optional matches a present value; with a `none` arm, the arms cover the optional.
+// Spec: 4.3
+// expect output: asha
+// expect output: nobody
+
+type Customer {
+    name: String
+    age: Int
+}
+
+fn who(c: Customer?) -> String {
+    match c {
+        Customer(name) => name,
+        none => "nobody",
+    }
+}
+
+fn main() {
+    print(who(Customer(name: "asha", age: 31)))
+    print(who(none))
+}

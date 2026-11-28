@@ -1,0 +1,26 @@
+// Rule: A record pattern works inside a variant's field; with names only, it covers that field as a name does.
+// Spec: 4.3
+// expect output: on the axis at 3
+// expect output: at 1, 2
+// expect output: empty
+
+type Point {
+    x: Int
+    y: Int
+}
+
+type Box = Full(item: Point) | Empty
+
+fn show(b: Box) -> String {
+    match b {
+        Box.Full(item: Point(x: 0, y)) => `on the axis at {y}`,
+        Box.Full(item: Point(x, y)) => `at {x}, {y}`,
+        Box.Empty => "empty",
+    }
+}
+
+fn main() {
+    print(show(Box.Full(item: Point(x: 0, y: 3))))
+    print(show(Box.Full(item: Point(x: 1, y: 2))))
+    print(show(Box.Empty))
+}
