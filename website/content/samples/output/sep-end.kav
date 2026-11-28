@@ -1,0 +1,7 @@
+fn main() {
+    print(1, 2, 3, sep: ", ")
+    print("2026", "11", "28", sep: "-")
+    print("loading", end: "")
+    print("... done")
+    print("a", "b", sep: "", end: `!\n`)
+}

@@ -1,0 +1,11 @@
+$ kavach check
+error: this always panics: integer overflow: 127 + 127 doesn't fit in Int8 (spec 1.8)
+ --> src/main.kav:4:11
+  |
+4 |     print(a + b)
+  |           ^^^^^
+help: for 254, widen first: Int(a) + Int(b); to wrap: a.wrapping_add(b)
+$ kavach fix src
+src/main.kav: Widen first: `Int(a) + Int(b)`
+$ kavach run
+254

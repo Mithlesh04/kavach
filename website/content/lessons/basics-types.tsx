@@ -2,7 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, Files, H2, Note, P } from "./parts";
 import { Limits } from "./limits";
 
 // ---------- Data Types ----------
@@ -152,6 +152,22 @@ export const sizedDoc: LessonDoc = {
       <Ex name="types/sub-overflow.panics" />
       <P>When the compiler knows where the count starts and how often the loop runs, it doesn&apos;t wait for the run:</P>
       <Ex name="types/sub-overflow-known.fails" />
+      <P>
+        Such an error names both ways out: widen first, so the sum is worked out in an <C>Int</C>, or{" "}
+        <Link href="/docs/basics/data-types/any-bit-width/#arithmetic-at-the-width">wrap round</Link> on purpose.
+        The editor offers the first as a quick fix, and <C>kavach fix</C> applies it where it leaves no error:
+      </P>
+      <Files name="types/overflow-help" first={["src/main.kav"]} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Arithmetic keeps its operands&apos; type wherever it is used, so moving <C>a + b</C> into a variable never changes its result.</li>
+        <li><C>level += 1</C> keeps <C>level</C>&apos;s type, so its help says to declare <C>level</C> with a wider type, or to write <C>level = level.wrapping_add(1)</C>.</li>
+        <li>A <Link href="/docs/basics/data-types/ranged-integers/">range type</Link> can&apos;t wrap, so it gets only the first way.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/01-basics.md" label="spec 1.8 · two ways out" />
+        <SrcRef file="tests/conformance/01-basics/a-small-overflow-has-two-ways-out.kav" label="tested" />
+        <SrcRef file="tools/lsp/src/widen.rs" label="the editor's quick fix" />
+      </div>
       <P>The smallest value has no positive twin, so even dividing it by -1 doesn&apos;t fit, and is caught the same way:</P>
       <Ex name="datatypes/narrow-div.panics" />
       <P>

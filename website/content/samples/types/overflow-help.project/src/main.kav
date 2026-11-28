@@ -1,0 +1,5 @@
+fn main() {
+    const a: Int8 = 127
+    const b: Int8 = 127
+    print(a + b)
+}

@@ -1,0 +1,8 @@
+fn main() {
+    const name = "Asha"
+    const age = 31
+    print("name:", name, "age:", age)
+    print("cart:", ["dosa", "mango"], 2)
+    print()
+    print("done")
+}

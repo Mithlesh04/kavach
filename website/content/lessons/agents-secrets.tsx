@@ -94,7 +94,7 @@ export const secretParamsDoc: LessonDoc = {
       <P>The names a <C>for</C>, <C>match</C>, <C>if let</C> or destructuring takes from a secret are secret too:</P>
       <Ex name="agents/secret-loop.fails" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>A built-in method&apos;s parameters aren&apos;t <C>secret</C>, so <C>cards.push(card)</C> is refused.</li>
+        <li>A built-in method&apos;s parameters aren&apos;t <C>secret</C>, so <C>name.contains(card)</C> and <C>cards.push(card)</C> are refused.</li>
         <li>A field that isn&apos;t <C>secret</C> can&apos;t take one, when the record is made or later.</li>
         <li>A lambda given to a method of a secret may use its secrets: in <C>{"cards.map(c => c.upper())"}</C> the result is secret anyway.</li>
       </ul>

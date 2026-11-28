@@ -1,0 +1,2 @@
+warning: a backslash in quotes is a backslash: for a line break or a tab, write the text in backticks, `` `first\nsecond` `` (spec 1.7)
+loading\n

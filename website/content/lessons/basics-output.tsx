@@ -8,16 +8,21 @@ import { Ex, H2, Note, P } from "./parts";
 // ---------- Output ----------
 
 export const outputDoc: LessonDoc = {
-  lead: "print(value) writes a value to the screen, followed by a new line.",
+  lead: "print(value) writes a value to the screen, followed by a new line. print(a, b) writes several, a space between them.",
   simple: <>Printing means showing something on the screen: it is how a program talks back to you. Without it, a program could work out an answer, but you would never see it.</>,
   minutes: 3,
   before: ["start/your-first-program"],
   body: (
     <>
       <P>
-        <C>print</C> takes one value of any kind: text, a number, a list. Each call writes one line.
+        <C>print</C> takes a value of any kind: text, a number, a list. Each call writes one line.
       </P>
       <Ex name="output/print" />
+      <P>
+        Give it several values, and it writes them on one line with a space between, as Python&apos;s{" "}
+        <C>print</C> does. Text is written as it is; <C>print()</C> with nothing writes an empty line:
+      </P>
+      <Ex name="output/several" />
       <Note>
         Text goes between double quotes: <C>&quot;Hello&quot;</C>. To put a value inside text, write the text in
         backticks and the value in braces: <C>{"`Total: {total}`"}</C>. The Strings page covers this in full.
@@ -36,7 +41,7 @@ export const outputDoc: LessonDoc = {
 };
 
 export const printDoc: LessonDoc = {
-  lead: "Each print call writes exactly one line to standard output.",
+  lead: "Each print call writes one line to standard output. sep: and end: change what goes between its values and after them.",
   simple: <>Each <C>print</C> is like writing one line in a notebook: every call starts a fresh line. Writing to the screen is something code must be allowed to do, and in Kavach every function is allowed it unless the project says otherwise.</>,
   minutes: 2,
   body: (
@@ -48,6 +53,27 @@ export const printDoc: LessonDoc = {
         print without writing <C>uses</C>, unless the project&apos;s <C>kavach.toml</C> takes it away. An agent is
         the one exception: it may print only when its <C>can</C> lists <C>Console</C>.
       </P>
+      <H2>Between and after the values</H2>
+      <P>
+        Two named arguments change the layout. <C>sep:</C> is the text between the values, a space by default.{" "}
+        <C>end:</C> is the text after the last one, a line end by default. Both are <C>String</C>s, written by name
+        after the values:
+      </P>
+      <Ex name="output/sep-end" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>With <C>end: &quot;&quot;</C>, the next <C>print</C> goes on the same line. On a terminal, the text shows at once, even without a line end.</li>
+        <li>A line end written out is a template, <C>{"end: `\\n`"}</C>, as text in quotes takes no escapes.</li>
+        <li><C>debug</C> takes values, <C>sep:</C> and <C>end:</C> the same way.</li>
+      </ul>
+      <P>A quoted <C>&quot;\n&quot;</C> is a backslash and an <C>n</C>, and the compiler warns:</P>
+      <Ex name="output/end-quoted.warns" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/01-basics.md" label="spec 1.10 · printing" />
+        <SrcRef file="tests/conformance/01-basics/print-joins-values-with-spaces.kav" label="several values, tested" />
+        <SrcRef file="tests/conformance/01-basics/print-takes-sep-and-end.kav" label="sep and end, tested" />
+        <SrcRef file="tests/conformance/01-basics/print-with-no-values-writes-an-empty-line.kav" label="print(), tested" />
+        <SrcRef file="tests/conformance/01-basics/print-writes-text-among-values-as-it-is.kav" label="text as it is, tested" />
+      </div>
       <H2>What the machine does</H2>
       <P>
         A program can&apos;t draw on the screen itself. It hands its text to the operating system, which passes it
