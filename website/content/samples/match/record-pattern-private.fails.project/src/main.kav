@@ -1,0 +1,10 @@
+use accounts
+
+fn main() {
+    const a = accounts.open("Asha")
+    const text = match a {
+        accounts.Account(owner, pin: 1234) => `{owner} kept the first pin`,
+        accounts.Account(owner) => owner,
+    }
+    print(text)
+}

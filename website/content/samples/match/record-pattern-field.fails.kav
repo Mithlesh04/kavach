@@ -1,0 +1,13 @@
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const p = Point(x: 1, y: 2)
+    const text = match p {
+        Point(x: 0, z: _) => "on the axis",
+        _ => "elsewhere",
+    }
+    print(text)
+}

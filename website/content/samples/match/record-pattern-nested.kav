@@ -1,0 +1,29 @@
+type Point {
+    x: Int
+    y: Int
+}
+
+type Parcel = Full(at: Point) | Empty
+
+fn where_is(p: Parcel) -> String {
+    match p {
+        Parcel.Full(at: Point(x: 0, y)) => `on the axis at {y}`,
+        Parcel.Full(at: Point(x, y)) => `at {x}, {y}`,
+        Parcel.Empty => "nothing to deliver",
+    }
+}
+
+fn first(points: [Point]) -> String {
+    match points.first() {
+        Point(x, y) => `starts at {x}, {y}`,
+        none => "no points",
+    }
+}
+
+fn main() {
+    print(where_is(Parcel.Full(at: Point(x: 0, y: 3))))
+    print(where_is(Parcel.Full(at: Point(x: 1, y: 2))))
+    print(where_is(Parcel.Empty))
+    print(first([Point(x: 5, y: 6)]))
+    print(first([]))
+}

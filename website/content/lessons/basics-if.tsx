@@ -2,7 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, H2, Note, P, Syntax } from "./parts";
+import { Ex, Files, H2, Note, P, Syntax } from "./parts";
 
 // ---------- If...Else ----------
 
@@ -161,7 +161,7 @@ export const matchValuesDoc: LessonDoc = {
 };
 
 export const patternsDoc: LessonDoc = {
-  lead: "Patterns can be ranges, tuples, union variants, none, or _ for anything.",
+  lead: "Patterns can be ranges, tuples, union variants, records, none, or _ for anything.",
   simple: <>A pattern can stand for a whole group of values, like a teacher&apos;s rule &quot;90 to 100 marks is an A&quot;. Other patterns look at the parts of a pair, or say &quot;anything at all&quot; with <C>_</C>.</>,
   minutes: 4,
   body: (
@@ -186,6 +186,41 @@ export const patternsDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/04-control-flow/match-covers-nested-variants.kav" label="nested variants, tested" />
         <SrcRef file="tests/conformance/04-control-flow/match-on-an-optional-may-list-its-variants.kav" label="optionals, tested" />
+      </div>
+      <H2>Records</H2>
+      <P>
+        A record is matched the way a variant is, with its type&apos;s name: <C>Customer(name, age)</C> names the
+        fields it wants, and <C>Point(x: 0, y)</C> also checks one. Every <C>Customer</C> fits the shape, so the
+        pattern matches unless a field inside it doesn&apos;t, or its guard fails:
+      </P>
+      <Ex name="match/record-pattern" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>Customer(name)</C> has no guard and no field to check, so it covers every <C>Customer</C>: no <C>_</C> is needed after it.</li>
+        <li>A field left out is not looked at. <C>y: _</C> says the same out loud, and <C>x: right</C> gives a field another name.</li>
+      </ul>
+      <P>
+        A record pattern works anywhere a pattern does: inside a variant&apos;s field, and on an optional, where it
+        matches a present value and <C>none</C> the missing one:
+      </P>
+      <Ex name="match/record-pattern-nested" />
+      <P>Another module&apos;s record is written with its module&apos;s name, as a variant of its union is:</P>
+      <Files name="match/record-pattern-module" first={["src/main.kav", "src/orders.kav"]} />
+      <P>Only the record&apos;s own fields can be named:</P>
+      <Ex name="match/record-pattern-field.fails" />
+      <P>And of another module&apos;s record, only the fields it may read. A private field stays private here too:</P>
+      <Files name="match/record-pattern-private.fails" first={["src/main.kav", "src/accounts.kav"]} outcome="refused" />
+      <P>A record pattern matches only values of its own type:</P>
+      <Ex name="match/record-pattern-type.fails" />
+      <P>An arm after one that covers the type can never run, and the compiler says so:</P>
+      <Ex name="match/record-pattern-twice.warns" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/04-control-flow.md" label="spec 4.3 · a record pattern" />
+        <SrcRef file="tests/conformance/04-control-flow/a-record-pattern-covers-its-type.kav" label="covers its type, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/a-record-pattern-tests-the-patterns-in-its-fields.kav" label="field patterns, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/a-record-pattern-works-inside-a-variant.kav" label="inside a variant, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/a-record-pattern-matches-a-present-optional.kav" label="optionals, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/a-record-pattern-names-another-modules-type/src/main.kav" label="another module, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/a-record-pattern-names-no-private-field/src/main.kav" label="private fields, tested" />
       </div>
     </>
   ),

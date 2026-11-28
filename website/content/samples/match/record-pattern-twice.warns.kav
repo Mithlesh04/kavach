@@ -1,0 +1,13 @@
+type Customer {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const c = Customer(name: "Asha", age: 31)
+    const text = match c {
+        Customer(name) => `hello, {name}`,
+        Customer(name, age) if age >= 18 => `welcome, {name}`,
+    }
+    print(text)
+}

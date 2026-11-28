@@ -1,0 +1,8 @@
+pub type Account {
+    pub owner: String
+    pin: Int
+}
+
+pub fn open(owner: String) -> Account {
+    Account(owner: owner, pin: 1234)
+}

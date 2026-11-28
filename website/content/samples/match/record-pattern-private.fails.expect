@@ -1,0 +1,1 @@
+error: the field `pin` of `Account` is private to module `accounts`: mark it `pub` there to use it here (spec 10.1)

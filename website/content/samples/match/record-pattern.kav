@@ -1,0 +1,32 @@
+type Customer {
+    name: String
+    age: Int
+}
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn greet(c: Customer) -> String {
+    match c {
+        Customer(name, age) if age >= 18 => `welcome, {name}`,
+        Customer(name) => `hello, {name}: ask a parent to sign`,
+    }
+}
+
+fn place(p: Point) -> String {
+    match p {
+        Point(x: 0, y: 0) => "at the start",
+        Point(x: 0, y) => `on the y axis at {y}`,
+        Point(x: right, y: _) => `{right} to the right`,
+    }
+}
+
+fn main() {
+    print(greet(Customer(name: "Asha", age: 31)))
+    print(greet(Customer(name: "Ravi", age: 9)))
+    print(place(Point(x: 0, y: 0)))
+    print(place(Point(x: 0, y: 4)))
+    print(place(Point(x: 2, y: 5)))
+}

@@ -26,6 +26,7 @@ export const recordsDoc: LessonDoc = {
         <li><C>type User {"{ … }"}</C> declares the record; <C>User(name: …, age: …)</C> makes one, naming every field.</li>
         <li><C>asha.name</C> reads a field.</li>
         <li>A record is a value: <C>copy</C> changing its city leaves <C>asha</C> as she was.</li>
+        <li>A <C>match</C> takes a record apart by its fields, <C>User(name, age) if age &gt;= 18 =&gt; …</C>: see <Link href="/docs/basics/match/patterns/#records">Patterns</Link>.</li>
       </ul>
       <Note>Other languages call this a struct, or a class with only data.</Note>
     </>

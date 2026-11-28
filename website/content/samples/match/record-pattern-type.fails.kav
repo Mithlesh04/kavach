@@ -1,0 +1,13 @@
+type Order {
+    id: Int
+    amount: Int
+}
+
+fn main() {
+    const total = 499
+    const text = match total {
+        Order(id, amount) => `#{id}: {amount}`,
+        _ => "not an order",
+    }
+    print(text)
+}

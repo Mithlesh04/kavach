@@ -1,0 +1,9 @@
+use orders
+
+fn main() {
+    const o = orders.Order(id: 1, amount: 100)
+    match o {
+        orders.Order(id, amount) if amount >= 100 => print(`#{id}: free delivery`),
+        orders.Order(id) => print(`#{id}: delivery 40`),
+    }
+}
