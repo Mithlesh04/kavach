@@ -1125,6 +1125,10 @@
 <priority>0.6</priority>
 </url>
 <url>
+<loc>https://kavachlang.com/docs/agents/capabilities/default-capabilities/</loc>
+<priority>0.6</priority>
+</url>
+<url>
 <loc>https://kavachlang.com/docs/agents/capabilities/pure-functions/</loc>
 <priority>0.6</priority>
 </url>

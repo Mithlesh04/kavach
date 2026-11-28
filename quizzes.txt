@@ -224,11 +224,11 @@ print(add(2, 3))
 
 1. Multiple choice: A library you use has `pub fn format_price(p: Decimal) -> String`, with no `uses`. What can it do?
 
-   Choices: `Only compute its result: it can't read files, use the network or print`, `Anything, as long as it returns a String`, `Read files, but not use the network`
+   Choices: `Compute its result, and print: it can't read files or use the network`, `Anything, as long as it returns a String`, `Read files, but not use the network`
 
-   Answer: `Only compute its result: it can't read files, use the network or print`
+   Answer: `Compute its result, and print: it can't read files or use the network`
 
-   Why: A pub function must list what it touches. No uses means it touches nothing, and the compiler checks that.
+   Why: A pub function must list what it touches beyond the package's defaults, which are Console unless kavach.toml says otherwise. No uses means it touches nothing else, and the compiler checks that.
 
 ### [Agents](https://kavachlang.com/docs/agents/agents/)
 

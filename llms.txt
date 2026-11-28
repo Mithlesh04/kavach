@@ -21,6 +21,7 @@ count += 1
 const price: Decimal = 499.00       // exact; literals take their type from context
 const big = 1_000_000 + 0xff + 0b1010
 print(`Hi {name}, {count + 1}\n`) // backticks fill in {expr} and read \n \t \{ \`
+print("count:", count, end: "")    // several values, a space between; sep: and end: by name
 const path = "C:\new\{x}"           // quotes: exactly what is written, one line; no r"…" or f"…"
 const body = `
     \{"name": "{name}"}
@@ -207,8 +208,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Syntax: Blocks are values](https://kavachlang.com/docs/basics/syntax/blocks-are-values/): A block { … } has a value: the value of its last line.
 - [Syntax: Names](https://kavachlang.com/docs/basics/syntax/names/): Names are made of letters, digits and _, in snake_case for values and PascalCase for types.
 - [Syntax: Keywords](https://kavachlang.com/docs/basics/syntax/keywords/): Keywords are the words the language itself uses. They can't be used as names.
-- [Output](https://kavachlang.com/docs/basics/output/): print(value) writes a value to the screen, followed by a new line.
-- [Output: print](https://kavachlang.com/docs/basics/output/print/): Each print call writes exactly one line to standard output.
+- [Output](https://kavachlang.com/docs/basics/output/): print(value) writes a value to the screen, followed by a new line. print(a, b) writes several, a space between them.
+- [Output: print](https://kavachlang.com/docs/basics/output/print/): Each print call writes one line to standard output. sep: and end: change what goes between its values and after them.
 - [Output: How values print](https://kavachlang.com/docs/basics/output/how-values-print/): print shows a value the way you would write it in code, so the output is never ambiguous.
 - [Output: debug](https://kavachlang.com/docs/basics/output/debug/): debug(value) prints a value with its file and line while you develop, and disappears from release builds.
 - [Comments](https://kavachlang.com/docs/basics/comments/): Comments are notes for people: the compiler skips them.
@@ -262,7 +263,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [If Let](https://kavachlang.com/docs/basics/if-let/): if let runs a block only when an optional value is there, and gives you the value inside.
 - [Match](https://kavachlang.com/docs/basics/match/): match compares a value against patterns, top to bottom, and runs the first that fits.
 - [Match: Matching values](https://kavachlang.com/docs/basics/match/matching-values/): Match exact values: numbers, text, true and false.
-- [Match: Patterns](https://kavachlang.com/docs/basics/match/patterns/): Patterns can be ranges, tuples, union variants, none, or _ for anything.
+- [Match: Patterns](https://kavachlang.com/docs/basics/match/patterns/): Patterns can be ranges, tuples, union variants, records, none, or _ for anything.
 - [Match: Guards](https://kavachlang.com/docs/basics/match/guards/): A guard, pattern if condition, adds a check to a pattern.
 - [For Loop](https://kavachlang.com/docs/basics/for-loop/): A for loop runs a block of code once for each item: each item of a list, each number of a range, each entry of a dict.
 - [For Loop: Over a list](https://kavachlang.com/docs/basics/for-loop/over-a-list/): Loop over a list: the block runs once per item, in order, and the name you choose holds the item.
@@ -486,8 +487,9 @@ version's git tag; benchmarks carry one command to reproduce them.
 ## Part 10: Capabilities & Agents
 
 - [Capabilities](https://kavachlang.com/docs/agents/capabilities/): A capability is permission to touch the outside world: files, the network, the terminal. A function says which ones it uses, and the compiler checks it.
-- [Capabilities: uses](https://kavachlang.com/docs/agents/capabilities/uses/): A pub function must write its uses clause. A private one may leave it out: the compiler works it out.
-- [Capabilities: Pure functions](https://kavachlang.com/docs/agents/capabilities/pure-functions/): A function without uses is pure: it can't affect the outside world at all.
+- [Capabilities: uses](https://kavachlang.com/docs/agents/capabilities/uses/): A pub function must write its uses clause for what it uses beyond the package's defaults. A private one may leave it out: the compiler works it out.
+- [Capabilities: Default capabilities](https://kavachlang.com/docs/agents/capabilities/default-capabilities/): Every function in a package may use its default capabilities without writing uses. The default is Console, so print needs no uses; kavach.toml can change it.
+- [Capabilities: Pure functions](https://kavachlang.com/docs/agents/capabilities/pure-functions/): A function that uses no capability is pure: it can't affect the outside world at all. With default = [] in kavach.toml, every function without uses is.
 - [Capabilities: Narrower file access](https://kavachlang.com/docs/agents/capabilities/narrower-file-access/): Fs can be granted in part: Fs.read only reads, Fs.write only changes, and Fs("./data") stays inside one folder.
 - [Your Own Capabilities](https://kavachlang.com/docs/agents/your-own-capabilities/): Declare a capability for an outside system your code depends on, such as payments or email. Code calls it by name; who answers is decided elsewhere.
 - [Your Own Capabilities: Declaring a capability](https://kavachlang.com/docs/agents/your-own-capabilities/declaring-a-capability/): A capability names methods. Every method can be refused, so its error type must have a Denied(reason: String) case.
@@ -604,7 +606,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 
 - [Values, Not Shared References](https://kavachlang.com/docs/concepts/values-not-shared-references/): In Kavach, b = a gives b its own value. Two names never share one changing value by accident, and sharing underneath makes it cost nothing until one of them changes.
 - [Errors as Values](https://kavachlang.com/docs/concepts/errors-as-values/): A function that can fail says so in its type, and the caller must handle it. A bug, such as an index out of range, is a panic instead: it stops the task where the bug is.
-- [Capabilities in Types](https://kavachlang.com/docs/concepts/capabilities-in-types/): A function's type says what it may touch: files, the network, the clock, a payment API. A function that says nothing touches nothing, and the compiler holds every function to what it says.
+- [Capabilities in Types](https://kavachlang.com/docs/concepts/capabilities-in-types/): A function's type says what it may touch: files, the network, the clock, a payment API. A function that says nothing touches nothing beyond the project's defaults, printing unless kavach.toml takes it away, and the compiler holds every function to what it says.
 - [Memory without a Garbage Collector](https://kavachlang.com/docs/concepts/memory-without-a-garbage-collector/): Kavach frees memory without a garbage collector and without a borrow checker: the compiler finds each value's last use, a count kept while running frees it at that moment, and values with one holder change in place.
 - [Tests from Contracts](https://kavachlang.com/docs/concepts/tests-from-contracts/): In Kavach you write the rules a function follows, as contracts, and kavach test writes the tests: it generates inputs from the types, checks every rule, and shrinks a failure to the smallest case.
 - [The One-Core Answer](https://kavachlang.com/docs/concepts/the-one-core-answer/): A loop runs on one core unless it says on cores. Then its rounds run on every core, and the compiler checks that the answer is exactly the one-core answer, so using more cores never changes what a program does.
