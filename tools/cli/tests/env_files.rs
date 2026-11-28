@@ -96,8 +96,9 @@ fn programs_read_the_dot_env_file() {
     assert!(String::from_utf8_lossy(&bad.stderr).contains("bad.env:1: expected `NAME=value`"));
 
     // `--no-env-file` removes the copy an earlier build wrote.
-    kavach(&dir, &["build", "--no-env-file"], &[]);
-    assert!(!dir.join(".kavach/bin/.env").exists());
+    // The copy goes only when the build itself succeeds, so say why not.
+    let rebuilt = kavach(&dir, &["build", "--no-env-file"], &[]);
+    assert!(!dir.join(".kavach/bin/.env").exists(), "{rebuilt}");
     assert_eq!(shown(&[]), "unset unset unset\n");
 
     let _ = fs::remove_dir_all(&dir);
