@@ -32,7 +32,7 @@ impl Checker<'_> {
             self.error(
                 p.span,
                 format!(
-                    "`{0}(…)` matches a `{0}`, but this value is `{shown}`",
+                    "`{0}(…)` matches only values of type `{0}`, but this value is `{shown}`",
                     name.name
                 ),
             );
